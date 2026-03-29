@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
           { key: "X-XSS-Protection", value: "1; mode=block" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "X-Powered-By", value: "ForThePeople.in" },
+          { key: "X-Creator", value: "Jayanth M B" },
+          { key: "X-Project-ID", value: "FTP-JMB-2026-IN" },
+          { key: "X-License", value: "MIT with Attribution — github.com/jayanthmb14/forthepeople" },
         ],
       },
       // Cache static GeoJSON files aggressively
@@ -35,6 +39,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Remove default "x-powered-by: Next.js" header (we set our own above)
+  poweredByHeader: false,
 
   // Compress responses
   compress: true,
