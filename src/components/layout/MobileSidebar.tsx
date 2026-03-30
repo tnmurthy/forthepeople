@@ -18,7 +18,7 @@ const SIDEBAR_CATEGORIES = [
   },
   {
     label: "GOVERNANCE",
-    slugs: ["leadership", "finance", "schemes", "services", "elections"],
+    slugs: ["leadership", "finance", "schemes", "services", "exams", "elections"],
   },
   {
     label: "COMMUNITY",
