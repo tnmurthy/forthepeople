@@ -100,10 +100,29 @@ async function fetchModule(
     // 2. LEADERS
     // ══════════════════════════════════════════════════
     case "leaders": {
-      const data = await prisma.leader.findMany({
-        where: { districtId: did },
-        orderBy: [{ tier: "asc" }, { name: "asc" }],
-      });
+      // Use DISTINCT ON via raw query to deduplicate by name+role, keeping newest
+      const raw = await prisma.$queryRaw<{
+        id: string; districtId: string; name: string; role: string; tier: number;
+        party: string | null; constituency: string | null; since: string | null;
+        photoUrl: string | null;
+      }[]>`
+        SELECT DISTINCT ON (LOWER("name"), LOWER("role"))
+          id, "districtId", name, role, tier,
+          party, constituency, since, "photoUrl"
+        FROM "Leader"
+        WHERE "districtId" = ${did}
+        ORDER BY LOWER("name"), LOWER("role"), id DESC
+      `;
+      const data = raw.map(r => ({
+        ...r,
+        talukId: null,
+        nameLocal: null,
+        roleLocal: null,
+        phone: null,
+        email: null,
+        photoLicense: null,
+        source: null,
+      }));
       return { data, meta };
     }
 
