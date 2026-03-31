@@ -62,6 +62,7 @@ export default function CitizenCornerPage({ params }: { params: Promise<{ locale
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [tipsMonth, setTipsMonth] = useState<number | null>(null);
   const [tipsYear, setTipsYear] = useState<number | null>(null);
+  const [nextRefreshDays, setNextRefreshDays] = useState<number | null>(null);
 
   const tipsLoading = loadedFor !== district;
 
@@ -72,6 +73,7 @@ export default function CitizenCornerPage({ params }: { params: Promise<{ locale
         setTips(json.tips ?? []);
         setTipsMonth(json.month ?? null);
         setTipsYear(json.year ?? null);
+        setNextRefreshDays(json.nextRefreshDays ?? null);
         setLoadedFor(district);
       })
       .catch(() => setLoadedFor(district));
@@ -117,8 +119,26 @@ export default function CitizenCornerPage({ params }: { params: Promise<{ locale
           {tipsLoading && <LoadingShell rows={4} />}
 
           {!tipsLoading && tips.length === 0 && (
-            <div style={{ padding: 24, textAlign: "center", color: "#9B9B9B", fontSize: 14 }}>
-              AI tips not available right now. Check back soon.
+            <div style={{
+              padding: "32px 24px", textAlign: "center",
+              background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 16,
+            }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>📅</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#1A1A1A", marginBottom: 6 }}>
+                Citizen Tips generate weekly
+              </div>
+              <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 300, margin: "0 auto 16px" }}>
+                {nextRefreshDays != null
+                  ? `Next tips will be available in ${nextRefreshDays === 1 ? "1 day" : nextRefreshDays + " days"}.`
+                  : "New tips will be generated automatically next week."}
+              </div>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 20,
+                padding: "4px 12px", fontSize: 11, color: "#D97706", fontWeight: 600,
+              }}>
+                🔄 Auto-generated every Sunday
+              </div>
             </div>
           )}
 
@@ -133,7 +153,7 @@ export default function CitizenCornerPage({ params }: { params: Promise<{ locale
                   }}>
                     🧠 AI-generated tips for {MONTHS[tipsMonth - 1]} {tipsYear}
                   </div>
-                  <span style={{ fontSize: 11, color: "#9B9B9B" }}>Refreshed every 6 hours</span>
+                  <span style={{ fontSize: 11, color: "#9B9B9B" }}>Updated weekly</span>
                 </div>
               )}
 

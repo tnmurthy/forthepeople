@@ -6,14 +6,15 @@
 
 // ═══════════════════════════════════════════════════════════
 // ForThePeople.in — AI Citizen Tips (READ-ONLY)
-// GET /api/ai/citizen-tips?district=mandya&state=karnataka
+// GET /api/ai/citizen-tips?district=mandya
 // Serves ONLY from Redis cache — never generates live AI on public GET.
-// Live AI generation restricted to backend crons + admins only.
+// Tips are generated weekly by /api/cron/generate-citizen-tips (cron).
+// Cache TTL: 7 days. When empty, returns nextRefreshDays info.
 // ═══════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server";
 import { cacheGet } from "@/lib/cache";
 
-const CACHE_TTL = 6 * 60 * 60; // 6 hours
+const CACHE_TTL = 7 * 24 * 60 * 60; // 7 days — must match cron TTL
 
 interface TipsResponse {
   tips: Array<{
@@ -22,11 +23,12 @@ interface TipsResponse {
   }>;
   month: number;
   year: number;
-  generatedAt: string;
+  generatedAt: string | null;
+  generatedBy?: string;
+  nextRefreshDays?: number;
 }
 
 // ── Route handler — READ-ONLY (public) ───────────────────
-// Zero-credit guarantee: never calls live AI on public GET.
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const districtSlug = searchParams.get("district");
@@ -35,20 +37,35 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "district param required" }, { status: 400 });
   }
 
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
+  const cacheKey = `ftp:ai:citizen-tips:${districtSlug}`;
 
-  const cacheKeyStr = `ftp:ai:citizen-tips:${districtSlug}:${year}:${month}`;
-
-  const cached = await cacheGet<TipsResponse>(cacheKeyStr);
-  if (cached) {
+  const cached = await cacheGet<TipsResponse>(cacheKey);
+  if (cached && cached.tips && cached.tips.length > 0) {
     return NextResponse.json(
       { ...cached, fromCache: true },
-      { headers: { "Cache-Control": `public, s-maxage=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL * 2}` } }
+      {
+        headers: {
+          "Cache-Control": `public, s-maxage=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL}`,
+        },
+      }
     );
   }
 
-  // Zero-credit guarantee: return empty instead of generating live AI
-  return NextResponse.json({ tips: [], month, year, generatedAt: null });
+  // Tips not generated yet — return metadata so UI can show "next refresh in X days"
+  const now = new Date();
+  // Next Sunday midnight UTC (weekly schedule)
+  const daysUntilSunday = (7 - now.getDay()) % 7 || 7;
+  const nextRefresh = new Date(now);
+  nextRefresh.setUTCDate(nextRefresh.getUTCDate() + daysUntilSunday);
+  nextRefresh.setUTCHours(6, 0, 0, 0); // Sunday 6AM UTC
+
+  return NextResponse.json({
+    tips: [],
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+    generatedAt: null,
+    nextRefreshDays: daysUntilSunday,
+    nextRefreshDate: nextRefresh.toISOString(),
+    fromCache: false,
+  });
 }
