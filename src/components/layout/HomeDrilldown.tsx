@@ -119,7 +119,7 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
       <HomepageStats />
 
       {/* Map + District cards: 2-col on desktop, stacked on mobile */}
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      <div>
         <div
           style={{ padding: "12px 16px 8px" }}
         >
@@ -212,7 +212,7 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
       </div>
 
       {/* Remaining sections — full width, stacked */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
         {/* Live Data Preview cards */}
         <LiveDataPreview locale={locale} />
 
