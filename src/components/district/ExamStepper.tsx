@@ -127,7 +127,6 @@ export default function ExamStepper(props: ExamStepperProps) {
 
         // Content for this step
         let stepDate = "";
-        let subLabel = "";
         if (step.key === "announced")  stepDate = fmtDate(props.announcedDate);
         if (step.key === "applications") {
           stepDate = fmtDate(props.startDate);

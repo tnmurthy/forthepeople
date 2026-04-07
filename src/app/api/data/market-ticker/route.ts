@@ -109,12 +109,7 @@ async function fetchIBJAPrices(): Promise<{
     if (!res.ok) return { gold: null, silver: null };
     const html = await res.text();
 
-    // Extract gold 999 price (per 10g) — look for the rate in the page
-    // IBJA page has structured rate tables with AM/PM rates
-    const goldMatch = html.match(/999[^]*?₹?\s*([\d,]+)\s*(?:\.(\d+))?/);
-    const silverMatch = html.match(/Silver[^]*?999[^]*?₹?\s*([\d,]+)\s*(?:\.(\d+))?/i);
-
-    // More robust: look for hidden fields or specific patterns
+    // Look for hidden fields or specific patterns
     const goldRateMatch = html.match(/HdnGold[^"]*"[^"]*value="([^"]*)"/i);
     const silverRateMatch = html.match(/HdnSilver[^"]*"[^"]*value="([^"]*)"/i);
 
