@@ -114,17 +114,28 @@ async function fetchIBJAPrices(): Promise<{
     const silverRateMatch = html.match(/HdnSilver[^"]*"[^"]*value="([^"]*)"/i);
 
     let goldPrice: number | null = null;
+    let goldPrevPrice: number | null = null;
     let silverPrice: number | null = null;
+    let silverPrevPrice: number | null = null;
 
-    // Try hidden fields first (most reliable)
+    // Try hidden fields first (most reliable) — contains comma-separated historical daily prices
     if (goldRateMatch) {
-      // Hidden field may contain comma-separated historical values; last value is latest
       const vals = goldRateMatch[1].split(",").map((v: string) => parseFloat(v.trim())).filter((v: number) => !isNaN(v) && v > 50000);
-      if (vals.length > 0) goldPrice = vals[vals.length - 1];
+      if (vals.length >= 2) {
+        goldPrice = vals[vals.length - 1];
+        goldPrevPrice = vals[vals.length - 2];
+      } else if (vals.length === 1) {
+        goldPrice = vals[0];
+      }
     }
     if (silverRateMatch) {
       const vals = silverRateMatch[1].split(",").map((v: string) => parseFloat(v.trim())).filter((v: number) => !isNaN(v) && v > 50000);
-      if (vals.length > 0) silverPrice = vals[vals.length - 1];
+      if (vals.length >= 2) {
+        silverPrice = vals[vals.length - 1];
+        silverPrevPrice = vals[vals.length - 2];
+      } else if (vals.length === 1) {
+        silverPrice = vals[0];
+      }
     }
 
     // Fallback: parse from visible text — look for 6-digit numbers near "999" and "Gold"/"Silver"
@@ -153,9 +164,14 @@ async function fetchIBJAPrices(): Promise<{
       }
     }
 
+    const goldChange = goldPrice && goldPrevPrice ? goldPrice - goldPrevPrice : 0;
+    const goldChangePct = goldPrice && goldPrevPrice ? (goldChange / goldPrevPrice) * 100 : 0;
+    const silverChange = silverPrice && silverPrevPrice ? silverPrice - silverPrevPrice : 0;
+    const silverChangePct = silverPrice && silverPrevPrice ? (silverChange / silverPrevPrice) * 100 : 0;
+
     return {
-      gold: goldPrice ? { price: goldPrice, change: 0, changePct: 0 } : null,
-      silver: silverPrice ? { price: silverPrice, change: 0, changePct: 0 } : null,
+      gold: goldPrice ? { price: goldPrice, change: goldChange, changePct: goldChangePct } : null,
+      silver: silverPrice ? { price: silverPrice, change: silverChange, changePct: silverChangePct } : null,
     };
   } catch {
     return { gold: null, silver: null };
