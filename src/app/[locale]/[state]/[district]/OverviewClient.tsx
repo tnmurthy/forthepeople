@@ -25,6 +25,7 @@ import EmptyState from "@/components/district/EmptyState";
 import AIInsightCard from "@/components/common/AIInsightCard";
 import { DistrictHealthScoreCard } from "@/components/district/DistrictHealthScoreCard";
 import DistrictSponsorBanner from "@/components/common/DistrictSponsorBanner";
+import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 
 interface Props {
   locale: string;
@@ -234,13 +235,13 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
               boxShadow: "0 2px 8px rgba(244, 63, 94, 0.2)",
             }}
           >
-            ❤️ Sponsor {districtData.name} — ₹2,000/mo →
+            ❤️ Sponsor {districtData.name} — ₹{TIER_CONFIG.district.amount.toLocaleString("en-IN")}/mo →
           </Link>
           <Link href={`/${locale}/support?tier=state&state=${stateSlug}`} style={{ fontSize: 12, color: "#6B6B6B", textDecoration: "none" }}>
-            or: Sponsor all of {stateName} →
+            or: Sponsor all of {stateName} — ₹{TIER_CONFIG.state.amount.toLocaleString("en-IN")}/mo →
           </Link>
           <Link href={`/${locale}/support?tier=patron`} style={{ fontSize: 12, color: "#6B6B6B", textDecoration: "none" }}>
-            or: Sponsor all of India →
+            or: Sponsor all of India — ₹{TIER_CONFIG.patron.amount.toLocaleString("en-IN")}/mo →
           </Link>
         </div>
       </div>

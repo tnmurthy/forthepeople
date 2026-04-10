@@ -4,7 +4,9 @@
  * https://github.com/jayanthmb14/forthepeople
  */
 
-export function calculateBadgeLevel(activatedAt: Date | null): string | null {
+export function calculateBadgeLevel(activatedAt: Date | null, tier?: string): string | null {
+  // Founding Builders get platinum immediately
+  if (tier === "founder") return "platinum";
   if (!activatedAt) return null;
   const months = Math.floor(
     (Date.now() - activatedAt.getTime()) / (30 * 24 * 60 * 60 * 1000)

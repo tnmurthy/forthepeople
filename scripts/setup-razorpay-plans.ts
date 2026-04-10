@@ -4,29 +4,10 @@
  * https://github.com/jayanthmb14/forthepeople
  *
  * Run ONCE to create subscription plans on Razorpay:
- *   npx tsx scripts/setup-razorpay-plans.ts
- *
- * After running, add the returned plan IDs to your .env:
- *   RAZORPAY_PLAN_MONTHLY=plan_xxx
- *   RAZORPAY_PLAN_DISTRICT=plan_xxx
- *   RAZORPAY_PLAN_STATE=plan_xxx
- *   RAZORPAY_PLAN_PATRON=plan_xxx
+ *   npx tsx -r dotenv/config scripts/setup-razorpay-plans.ts
  */
 
 const PLANS = [
-  {
-    envKey: "RAZORPAY_PLAN_MONTHLY",
-    plan: {
-      period: "monthly",
-      interval: 1,
-      item: {
-        name: "ForThePeople.in Monthly Supporter",
-        amount: 20000, // ₹200 in paise
-        currency: "INR",
-        description: "Monthly supporter — keeps one taluk's data pipeline running",
-      },
-    },
-  },
   {
     envKey: "RAZORPAY_PLAN_DISTRICT",
     plan: {
@@ -34,9 +15,9 @@ const PLANS = [
       interval: 1,
       item: {
         name: "ForThePeople.in District Champion",
-        amount: 200000, // ₹2,000 in paise
+        amount: 20000, // ₹200 in paise
         currency: "INR",
-        description: "District Champion — sponsors one full district dashboard",
+        description: "District Champion — your name on the district you champion",
       },
     },
   },
@@ -47,9 +28,9 @@ const PLANS = [
       interval: 1,
       item: {
         name: "ForThePeople.in State Champion",
-        amount: 1000000, // ₹10,000 in paise
+        amount: 200000, // ₹2,000 in paise
         currency: "INR",
-        description: "State Champion — sponsors all districts in one state",
+        description: "State Champion — your name on all districts in one state",
       },
     },
   },
@@ -60,9 +41,22 @@ const PLANS = [
       interval: 1,
       item: {
         name: "ForThePeople.in All-India Patron",
+        amount: 1000000, // ₹10,000 in paise
+        currency: "INR",
+        description: "All-India Patron — featured across all 780+ districts",
+      },
+    },
+  },
+  {
+    envKey: "RAZORPAY_PLAN_FOUNDER",
+    plan: {
+      period: "monthly",
+      interval: 1,
+      item: {
+        name: "ForThePeople.in Founding Builder",
         amount: 5000000, // ₹50,000 in paise
         currency: "INR",
-        description: "All-India Patron — help cover all 780 districts",
+        description: "Founding Builder — everything + permanent homepage feature, gold card everywhere",
       },
     },
   },
@@ -79,7 +73,7 @@ async function main() {
 
   const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
 
-  console.log("Creating Razorpay subscription plans...\n");
+  console.log("Creating Razorpay subscription plans (new pricing)...\n");
 
   const envLines: string[] = [];
 
@@ -104,16 +98,17 @@ async function main() {
       console.log(`✅ ${plan.item.name}`);
       console.log(`   Plan ID: ${data.id}`);
       console.log(`   Amount: ₹${plan.item.amount / 100}/month\n`);
-      envLines.push(`${envKey}=${data.id}`);
+      envLines.push(`${envKey} = ${data.id}`);
     } catch (err) {
       console.error(`❌ Error creating ${plan.item.name}:`, err);
     }
   }
 
   if (envLines.length > 0) {
-    console.log("\n═══════════════════════════════════════");
-    console.log("Add these to your .env file:\n");
+    console.log("\n=== NEW RAZORPAY PLAN IDs ===\n");
     console.log(envLines.join("\n"));
+    console.log("\nAdd these to Vercel → Settings → Environment Variables");
+    console.log("Remove RAZORPAY_PLAN_MONTHLY (no longer needed)");
     console.log("\n═══════════════════════════════════════");
   }
 }

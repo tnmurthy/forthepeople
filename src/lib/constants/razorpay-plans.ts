@@ -7,10 +7,10 @@
 // Razorpay Plan IDs — populated after running scripts/setup-razorpay-plans.ts
 // These are Razorpay Plan IDs, NOT subscription IDs
 export const RAZORPAY_PLANS = {
-  monthly: process.env.RAZORPAY_PLAN_MONTHLY ?? "",
   district: process.env.RAZORPAY_PLAN_DISTRICT ?? "",
   state: process.env.RAZORPAY_PLAN_STATE ?? "",
   patron: process.env.RAZORPAY_PLAN_PATRON ?? "",
+  founder: process.env.RAZORPAY_PLAN_FOUNDER ?? "",
 } as const;
 
 export interface TierConfigItem {
@@ -40,33 +40,22 @@ export const TIER_CONFIG: Record<string, TierConfigItem> = {
     border: "#FED7AA",
     accent: "#F97316",
   },
-  monthly: {
-    name: "Monthly Supporter",
-    amount: 200,
-    isRecurring: true,
-    description: "Monthly · keeps one taluk's data pipeline running",
-    emoji: "🙏",
-    badgeType: "supporter",
-    color: "#F0FDFA",
-    border: "#99F6E4",
-    accent: "#0D9488",
-    featured: true,
-  },
   district: {
     name: "District Champion",
-    amount: 2000,
+    amount: 200,
     isRecurring: true,
-    description: "Monthly · your name on the district page you sponsor",
+    description: "Monthly · your name on the district page you champion",
     emoji: "🏛️",
     badgeType: "champion",
     requiresDistrict: true,
     color: "#EFF6FF",
     border: "#BFDBFE",
     accent: "#2563EB",
+    featured: true,
   },
   state: {
     name: "State Champion",
-    amount: 10000,
+    amount: 2000,
     isRecurring: true,
     description: "Monthly · your name on all districts in one state",
     emoji: "🇮🇳",
@@ -78,14 +67,25 @@ export const TIER_CONFIG: Record<string, TierConfigItem> = {
   },
   patron: {
     name: "All-India Patron",
-    amount: 50000,
+    amount: 10000,
     isRecurring: true,
-    description: "Monthly · help us cover all 780 districts across India",
+    description: "Monthly · featured across all 780+ districts, homepage spotlight",
     emoji: "🌟",
     badgeType: "patron",
     color: "#FEF2F2",
     border: "#FECACA",
     accent: "#DC2626",
+  },
+  founder: {
+    name: "Founding Builder",
+    amount: 50000,
+    isRecurring: true,
+    description: "Monthly · everything + permanent homepage feature, gold card on every page, listed first everywhere",
+    emoji: "👑",
+    badgeType: "founder",
+    color: "#FFFBEB",
+    border: "#FDE68A",
+    accent: "#D97706",
   },
   custom: {
     name: "Custom Amount",
@@ -101,14 +101,14 @@ export const TIER_CONFIG: Record<string, TierConfigItem> = {
 };
 
 // Ordered tier keys for display (two rows of 3)
-export const TIER_ORDER = ["chai", "monthly", "district", "state", "patron", "custom"] as const;
+export const TIER_ORDER = ["chai", "district", "state", "patron", "founder", "custom"] as const;
 
 // Tier priority for sorting (higher = more prominent)
 export const TIER_PRIORITY: Record<string, number> = {
+  founder: 6,
   patron: 5,
   state: 4,
   district: 3,
-  monthly: 2,
   chai: 1,
   custom: 0,
 };

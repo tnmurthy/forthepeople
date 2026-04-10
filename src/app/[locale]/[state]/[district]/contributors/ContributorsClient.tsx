@@ -148,8 +148,8 @@ export default function ContributorsClient({ locale, stateSlug, districtSlug, di
 
   const leaders = leaderboard?.contributors?.slice(0, 5) ?? [];
   const allSponsors = districtSponsors?.contributors ?? [];
-  const patrons = allSponsors.filter((c) => c.tier === "patron");
-  const sponsors = allSponsors.filter((c) => c.tier !== "patron");
+  const premiumSponsors = allSponsors.filter((c) => c.tier === "patron" || c.tier === "founder");
+  const sponsors = allSponsors.filter((c) => c.tier !== "patron" && c.tier !== "founder");
   const oneTimers = allData?.oneTime ?? [];
 
   return (
@@ -166,8 +166,8 @@ export default function ContributorsClient({ locale, stateSlug, districtSlug, di
         </p>
       </div>
 
-      {/* All-India Patrons — premium display */}
-      {patrons.map((p) => (
+      {/* Founders + Patrons — premium display */}
+      {premiumSponsors.map((p) => (
         <PatronCard key={p.id} patron={p} />
       ))}
 

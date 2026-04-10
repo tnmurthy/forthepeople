@@ -47,10 +47,10 @@ export default function BadgeExplainer() {
         <div style={{ padding: "0 16px 16px", fontSize: 13, color: "#4B4B4B", lineHeight: 1.8 }}>
           <div style={{ fontWeight: 700, color: "#1A1A1A", marginBottom: 6 }}>CONTRIBUTION TIERS:</div>
           <div>☕ <strong>Buy me a Chai</strong> — One-time from ₹50</div>
-          <div>🙏 <strong>Monthly Supporter</strong> — ₹200/month</div>
-          <div>🏛️ <strong>District Champion</strong> — ₹2,000/month · Your name on the district page</div>
-          <div>🇮🇳 <strong>State Champion</strong> — ₹10,000/month · Your name on all districts in a state</div>
-          <div>🌟 <strong>All-India Patron</strong> — ₹50,000/month · Your name on every page</div>
+          <div>🏛️ <strong>District Champion</strong> — ₹200/month · Your name on the district page</div>
+          <div>🇮🇳 <strong>State Champion</strong> — ₹2,000/month · Your name on all districts in a state</div>
+          <div>🌟 <strong>All-India Patron</strong> — ₹10,000/month · Your name on every page</div>
+          <div>👑 <strong>Founding Builder</strong> — ₹50,000/month · Gold card everywhere, listed first, permanent feature</div>
 
           <div style={{ fontWeight: 700, color: "#1A1A1A", marginTop: 16, marginBottom: 6 }}>BADGE LEVELS (earned automatically by continuous support):</div>
           <div>🥉 <strong>Bronze</strong> — 3+ months of continuous support</div>

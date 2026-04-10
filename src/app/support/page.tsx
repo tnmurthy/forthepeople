@@ -71,7 +71,10 @@ export default function SupportPage() {
               ₹1.50 / district / day
             </div>
             <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 4 }}>
-              That&apos;s all it costs to give a district&apos;s citizens free access to their government data
+              Target cost at full scale (780 districts)
+            </div>
+            <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 6 }}>
+              Current cost per district is higher with 9 active districts. As we scale to 780, per-district costs decrease significantly.
             </div>
           </div>
         </div>
@@ -230,11 +233,17 @@ export default function SupportPage() {
             The Scale
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
-            More than ₹12 lakh / year to serve ALL of India
+            More than ₹12 lakh / year to serve all of India
           </div>
-          <div style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 20 }}>
+          <div style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 12 }}>
             780 districts × 29 dashboards = <strong style={{ color: "#1A1A1A" }}>22,620 live data modules</strong> —
             updated every 5–30 minutes from government portals.
+          </div>
+          <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 20 }}>
+            This is the current annual cost as of April 2026, covering 9 active districts across 6 states.
+            As we expand to all 780+ districts, costs will grow significantly.
+            Pricing for sponsorship tiers may be revised as the platform scales.{" "}
+            <strong style={{ color: "#1A1A1A" }}>Early supporters lock in current rates.</strong>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
             {[

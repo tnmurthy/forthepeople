@@ -149,7 +149,7 @@ export default function SupportersTable({ supporters }: { supporters: SupporterR
           style={{ padding: "7px 12px", border: "1px solid #E8E8E4", borderRadius: 8, fontSize: 13, background: "#FAFAF8" }}>
           <option value="all">All Tiers</option>
           <option value="chai">Chai</option>
-          <option value="monthly">Monthly</option>
+          <option value="founder">Founder</option>
           <option value="district">District</option>
           <option value="state">State</option>
           <option value="patron">Patron</option>

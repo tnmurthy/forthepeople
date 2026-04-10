@@ -51,7 +51,7 @@ const FILTERS = [
   { key: "patron", label: "Patrons" },
   { key: "state", label: "State Champions" },
   { key: "district", label: "District Champions" },
-  { key: "monthly", label: "Monthly" },
+  { key: "founder", label: "Founders" },
   { key: "one-time", label: "One-Time" },
 ] as const;
 
