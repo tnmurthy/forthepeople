@@ -1584,6 +1584,15 @@ Lucknow (#10) Full Data Seeding  COMPLETE (2026-04-11)
     - DistrictBadges.tsx: Lucknow badge avoidance (no pink/purple)
     - health/page.tsx: Added Ayushman Bharat UP to state health schemes
     - seed-subdistrict-populations.ts: Added Lucknow 4 tehsils
+  Cross-District Fixes (2026-04-11):
+    - Budget consistency: overview filters to latest FY only (matches finance page)
+    - Schemes: Apply Online button green (#0f6e56), grey fallback for missing URLs
+    - Scheme eligibility + benefit amounts updated for 20 records across all districts
+    - Hyderabad housing: PMAY-U + 2BHK seeded (was all zeros)
+    - Health scores recalculated for all 10 districts
+    - Crop price Kg/Quintal toggle: default per Kg, AGMARKNET data stays per quintal in DB
+    - Overview mandi preview: shows per-kg prices
+
     - Seeded: leadership (MP, 9 MLAs, Governor, CM, DM, CP), budget (10 sectors),
       infrastructure (8 projects), police (15 stations), schools (15 institutions),
       offices (10), schemes (10), elections (2024 LS + 2022 Assembly 9 constituencies),

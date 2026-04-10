@@ -24,6 +24,10 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
   const base = `/${locale}/${state}/${district}`;
   const { data, isLoading, error } = useCropPrices(district, state);
   const [selected, setSelected] = useState<string | null>(null);
+  const [unit, setUnit] = useState<"kg" | "quintal">("kg");
+
+  const dp = (price: number) => Math.round(unit === "kg" ? price / 100 : price);
+  const unitLabel = unit === "kg" ? "/kg" : "/q";
 
   const prices = data?.data ?? [];
   const commodities = Array.from(new Set(prices.map((p) => p.commodity)));
@@ -44,7 +48,7 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
   }
 
   const shareText = latestByCrop.length > 0
-    ? `Crop prices in ${district}: ${latestByCrop.slice(0, 3).map((p) => `${p.commodity} ₹${p.modalPrice}/qtl`).join(", ")}`
+    ? `Crop prices in ${district}: ${latestByCrop.slice(0, 3).map((p) => `${p.commodity} ₹${dp(p.modalPrice)}${unitLabel}`).join(", ")}`
     : `Crop prices data for ${district}`;
 
   return (
@@ -56,7 +60,7 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
 
       {/* AI-crawler readable summary */}
       <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 16, padding: "12px 16px", background: "#FAFAF8", borderRadius: 8, borderLeft: "3px solid #16A34A" }}>
-        This page shows live agricultural mandi prices for this district, sourced daily from AGMARKNET (Agricultural Marketing Information Network), India&apos;s official government portal for regulated market prices. Prices shown are in Indian Rupees (₹) per quintal. Data covers all commodities traded at APMC (Agricultural Produce Market Committee) mandis in the district, including paddy, sugarcane, ragi, and other major crops.
+        This page shows live agricultural mandi prices for this district, sourced daily from AGMARKNET (Agricultural Marketing Information Network), India&apos;s official government portal for regulated market prices. Prices can be viewed per Kg or per quintal. Data covers all commodities traded at APMC (Agricultural Produce Market Committee) mandis in the district.
       </p>
       {(() => { const _src = getModuleSources("crops", state); return <DataSourceBanner moduleName="crops" sources={_src.sources} updateFrequency={_src.frequency} isLive={_src.isLive} />; })()}
       <AIInsightCard module="crops" district={district} />
@@ -66,6 +70,23 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
 
       {!isLoading && latestByCrop.length > 0 && (
         <>
+          {/* Kg / Quintal toggle */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+            <div style={{ display: "inline-flex", background: "#F5F5F0", borderRadius: 100, padding: 3, gap: 2 }}>
+              {(["kg", "quintal"] as const).map((u) => (
+                <button key={u} onClick={() => setUnit(u)} style={{
+                  padding: "6px 14px", borderRadius: 100, fontSize: 13, fontWeight: 500,
+                  border: "none", cursor: "pointer",
+                  background: unit === u ? "#FFF" : "transparent",
+                  color: unit === u ? "#1A1A1A" : "#9B9B9B",
+                  boxShadow: unit === u ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
+                }}>
+                  per {u === "kg" ? "Kg" : "Quintal"}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Commodity selector */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
             {commodities.map((c) => (
@@ -93,13 +114,13 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
                 }} onClick={() => setSelected(p.commodity)}>
                   <div style={{ fontSize: 12, color: "#6B6B6B", marginBottom: 6 }}>{p.commodity}</div>
                   <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "var(--font-mono)", color: "#1A1A1A", letterSpacing: "-0.5px" }}>
-                    ₹{p.modalPrice.toLocaleString("en-IN")}
+                    ₹{dp(p.modalPrice).toLocaleString("en-IN")}
                   </div>
-                  <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 2 }}>per quintal · {p.market}</div>
+                  <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 2 }}>{unitLabel} · {p.market}</div>
                   {prev && (
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: 12, color: change > 0 ? "#16A34A" : change < 0 ? "#DC2626" : "#9B9B9B" }}>
                       {change > 0 ? <TrendingUp size={12} /> : change < 0 ? <TrendingDown size={12} /> : null}
-                      {change !== 0 ? `₹${Math.abs(change).toLocaleString("en-IN")} from prev` : "No change"}
+                      {change !== 0 ? `₹${dp(Math.abs(change)).toLocaleString("en-IN")} ${unitLabel}` : "No change"}
                     </div>
                   )}
                 </div>
@@ -116,9 +137,9 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
                   <LineChart data={[...cropPrices].reverse()} margin={{ top: 5, right: 10, bottom: 0, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0EC" />
                     <XAxis dataKey="date" tickFormatter={(d) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} tick={{ fontSize: 10, fill: "#9B9B9B" }} />
-                    <YAxis tick={{ fontSize: 10, fill: "#9B9B9B" }} tickFormatter={(v) => `₹${v}`} />
+                    <YAxis tick={{ fontSize: 10, fill: "#9B9B9B" }} tickFormatter={(v) => `₹${dp(Number(v))}`} />
                     <Tooltip
-                      formatter={(v) => [`₹${Number(v).toLocaleString("en-IN")}`, ""]}
+                      formatter={(v) => [`₹${dp(Number(v)).toLocaleString("en-IN")}${unitLabel}`, ""]}
                       labelFormatter={(d) => new Date(d).toLocaleDateString("en-IN")}
                     />
                     <Line type="monotone" dataKey="minPrice" stroke="#9B9B9B" strokeWidth={1} dot={false} name="Min" />
@@ -156,17 +177,17 @@ function CropsPageInner({ params }: { params: Promise<{ locale: string; state: s
               { key: "date", label: "Date" },
               { key: "commodity", label: "Commodity" },
               { key: "market", label: "Market" },
-              { key: "min", label: "Min ₹", mono: true, align: "right" },
-              { key: "modal", label: "Modal ₹", mono: true, align: "right" },
-              { key: "max", label: "Max ₹", mono: true, align: "right" },
+              { key: "min", label: `Min ₹${unitLabel}`, mono: true, align: "right" },
+              { key: "modal", label: `Modal ₹${unitLabel}`, mono: true, align: "right" },
+              { key: "max", label: `Max ₹${unitLabel}`, mono: true, align: "right" },
             ]}
             rows={prices.slice(0, 30).map((p) => ({
               date: new Date(p.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
               commodity: p.commodity,
               market: p.market,
-              min: p.minPrice.toLocaleString("en-IN"),
-              modal: <strong style={{ color: "#16A34A" }}>{p.modalPrice.toLocaleString("en-IN")}</strong>,
-              max: p.maxPrice.toLocaleString("en-IN"),
+              min: dp(p.minPrice).toLocaleString("en-IN"),
+              modal: <strong style={{ color: "#16A34A" }}>{dp(p.modalPrice).toLocaleString("en-IN")}</strong>,
+              max: dp(p.maxPrice).toLocaleString("en-IN"),
             }))}
           />
         </>
