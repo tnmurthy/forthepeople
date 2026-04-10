@@ -8,8 +8,8 @@ export default function HowItWorks() {
   const steps = [
     {
       icon: "📡",
-      title: "We Scrape",
-      desc: "Government portals every 5–30 minutes",
+      title: "We Collect",
+      desc: "Data from government portals every 5–30 minutes",
     },
     {
       icon: "📊",
