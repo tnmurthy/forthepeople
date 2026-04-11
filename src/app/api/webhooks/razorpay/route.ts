@@ -7,7 +7,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
 import { prisma } from "@/lib/db";
+import { cacheSet } from "@/lib/cache";
 import { calculateBadgeLevel } from "@/lib/badge-level";
+
+// All contributor cache keys — bust after any payment event
+const CONTRIBUTOR_CACHES = [
+  "ftp:contributors:v1",
+  "ftp:contributors:all",
+  "ftp:contributors:leaderboard",
+  "ftp:contributors:district-rankings",
+];
 
 export async function POST(req: NextRequest) {
   // If Razorpay keys aren't configured yet, return 200 gracefully
@@ -122,6 +131,9 @@ export async function POST(req: NextRequest) {
         data: { subscriptionStatus: "paused" },
       });
     }
+
+    // Bust all contributor caches so walls refresh immediately
+    await Promise.all(CONTRIBUTOR_CACHES.map((k) => cacheSet(k, null, 1)));
 
     return NextResponse.json({ ok: true, event });
   } catch (err) {

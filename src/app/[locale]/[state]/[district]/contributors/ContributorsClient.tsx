@@ -6,8 +6,10 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Instagram, Linkedin, Github, Twitter, ExternalLink, Plus } from "lucide-react";
 import { BADGE_COLORS } from "@/lib/badge-level";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
@@ -128,22 +130,44 @@ function ContributorCard({ c, showAmount }: { c: Contributor; showAmount?: boole
 }
 
 export default function ContributorsClient({ locale, stateSlug, districtSlug, districtName, stateName }: Props) {
+  const searchParams = useSearchParams();
+  const justPaid = searchParams.get("just_paid") === "true";
+  const queryClient = useQueryClient();
+  const [showBanner, setShowBanner] = useState(justPaid);
+
+  // Auto-refresh every 15s when just_paid, stop after 3 min
+  useEffect(() => {
+    if (!justPaid) return;
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["contributors-leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["contributors-district"] });
+      queryClient.invalidateQueries({ queryKey: ["contributors-all"] });
+    }, 15_000);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      setShowBanner(false);
+    }, 180_000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
+  }, [justPaid, queryClient]);
+
+  const refreshRate = justPaid ? 15_000 : 120_000;
+
   const { data: leaderboard, isLoading: loadingLb } = useQuery<{ contributors: Contributor[] }>({
     queryKey: ["contributors-leaderboard"],
     queryFn: () => fetch("/api/data/contributors?type=leaderboard").then((r) => r.json()),
-    staleTime: 120_000,
+    staleTime: refreshRate,
   });
 
   const { data: districtSponsors, isLoading: loadingDist } = useQuery<{ contributors: Contributor[] }>({
     queryKey: ["contributors-district", districtSlug, stateSlug],
     queryFn: () => fetch(`/api/data/contributors?district=${districtSlug}&state=${stateSlug}`).then((r) => r.json()),
-    staleTime: 120_000,
+    staleTime: refreshRate,
   });
 
   const { data: allData, isLoading: loadingAll } = useQuery<{ subscribers: Contributor[]; oneTime: Contributor[] }>({
     queryKey: ["contributors-all"],
     queryFn: () => fetch("/api/data/contributors?type=all").then((r) => r.json()),
-    staleTime: 120_000,
+    staleTime: refreshRate,
   });
 
   const leaders = leaderboard?.contributors?.slice(0, 5) ?? [];
@@ -165,6 +189,19 @@ export default function ContributorsClient({ locale, stateSlug, districtSlug, di
           People who keep this district&apos;s data free and accessible.
         </p>
       </div>
+
+      {showBanner && (
+        <div style={{
+          background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10,
+          padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10,
+        }}>
+          <span style={{ fontSize: 20 }}>🎉</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#15803D" }}>Your contribution is being processed!</div>
+            <div style={{ fontSize: 12, color: "#16A34A" }}>It will appear here within a minute. This page auto-refreshes.</div>
+          </div>
+        </div>
+      )}
 
       {/* Founders + Patrons — premium display */}
       {premiumSponsors.map((p) => (

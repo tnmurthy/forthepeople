@@ -306,30 +306,44 @@ export default function SupportCheckout({ tier }: Props) {
     const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
     const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
 
+    // Build contributors page URL if district context available
+    const contributorsUrl = selectedState && selectedDistrict
+      ? `/en/${selectedState}/${selectedDistrict}/contributors?just_paid=true`
+      : "/en";
+
     return (
       <div style={{ textAlign: "center", padding: "24px 16px" }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#1A1A1A", marginBottom: 8 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#e1f5ee", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 28 }}>✅</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#1A1A1A", marginBottom: 6 }}>
           Thank You!
         </div>
-        <div style={{ fontSize: 13, color: "#4B4B4B", lineHeight: 1.7, marginBottom: 20 }}>
+        <div style={{ fontSize: 14, color: "#4B4B4B", lineHeight: 1.7, marginBottom: 6 }}>
           {tier.isMonthly
             ? `Your ₹${paidAmount.toLocaleString("en-IN")}/month subscription is now active.`
             : `Your ₹${paidAmount.toLocaleString("en-IN")} contribution helps keep ForThePeople.in running.`}
         </div>
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
+        <div style={{ fontSize: 12, color: "#16A34A", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8, padding: "8px 12px", marginBottom: 16, lineHeight: 1.6 }}>
+          Your name will appear on the contributors page within a minute.
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 }}>
           <a href={whatsappHref} target="_blank" rel="noopener noreferrer"
-            style={{ padding: "8px 16px", background: "#25D366", color: "#fff", borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+            style={{ padding: "9px 18px", background: "#25D366", color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
             Share on WhatsApp
           </a>
           <a href={twitterHref} target="_blank" rel="noopener noreferrer"
-            style={{ padding: "8px 16px", background: "#1DA1F2", color: "#fff", borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: "none" }}>
+            style={{ padding: "9px 18px", background: "#1DA1F2", color: "#fff", borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
             Share on X
           </a>
         </div>
-        <Link href="/en" style={{ fontSize: 12, color: "#9B9B9B", textDecoration: "none" }}>
-          ← Back to Homepage
-        </Link>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <Link href={contributorsUrl}
+            style={{ fontSize: 13, color: "#2563EB", textDecoration: "none", fontWeight: 600 }}>
+            View Contributors →
+          </Link>
+          <Link href="/en" style={{ fontSize: 13, color: "#9B9B9B", textDecoration: "none" }}>
+            Back to Homepage
+          </Link>
+        </div>
       </div>
     );
   }
