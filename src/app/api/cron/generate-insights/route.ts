@@ -12,9 +12,11 @@
 // Rate-limited: 2s delay between Anthropic calls
 // ═══════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
 import { MODULE_INSIGHT_CONFIGS } from "@/lib/insight-config";
 import { generateInsight } from "@/lib/insight-generator";
+import { alertCronFailed } from "@/lib/admin-alerts";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 min max
@@ -90,6 +92,8 @@ export async function POST(req: NextRequest) {
       durationMs: Date.now() - startTime,
     });
   } catch (err) {
+    Sentry.captureException(err);
+    alertCronFailed("generate-insights", err instanceof Error ? err.message : String(err)).catch(() => {});
     console.error("[generate-insights] Fatal:", err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }

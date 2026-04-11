@@ -9,6 +9,7 @@ import { createHmac } from "crypto";
 import { prisma } from "@/lib/db";
 import { cacheSet } from "@/lib/cache";
 import { calculateBadgeLevel } from "@/lib/badge-level";
+import { alertPaymentReceived } from "@/lib/admin-alerts";
 
 // All contributor cache keys — bust after any payment event
 const CONTRIBUTOR_CACHES = [
@@ -130,6 +131,11 @@ export async function POST(req: NextRequest) {
         where: { razorpaySubscriptionId: subId },
         data: { subscriptionStatus: "paused" },
       });
+    }
+
+    // Alert on successful payment
+    if (event === "payment.captured" && paymentEntity) {
+      alertPaymentReceived(Number(paymentEntity.amount ?? 0), "One-time").catch(() => {});
     }
 
     // Bust all contributor caches so walls refresh immediately

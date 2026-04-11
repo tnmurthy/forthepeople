@@ -10,6 +10,7 @@
 // Response: { data: T, meta: { district, module, updatedAt, fromCache } }
 // ═══════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet, cacheKey, getModuleTTL } from "@/lib/cache";
 
@@ -46,6 +47,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     resp.headers.set("Cache-Control", `public, s-maxage=${ttl}, stale-while-revalidate=${ttl * 2}`);
     return resp;
   } catch (err) {
+    Sentry.captureException(err);
     console.error(`[API] ${module} error:`, err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

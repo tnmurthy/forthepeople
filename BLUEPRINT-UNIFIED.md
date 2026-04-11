@@ -119,7 +119,10 @@ Maps:         react-simple-maps + topojson-client (India SVG map — FINAL, do n
 Icons:        lucide-react
 i18n:         next-intl v4
 Payments:     razorpay SDK + Razorpay Live checkout
-Email:        resend v6 (2FA recovery emails)
+Email:        resend v6 (2FA recovery emails + admin alert emails)
+Monitoring:   @sentry/nextjs (error tracking, production only)
+Alerts:       src/lib/admin-alerts.ts (email + DB alerts for scrapers, feedback, payments)
+Analytics:    Plausible (cookieless, DPDP-friendly, one script tag)
 2FA:          otpauth + qrcode (Google Authenticator TOTP)
 Scraping:     cheerio + puppeteer + node-cron (scraper container)
 AI providers: @anthropic-ai/sdk + @google/generative-ai
@@ -381,6 +384,8 @@ RtiTemplate         — topic, department, PIO address, fee, template text
 FamousPersonality   — name, category, bio, photoUrl, birthYear, bornInDistrict
                       (bornInDistrict MUST be true for district's page — see Section 27)
 Feedback            — type, module, subject, message, email, status, adminNote
+AdminAlert          — level(critical/warning/info), title, message, details(Json),
+                      module, district, read, emailed, createdAt
 MarketData          — SENSEX, NIFTY, GOLD, SILVER, USD_INR, CRUDE prices
 ```
 
@@ -833,15 +838,18 @@ POST /api/cron/generate-insights   — Cron: pre-compute AI insights (every 2h)
 
 URL: `forthepeople.in/en/admin`
 
-### 6 Tabs
+### 9 Tabs
 ```
-1. Dashboard   — Overview stats, sync tools, FactChecker, DataVerifier, StaleDataManager
-2. AI Settings — 3-provider cards (OpusCode.pro, Official Anthropic, Gemini), model select,
-                 fallback toggle, advanced (maxTokens, temperature), test connection
-3. Security    — 2FA setup/status, backup codes count, recovery email/phone, last login
-4. Review      — AI Insight review queue (approve/reject generated insights)
-5. Feedback    — All user feedback submissions with status management
-6. Supporters  — Contributions table with Razorpay sync button + router.refresh() after sync
+1. Dashboard      — Overview stats, sync tools, FactChecker, DataVerifier, StaleDataManager
+2. System Health  — DB/Redis status, data freshness table, scraper logs, pending items, revenue
+3. Alerts & Logs  — AdminAlert feed with level filters, mark-as-read, email status indicator
+4. AI Settings    — 3-provider cards (OpusCode.pro, Official Anthropic, Gemini), model select,
+                    fallback toggle, advanced (maxTokens, temperature), test connection
+5. Security       — 2FA setup/status, backup codes count, recovery email/phone, last login
+6. Review         — AI Insight review queue (approve/reject generated insights)
+7. Feedback       — All user feedback submissions with status management
+8. Supporters     — Contributions table with Razorpay sync button + router.refresh() after sync
+9. Analytics      — District requests, feature votes, feedback/revenue trends, totals
 ```
 
 ### AI Settings Page (`/admin/ai-settings`)
@@ -856,6 +864,9 @@ Provider mapping:
   Google Gemini    → activeProvider="gemini", key="gemini"
 
 API routes: GET/PUT /api/admin/ai-settings, POST/DELETE /api/admin/api-keys
+            GET /api/admin/system-health (DB/Redis status, data freshness, scrapers, pending items)
+            GET/PATCH/DELETE /api/admin/alerts (AdminAlert CRUD with filters)
+            GET /api/admin/analytics (district requests, feature votes, trends, totals)
 ```
 
 ### Fact Checker (`FactChecker.tsx`)
@@ -1105,7 +1116,12 @@ CRON_SECRET               — Bearer token for cron endpoint authentication
 RAZORPAY_KEY_ID           — Razorpay live key ID
 RAZORPAY_KEY_SECRET       — Razorpay live key secret (NEVER NEXT_PUBLIC)
 RAZORPAY_WEBHOOK_SECRET   — Razorpay webhook signature secret
-RESEND_API_KEY            — Resend email API key (for 2FA recovery emails)
+RESEND_API_KEY            — Resend email API key (for 2FA recovery emails + admin alerts)
+ADMIN_EMAIL               — Admin email for alert notifications
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN — Plausible analytics domain (cookieless)
+ADMIN_ALLOWED_IPS         — Comma-separated IPs for admin access (optional, empty = disabled)
+NEXT_PUBLIC_SENTRY_DSN    — Sentry DSN for error tracking (client + server)
+SENTRY_AUTH_TOKEN         — Sentry auth token (for source maps upload during build)
 NEXT_PUBLIC_SITE_URL      — https://forthepeople.in
 NEXT_PUBLIC_RAZORPAY_KEY_ID — Razorpay key ID (client-side checkout only)
 DATA_GOV_API_KEY          — data.gov.in API key (AGMARKNET crop prices)
@@ -1360,7 +1376,7 @@ Section 8:  Scrapers             COMPLETE (21 jobs)
   - All scrapers DB-driven (no hardcoded districts)
 
 Section 9:  Admin Panel          COMPLETE
-  - 6-tab admin dashboard
+  - 9-tab admin dashboard (added System Health, Alerts & Logs, Analytics)
   - AI Settings: 3-provider cards, model selection, test
   - 2FA: Google Authenticator setup/disable/recovery
   - Fact Checker: AI verification across 7 modules
@@ -1412,6 +1428,27 @@ Post-launch: District Health Score  COMPLETE
   - 10-category algorithm in src/lib/health-score.ts
   - Pre-computed weekly, stored in DistrictHealthScore
   - Shown on homepage district cards + district overview
+
+Error Monitoring + Alerts           COMPLETE (2026-04-11)
+  - @sentry/nextjs for automatic error catching in production
+  - AdminAlert model for storing alerts in DB
+  - src/lib/admin-alerts.ts: email + DB alert system via Resend
+  - Alerts wired into scrapers, feedback, and payments
+  - Global error page: src/app/global-error.tsx
+
+Analytics + Privacy + Security      COMPLETE (2026-04-11)
+  - Plausible Analytics (cookieless, one script tag in layout.tsx)
+  - DPDP Act 2023 compliant privacy policy at /privacy (10 sections)
+  - Homepage stat counters: fallback values 10/29/50000 instead of "–"
+  - npm audit: 12 → 3 vulnerabilities (d3-color override, next-intl fixed, next updated)
+  - Admin IP restriction middleware (optional, ADMIN_ALLOWED_IPS env var)
+
+Admin Panel Expansion (6→9 tabs)    COMPLETE (2026-04-11)
+  - System Health tab: DB/Redis status, data freshness, scraper logs, pending items
+  - Alerts & Logs tab: AdminAlert feed with filters, mark-as-read, email status
+  - Analytics tab: district requests, feature votes, feedback/revenue trends
+  - Tab navigation via AdminClient wrapper with unread badge on Alerts tab
+  - 3 new API routes: system-health, alerts, analytics
 
 Security + Performance Audit       COMPLETE (2026-03-29 commit a999b28)
 Exams & Jobs (Phase 5)              COMPLETE (2026-03-30)
@@ -1734,7 +1771,11 @@ src/app/[locale]/[state]/[district]/layout.tsx  — Sidebar + MobileTabNav + Fee
 src/app/[locale]/[state]/[district]/page.tsx    — District overview page (ISR)
 
 ADMIN PAGES:
-src/app/[locale]/admin/page.tsx                 — Admin dashboard (6 tabs)
+src/app/[locale]/admin/page.tsx                 — Admin dashboard (9 tabs)
+src/app/[locale]/admin/AdminClient.tsx          — Client-side tab navigation wrapper
+src/app/[locale]/admin/SystemHealth.tsx         — System health monitoring tab
+src/app/[locale]/admin/AlertsAndLogs.tsx        — Admin alert feed + filters tab
+src/app/[locale]/admin/AnalyticsDashboard.tsx   — Analytics dashboard tab
 src/app/[locale]/admin/ai-settings/page.tsx     — AI Settings with 3-provider cards
 src/app/[locale]/admin/security/page.tsx        — 2FA setup, backup codes
 src/app/[locale]/admin/review/page.tsx          — AI insight review queue
@@ -1753,6 +1794,15 @@ src/lib/constants/districts.ts                  — INDIA_STATES hierarchy (all 
 src/lib/health-score.ts                         — District health score algorithm
 src/lib/insight-generator.ts                    — Pre-compute AI module insights
 src/lib/news-action-engine.ts                   — News action classification + execution
+src/lib/admin-alerts.ts                         — Email + DB alert system (Resend + AdminAlert model)
+
+MONITORING:
+sentry.client.config.ts                         — Sentry browser init (production only)
+sentry.server.config.ts                         — Sentry server init (production only)
+sentry.edge.config.ts                           — Sentry edge init (production only)
+src/app/global-error.tsx                        — Global error boundary (reports to Sentry)
+src/app/privacy/page.tsx                        — DPDP Act 2023 compliant privacy policy
+src/middleware.ts                               — Admin IP restriction (optional, ADMIN_ALLOWED_IPS)
 src/lib/fact-checker.ts                         — AI fact checking (25+ checks)
 
 COMPONENTS:

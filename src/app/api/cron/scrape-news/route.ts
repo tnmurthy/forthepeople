@@ -9,10 +9,12 @@
 // Also: auto-expires stale alerts (>14 days) + deduplicates news
 // ═══════════════════════════════════════════════════════════
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
 import { cacheKey } from "@/lib/cache";
 import { redis } from "@/lib/redis";
 import { scrapeNews } from "@/scraper/jobs/news";
+import { alertCronFailed } from "@/lib/admin-alerts";
 import type { JobContext } from "@/scraper/types";
 
 export const runtime = "nodejs";
@@ -54,7 +56,16 @@ export async function GET(request: Request) {
     };
 
     // ── 1. Scrape news ──
-    const result = await scrapeNews(ctx);
+    let result: { success: boolean; recordsNew: number; error?: string };
+    try {
+      result = await scrapeNews(ctx);
+    } catch (scrapeErr) {
+      Sentry.captureException(scrapeErr);
+      const errMsg = scrapeErr instanceof Error ? scrapeErr.message : String(scrapeErr);
+      alertCronFailed("scrape-news", errMsg).catch(() => {});
+      results.push({ district: slug, success: false, newCount: 0, dedupRemoved: 0, alertsExpired: 0, error: errMsg });
+      continue;
+    }
 
     // ── 2. Deduplicate news by normalized title prefix ──
     let dedupRemoved = 0;

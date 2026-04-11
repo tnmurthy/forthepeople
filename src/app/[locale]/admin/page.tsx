@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { FactChecker } from "./FactChecker";
+import AdminClient from "./AdminClient";
 
 const COOKIE = "ftp_admin_v1";
 type Params = Promise<{ locale: string }>;
@@ -101,7 +102,7 @@ export default async function AdminDashboardPage({ params }: { params: Params })
   ].sort((a, b) => b.ts.getTime() - a.ts.getTime()).slice(0, 10);
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
+    <AdminClient locale={locale}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A", margin: 0 }}>
@@ -197,6 +198,6 @@ export default async function AdminDashboardPage({ params }: { params: Params })
         )}
       </div>
       <FactChecker />
-    </div>
+    </AdminClient>
   );
 }

@@ -9,8 +9,10 @@
 // AGMARKNET / data.gov.in API
 // ═══════════════════════════════════════════════════════════
 import { NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
 import { scrapeCrops } from "@/scraper/jobs/crops";
+import { alertCronFailed } from "@/lib/admin-alerts";
 import type { JobContext } from "@/scraper/types";
 
 export const runtime = "nodejs";
@@ -52,7 +54,9 @@ export async function GET(request: Request) {
       const result = await scrapeCrops(ctx);
       results.push({ district: row.slug, success: result.success, newCount: result.recordsNew });
     } catch (err) {
+      Sentry.captureException(err);
       const msg = err instanceof Error ? err.message : String(err);
+      alertCronFailed("scrape-crops", msg).catch(() => {});
       results.push({ district: row.slug, success: false, newCount: 0, error: msg });
     }
   }

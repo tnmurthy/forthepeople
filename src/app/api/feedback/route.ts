@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { alertNewFeedback } from "@/lib/admin-alerts";
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,6 +47,8 @@ export async function POST(req: NextRequest) {
         status: "new",
       },
     });
+
+    alertNewFeedback(body.type || "general", body.subject || "No subject").catch(() => {});
 
     return NextResponse.json({ success: true, id: feedback.id });
   } catch (err) {

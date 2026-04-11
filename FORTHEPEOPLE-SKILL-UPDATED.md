@@ -42,7 +42,8 @@ LAST UPDATED:     April 11, 2026
 | AI (primary) | @anthropic-ai/sdk | — | Claude Opus via OpusCode proxy |
 | AI (fallback) | @google/generative-ai | — | Gemini 2.5 Flash |
 | Payments | razorpay | — | Live keys, HMAC-SHA256 signature verification |
-| Email | resend | v6 | 2FA recovery emails |
+| Email | resend | v6 | 2FA recovery emails + admin alert emails |
+| Monitoring | @sentry/nextjs | — | Error tracking (production only) |
 | 2FA | otpauth + qrcode | — | TOTP Google Authenticator |
 | Encryption | Node.js crypto | built-in | AES-256-CBC for API keys + TOTP secrets |
 | Icons | lucide-react | — | 20px default |

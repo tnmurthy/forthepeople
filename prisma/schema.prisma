@@ -1420,3 +1420,19 @@ model DepartmentStaffing {
 
   @@index([districtId, module])
 }
+
+model AdminAlert {
+  id        String   @id @default(cuid())
+  level     String   // "critical" | "warning" | "info"
+  title     String
+  message   String
+  details   Json?
+  module    String?
+  district  String?
+  read      Boolean  @default(false)
+  emailed   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read, createdAt])
+  @@index([level, createdAt])
+}
