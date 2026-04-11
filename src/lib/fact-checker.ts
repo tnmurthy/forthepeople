@@ -5,7 +5,7 @@
  */
 
 // ═══════════════════════════════════════════════════════════
-// ForThePeople.in — Opus Fact Checker
+// ForThePeople.in — Fact Checker
 // Verifies each module's data for a given district
 // ═══════════════════════════════════════════════════════════
 import Anthropic from "@anthropic-ai/sdk";

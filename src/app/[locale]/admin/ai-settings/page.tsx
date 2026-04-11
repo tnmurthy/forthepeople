@@ -224,9 +224,9 @@ export default function AISettingsPage() {
     }
   }
 
-  function isProviderActive(p: typeof PROVIDERS[number], s: AISettings) {
-    if (p.activeProvider === "gemini") return s.activeProvider === "gemini";
-    return s.activeProvider === "anthropic" && s.anthropicSource === p.anthropicSource;
+  function isProviderActive(_p: typeof PROVIDERS[number], _s: AISettings) {
+    // OpenRouter is now the only active provider — legacy cards always show as inactive
+    return false;
   }
 
   if (!data) {
@@ -534,7 +534,7 @@ export default function AISettingsPage() {
         </div>
         {s.fallbackEnabled && (
           <div style={{ marginTop: 10, padding: "8px 12px", background: "#F5F7FF", borderRadius: 8, fontSize: 12, color: "#6B6B6B" }}>
-            Flow: <strong>{s.activeProvider === "anthropic" ? (s.anthropicSource === "opuscode" ? "OpusCode.pro" : "Official Anthropic") : "Google Gemini"}</strong> → fails → <strong>{s.fallbackProvider === "gemini" ? "Google Gemini" : "Anthropic Claude"}</strong>
+            Flow: <strong>OpenRouter (paid model)</strong> → fails → <strong>OpenRouter (gemini-flash:free)</strong>
           </div>
         )}
       </div>

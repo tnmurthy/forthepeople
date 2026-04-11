@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   LayoutDashboard,
   Activity,
@@ -19,6 +19,14 @@ import AlertsAndLogs from "./AlertsAndLogs";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import CostsTab from "./CostsTab";
 
+// Lazy-load heavier tab components
+const AISettingsPage = dynamic(() => import("./ai-settings/page"), { loading: () => <TabLoading /> });
+const FeedbackPage = dynamic(() => import("./feedback/page"), { loading: () => <TabLoading /> });
+
+function TabLoading() {
+  return <div style={{ padding: 24, color: "#9B9B9B", fontSize: 13 }}>Loading...</div>;
+}
+
 type TabId =
   | "dashboard"
   | "system"
@@ -35,7 +43,7 @@ interface Tab {
   id: TabId;
   label: string;
   icon: React.ComponentType<{ size?: number }>;
-  inline?: boolean;
+  inline: boolean;
   href?: string;
 }
 
@@ -43,11 +51,11 @@ const TABS: Tab[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, inline: true },
   { id: "system", label: "System Health", icon: Activity, inline: true },
   { id: "alerts", label: "Alerts & Logs", icon: Bell, inline: true },
-  { id: "ai", label: "AI Settings", icon: Brain, href: "/admin/ai-settings" },
-  { id: "security", label: "Security", icon: Shield, href: "/admin/security" },
-  { id: "review", label: "Review Queue", icon: CheckCircle, href: "/admin/review" },
-  { id: "feedback", label: "Feedback", icon: MessageSquare, href: "/admin/feedback" },
-  { id: "supporters", label: "Supporters", icon: Heart, href: "/admin/supporters" },
+  { id: "ai", label: "AI Settings", icon: Brain, inline: true },
+  { id: "security", label: "Security", icon: Shield, inline: false, href: "/admin/security" },
+  { id: "review", label: "Review Queue", icon: CheckCircle, inline: false, href: "/admin/review" },
+  { id: "feedback", label: "Feedback", icon: MessageSquare, inline: true },
+  { id: "supporters", label: "Supporters", icon: Heart, inline: false, href: "/admin/supporters" },
   { id: "analytics", label: "Analytics", icon: TrendingUp, inline: true },
   { id: "costs", label: "Costs", icon: DollarSign, inline: true },
 ];
@@ -59,7 +67,6 @@ export default function AdminClient({
   children: ReactNode;
   locale: string;
 }) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   const [unreadAlerts, setUnreadAlerts] = useState(0);
 
@@ -74,9 +81,12 @@ export default function AdminClient({
     if (tab.inline) {
       setActiveTab(tab.id);
     } else if (tab.href) {
-      router.push(`/${locale}${tab.href}`);
+      window.location.href = `/${locale}${tab.href}`;
     }
   };
+
+  // Fake params promise for dynamically-imported page components
+  const fakeParams = Promise.resolve({ locale });
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
@@ -144,6 +154,8 @@ export default function AdminClient({
       {activeTab === "dashboard" && children}
       {activeTab === "system" && <SystemHealth />}
       {activeTab === "alerts" && <AlertsAndLogs />}
+      {activeTab === "ai" && <AISettingsPage />}
+      {activeTab === "feedback" && <FeedbackPage params={fakeParams} />}
       {activeTab === "analytics" && <AnalyticsDashboard />}
       {activeTab === "costs" && <CostsTab />}
     </div>

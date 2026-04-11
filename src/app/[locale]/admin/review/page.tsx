@@ -113,6 +113,7 @@ export default async function AdminReviewPage({
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
+      <a href="/en/admin" style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", display: "inline-block", marginBottom: 12 }}>&larr; Back to Admin Dashboard</a>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}>🧠 Admin Dashboard</h1>
       </div>

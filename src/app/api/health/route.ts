@@ -25,13 +25,8 @@ export async function GET() {
   try {
     const settings = await prisma.aIProviderSettings.findUnique({ where: { id: "singleton" } });
     if (settings) {
-      const isAnthropic = settings.activeProvider === "anthropic";
-      const sourceLabel = !isAnthropic
-        ? "gemini"
-        : (settings as { anthropicSource?: string }).anthropicSource === "opuscode"
-          ? "anthropic/opuscode"
-          : "anthropic/official";
-      const model = isAnthropic ? settings.anthropicModel : settings.geminiModel;
+      const sourceLabel = "openrouter";
+      const model = "tiered (gemini-flash/claude-sonnet/gemini-pro)";
       checks.aiProvider = `✅ ${sourceLabel} (${model})`;
       meta.aiProvider = { source: sourceLabel, model, fallbackEnabled: settings.fallbackEnabled };
     } else {

@@ -158,6 +158,7 @@ export default function SecurityPage() {
 
   return (
     <div style={{ padding: 24, maxWidth: 820, margin: "0 auto" }}>
+      <a href="/en/admin" style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", display: "inline-block", marginBottom: 12 }}>&larr; Back to Admin Dashboard</a>
       {toast && (
         <div style={{
           position: "fixed", bottom: 24, right: 24, zIndex: 100,

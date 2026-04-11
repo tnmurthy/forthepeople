@@ -5,7 +5,7 @@
  */
 
 // ═══════════════════════════════════════════════════════════
-// Insight Generator — uses callAI (Opuscode/Anthropic + Gemini)
+// Insight Generator — uses callAI (OpenRouter tiered routing)
 // Key resolution: DB adminAPIKey → env var fallback
 // ═══════════════════════════════════════════════════════════
 import { prisma } from "@/lib/db";
@@ -89,7 +89,7 @@ export async function generateInsight(
     const data = await fetchModuleData(config.module, districtSlug, stateSlug);
     const { systemPrompt, userPrompt } = buildPrompts(config, districtName, stateName, data);
 
-    // Use unified AI provider (Opuscode proxy → Gemini fallback, keys from DB)
+    // Use unified AI provider (OpenRouter tiered routing)
     const response = await callAI({
       systemPrompt,
       userPrompt,

@@ -111,9 +111,15 @@ export default function FeedbackAdminPage({ params }: { params: Promise<{ locale
     try {
       const res = await fetch("/api/admin/feedback/classify", { method: "POST" });
       const d = await res.json();
-      setClassifyResult(`Classified ${d.classified}, failed ${d.failed}`);
+      if (d.error) {
+        setClassifyResult(`Error: ${d.error}`);
+      } else if (d.lastError) {
+        setClassifyResult(`Classified ${d.classified}, failed ${d.failed} — ${d.lastError}`);
+      } else {
+        setClassifyResult(`Classified ${d.classified}${d.failed > 0 ? `, failed ${d.failed}` : ""}`);
+      }
       fetchFeedback();
-    } catch { setClassifyResult("Failed"); }
+    } catch { setClassifyResult("Network error — check console"); }
     setClassifying(false);
   };
 

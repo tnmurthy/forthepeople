@@ -87,7 +87,7 @@ export async function classifyFeedback(
   }
 }
 
-export async function batchClassifyFeedback(): Promise<{ classified: number; failed: number; skipped: number }> {
+export async function batchClassifyFeedback(): Promise<{ classified: number; failed: number; skipped: number; lastError?: string }> {
   const unclassified = await prisma.feedback.findMany({
     where: { aiClassifiedAt: null },
     orderBy: { createdAt: "desc" },
@@ -97,17 +97,26 @@ export async function batchClassifyFeedback(): Promise<{ classified: number; fai
 
   let classified = 0;
   let failed = 0;
+  let lastError: string | undefined;
 
   for (const fb of unclassified) {
     const result = await classifyFeedback(
       fb.id, fb.type, fb.subject, fb.message, fb.module, fb.district?.name
     );
     if (result) classified++;
-    else failed++;
+    else {
+      failed++;
+      // Capture error for reporting
+      if (!lastError) {
+        lastError = process.env.OPENROUTER_API_KEY
+          ? "AI classification returned invalid response"
+          : "OPENROUTER_API_KEY not configured";
+      }
+    }
 
     // Rate limit: 500ms between calls
     await new Promise((r) => setTimeout(r, 500));
   }
 
-  return { classified, failed, skipped: 0 };
+  return { classified, failed, skipped: 0, lastError };
 }
