@@ -44,6 +44,8 @@ Delhi (New Delhi) | Maharashtra (Mumbai) | West Bengal (Kolkata) | Tamil Nadu (C
 | Scraping | Railway.app (24/7), Google News RSS, Cheerio |
 | Hosting | Vercel Pro |
 | Payments | Razorpay (for supporter contributions) |
+| Monitoring | Sentry (errors), Plausible (analytics, cookieless) |
+| Email | Resend (admin alerts) |
 
 ## Getting Started
 
@@ -70,15 +72,17 @@ npm run dev
 ## Project Structure
 
 ```
+docs/                       # All documentation (blueprint, skills, guides)
+prompts/                    # Claude Code prompts archive (completed + pending)
 src/
 ├── app/                    # Next.js App Router pages + API routes
 │   ├── api/
-│   │   ├── data/[module]/  # 29-module unified data API
+│   │   ├── data/[module]/  # 30-module unified data API
 │   │   ├── cron/           # Scheduled jobs (news, crops, insights)
-│   │   └── admin/          # Admin-only endpoints
+│   │   └── admin/          # Admin endpoints (health, alerts, analytics)
 │   └── [locale]/[state]/[district]/  # District dashboard pages
 ├── components/             # Reusable React components
-├── lib/                    # Core utilities (DB, Redis, AI, health score)
+├── lib/                    # Core utilities (DB, Redis, AI, alerts, health score)
 └── scraper/                # Background data scrapers (Railway)
 prisma/
 ├── schema.prisma           # 45+ database models
@@ -105,7 +109,7 @@ We welcome contributions from developers of all skill levels! Whether you want t
 - Review our [Code of Conduct](CODE_OF_CONDUCT.md)
 - Report security issues privately via [SECURITY.md](SECURITY.md)
 
-**Goal:** Cover all 780+ districts across India. Currently at 7 — help us get there!
+**Goal:** Cover all 780+ districts across India. Currently at 10 — help us get there!
 
 ## Creator
 
