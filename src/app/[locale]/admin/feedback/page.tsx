@@ -5,8 +5,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 interface FeedbackItem {
   id: string;
@@ -69,9 +68,7 @@ function timeAgo(iso: string): string {
   return `${Math.round(diff / 1440)}d ago`;
 }
 
-export default function FeedbackAdminPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = use(params);
-  const router = useRouter();
+export default function FeedbackAdminPage() {
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -84,6 +81,7 @@ export default function FeedbackAdminPage({ params }: { params: Promise<{ locale
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [sendingReply, setSendingReply] = useState<string | null>(null);
   const [reclassifying, setReclassifying] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<Array<{ key: string; label: string; value: string }>>([]);
 
   const fetchFeedback = useCallback(() => {
     setLoading(true);
@@ -97,6 +95,7 @@ export default function FeedbackAdminPage({ params }: { params: Promise<{ locale
   useEffect(() => {
     fetchFeedback();
     fetch("/api/admin/feedback/classify-toggle").then((r) => r.json()).then((d) => setAutoClassify(d.enabled)).catch(() => {});
+    fetch("/api/admin/feedback/templates").then((r) => r.json()).then((d) => setTemplates(d.templates || [])).catch(() => {});
   }, [fetchFeedback]);
 
   const toggleAutoClassify = async () => {
@@ -404,6 +403,22 @@ export default function FeedbackAdminPage({ params }: { params: Promise<{ locale
                 {/* Reply section */}
                 {isReplyOpen && (
                   <div style={{ marginTop: 10, padding: 12, background: "#FAFAF8", borderRadius: 8, border: "1px solid #E8E8E4" }}>
+                    {templates.length > 0 && (
+                      <div style={{ marginBottom: 8 }}>
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) setReplyText((p) => ({ ...p, [item.id]: e.target.value }));
+                            e.target.value = "";
+                          }}
+                          style={{ padding: "4px 8px", border: "1px solid #E8E8E4", borderRadius: 6, fontSize: 12, background: "#fff", color: "#6B6B6B" }}
+                        >
+                          <option value="">Quick Reply Template...</option>
+                          {templates.map((t) => (
+                            <option key={t.key} value={t.value}>{t.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     <textarea
                       placeholder="Type your reply..."
                       value={replyText[item.id] ?? ""}

@@ -206,11 +206,11 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
   try {
     const { text, usage } = await callOpenRouter(request, model, maxTokens, temp);
 
-    // Update legacy counters
+    // Update counters + clear any stale error on success
     prisma.aIProviderSettings
       .update({
         where: { id: "singleton" },
-        data: { totalGeminiCalls: { increment: 1 } },
+        data: { totalGeminiCalls: { increment: 1 }, lastError: null, lastErrorAt: null },
       })
       .catch(() => {});
 
@@ -250,15 +250,26 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
   }
 }
 
+// ── Robust JSON extractor ───────────────────────────────────
+function extractJSON(text: string): unknown {
+  try { return JSON.parse(text.trim()); } catch { /* continue */ }
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    try { return JSON.parse(fenceMatch[1].trim()); } catch { /* continue */ }
+  }
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start !== -1 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)); } catch { /* continue */ }
+  }
+  throw new Error(`Could not parse JSON: ${text.slice(0, 200)}`);
+}
+
 // ── Convenience: JSON mode ──────────────────────────────────
 export async function callAIJSON<T = unknown>(
   request: AIRequest
 ): Promise<{ data: T } & AIResponse> {
   const res = await callAI({ ...request, jsonMode: true });
-  try {
-    const data = JSON.parse(res.text) as T;
-    return { data, ...res };
-  } catch (e) {
-    throw new Error(`AI returned invalid JSON from ${res.model}: ${e}`);
-  }
+  const data = extractJSON(res.text) as T;
+  return { data, ...res };
 }

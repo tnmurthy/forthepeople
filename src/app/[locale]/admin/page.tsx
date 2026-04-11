@@ -48,10 +48,10 @@ export default async function AdminDashboardPage({ params }: { params: Params })
     {
       icon: "🤖",
       label: "AI Provider",
-      value: aiSettings?.activeProvider === "anthropic" ? "Claude Active" : "Gemini Active",
+      value: "OpenRouter Active",
       sub: `${todayCalls.toLocaleString("en-IN")} total calls`,
       href: `/${locale}/admin/ai-settings`,
-      color: aiSettings?.activeProvider === "anthropic" ? "#7C3AED" : "#16A34A",
+      color: "#16A34A",
     },
     {
       icon: "📰",

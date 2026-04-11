@@ -1,16 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import dynamic from "next/dynamic";
+import { useState, type ReactNode } from "react";
 import {
   LayoutDashboard,
   Activity,
   Bell,
-  Brain,
-  Shield,
-  CheckCircle,
-  MessageSquare,
-  Heart,
   TrendingUp,
   DollarSign,
 } from "lucide-react";
@@ -19,78 +13,33 @@ import AlertsAndLogs from "./AlertsAndLogs";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import CostsTab from "./CostsTab";
 
-// Lazy-load heavier tab components
-const AISettingsPage = dynamic(() => import("./ai-settings/page"), { loading: () => <TabLoading /> });
-const FeedbackPage = dynamic(() => import("./feedback/page"), { loading: () => <TabLoading /> });
-
-function TabLoading() {
-  return <div style={{ padding: 24, color: "#9B9B9B", fontSize: 13 }}>Loading...</div>;
-}
-
-type TabId =
-  | "dashboard"
-  | "system"
-  | "alerts"
-  | "ai"
-  | "security"
-  | "review"
-  | "feedback"
-  | "supporters"
-  | "analytics"
-  | "costs";
+type TabId = "dashboard" | "system" | "alerts" | "analytics" | "costs";
 
 interface Tab {
   id: TabId;
   label: string;
   icon: React.ComponentType<{ size?: number }>;
-  inline: boolean;
-  href?: string;
 }
 
 const TABS: Tab[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, inline: true },
-  { id: "system", label: "System Health", icon: Activity, inline: true },
-  { id: "alerts", label: "Alerts & Logs", icon: Bell, inline: true },
-  { id: "ai", label: "AI Settings", icon: Brain, inline: true },
-  { id: "security", label: "Security", icon: Shield, inline: false, href: "/admin/security" },
-  { id: "review", label: "Review Queue", icon: CheckCircle, inline: false, href: "/admin/review" },
-  { id: "feedback", label: "Feedback", icon: MessageSquare, inline: true },
-  { id: "supporters", label: "Supporters", icon: Heart, inline: false, href: "/admin/supporters" },
-  { id: "analytics", label: "Analytics", icon: TrendingUp, inline: true },
-  { id: "costs", label: "Costs", icon: DollarSign, inline: true },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "system", label: "System Health", icon: Activity },
+  { id: "alerts", label: "Alerts & Logs", icon: Bell },
+  { id: "analytics", label: "Analytics", icon: TrendingUp },
+  { id: "costs", label: "Costs", icon: DollarSign },
 ];
 
 export default function AdminClient({
   children,
-  locale,
 }: {
   children: ReactNode;
   locale: string;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
-  const [unreadAlerts, setUnreadAlerts] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/admin/alerts?read=false&limit=1")
-      .then((r) => r.json())
-      .then((d) => setUnreadAlerts(d.total || 0))
-      .catch(() => {});
-  }, [activeTab]);
-
-  const handleTab = (tab: Tab) => {
-    if (tab.inline) {
-      setActiveTab(tab.id);
-    } else if (tab.href) {
-      window.location.href = `/${locale}${tab.href}`;
-    }
-  };
-
-  // Fake params promise for dynamically-imported page components
-  const fakeParams = Promise.resolve({ locale });
 
   return (
     <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
-      {/* Tab bar */}
+      {/* Sub-tab bar — dashboard sections only */}
       <div
         style={{
           display: "flex",
@@ -103,16 +52,16 @@ export default function AdminClient({
       >
         {TABS.map((tab) => {
           const Icon = tab.icon;
-          const isActive = tab.inline && activeTab === tab.id;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => handleTab(tab)}
+              onClick={() => setActiveTab(tab.id)}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
-                padding: "8px 12px",
+                padding: "8px 14px",
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 500,
                 color: isActive ? "#2563EB" : "#6B6B6B",
@@ -127,24 +76,6 @@ export default function AdminClient({
             >
               <Icon size={14} />
               {tab.label}
-              {tab.id === "alerts" && unreadAlerts > 0 && (
-                <span
-                  style={{
-                    background: "#DC2626",
-                    color: "#fff",
-                    borderRadius: 20,
-                    padding: "1px 6px",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    marginLeft: 2,
-                  }}
-                >
-                  {unreadAlerts}
-                </span>
-              )}
-              {!tab.inline && (
-                <span style={{ fontSize: 10, color: "#9B9B9B" }}>→</span>
-              )}
             </button>
           );
         })}
@@ -154,8 +85,6 @@ export default function AdminClient({
       {activeTab === "dashboard" && children}
       {activeTab === "system" && <SystemHealth />}
       {activeTab === "alerts" && <AlertsAndLogs />}
-      {activeTab === "ai" && <AISettingsPage />}
-      {activeTab === "feedback" && <FeedbackPage params={fakeParams} />}
       {activeTab === "analytics" && <AnalyticsDashboard />}
       {activeTab === "costs" && <CostsTab />}
     </div>

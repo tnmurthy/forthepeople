@@ -7,6 +7,27 @@
 import { callAI } from "@/lib/ai-provider";
 import { prisma } from "@/lib/db";
 
+/** Robust JSON extractor — handles markdown fences, preamble text, etc. */
+function extractJSON(text: string): unknown {
+  // Try direct parse
+  try { return JSON.parse(text.trim()); } catch { /* continue */ }
+
+  // Remove markdown code fences
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    try { return JSON.parse(fenceMatch[1].trim()); } catch { /* continue */ }
+  }
+
+  // Extract between first { and last }
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start !== -1 && end > start) {
+    try { return JSON.parse(text.slice(start, end + 1)); } catch { /* continue */ }
+  }
+
+  throw new Error(`Could not parse JSON from AI response: ${text.slice(0, 200)}`);
+}
+
 export interface FeedbackClassification {
   category: "bug" | "feature" | "data_error" | "praise" | "general" | "partnership";
   priority: "critical" | "high" | "medium" | "low";
@@ -64,7 +85,7 @@ export async function classifyFeedback(
       temperature: 0.1,
     });
 
-    const parsed = JSON.parse(response.text) as FeedbackClassification;
+    const parsed = extractJSON(response.text) as FeedbackClassification;
 
     // Save classification to DB
     await prisma.feedback.update({
