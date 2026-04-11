@@ -134,7 +134,7 @@ Return ONLY valid JSON:
 If no relevant news for this module, return: {"noRelevantNews": true}`;
 
   try {
-    const response = await callAI({ systemPrompt, userPrompt, jsonMode: true });
+    const response = await callAI({ systemPrompt, userPrompt, purpose: "news-analysis", jsonMode: true });
     const text = response.text.trim();
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);

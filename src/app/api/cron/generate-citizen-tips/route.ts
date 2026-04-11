@@ -111,6 +111,7 @@ Guidelines:
     const response = await callAI({
       systemPrompt: `You are a civic advisor for ${districtName} district, ${stateName}, India.`,
       userPrompt: prompt,
+      purpose: "summarize",
       jsonMode: true,
     });
 

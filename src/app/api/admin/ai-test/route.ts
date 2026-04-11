@@ -20,6 +20,7 @@ export async function POST() {
     const response = await callAI({
       systemPrompt: "You are a test assistant for ForThePeople.in.",
       userPrompt: "Reply with exactly: {\"status\":\"ok\",\"message\":\"Connection successful\"}",
+      purpose: "classify",
       jsonMode: true,
     });
     const durationMs = Date.now() - start;

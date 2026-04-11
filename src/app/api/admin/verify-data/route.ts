@@ -119,7 +119,7 @@ Return JSON with exactly this shape:
         suggestions: string[];
         confidence: number;
         status: "ok" | "warning" | "error";
-      }>({ systemPrompt: SYSTEM_PROMPT, userPrompt, maxTokens: 1024, temperature: 0.2 });
+      }>({ systemPrompt: SYSTEM_PROMPT, userPrompt, purpose: "fact-check", maxTokens: 1024, temperature: 0.2 });
 
       return NextResponse.json({ module, district, ...data } satisfies VerificationResult);
     } catch (aiErr) {

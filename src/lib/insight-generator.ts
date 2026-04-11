@@ -93,9 +93,11 @@ export async function generateInsight(
     const response = await callAI({
       systemPrompt,
       userPrompt,
+      purpose: "insight",
       jsonMode: true,
       maxTokens: 2048,
       temperature: 0.3,
+      district: districtSlug,
     });
 
     // Parse the AI response

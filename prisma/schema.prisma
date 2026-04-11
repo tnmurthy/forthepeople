@@ -1045,12 +1045,30 @@ model Feedback {
   userAgent  String?
   status     String    @default("new")  // "new" | "reviewed" | "resolved" | "archived"
   adminNote  String?
+
+  // AI Classification
+  aiCategory     String?    // bug | feature | data_error | praise | general | partnership
+  aiPriority     String?    // critical | high | medium | low
+  aiSummary      String?
+  aiClassifiedAt DateTime?
+  aiConfidence   Float?
+  aiFlags        String[]
+  aiAdminWarning String?
+
+  // Reply System
+  adminReply     String?
+  adminRepliedAt DateTime?
+  adminRepliedBy String?
+  replyMethod    String?    // email | none
+  replySentAt    DateTime?
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
   @@index([status, createdAt])
   @@index([districtId, createdAt])
   @@index([type, status])
+  @@index([aiCategory, aiPriority])
 }
 
 // ═══ MARKET DATA ══════════════════════════════════════════
@@ -1435,4 +1453,50 @@ model AdminAlert {
 
   @@index([read, createdAt])
   @@index([level, createdAt])
+}
+
+model AdminSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model AIUsageLog {
+  id           String   @id @default(cuid())
+  provider     String
+  model        String
+  purpose      String
+  district     String?
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  totalTokens  Int      @default(0)
+  costUSD      Float    @default(0)
+  costINR      Float    @default(0)
+  durationMs   Int      @default(0)
+  success      Boolean  @default(true)
+  errorMsg     String?
+  createdAt    DateTime @default(now())
+
+  @@index([provider, createdAt])
+  @@index([purpose, createdAt])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id           String    @id @default(cuid())
+  name         String
+  provider     String
+  category     String
+  costINR      Float
+  currency     String    @default("INR")
+  costOriginal Float?
+  billingCycle String    @default("monthly")
+  renewalDate  DateTime?
+  status       String    @default("active")
+  apiKeyEnvVar String?
+  dashboardUrl String?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }

@@ -1,85 +1,139 @@
 /**
- * ForThePeople.in — Your District. Your Data. Your Right.
- * © 2026 Jayanth M B. MIT License with Attribution.
- * https://github.com/jayanthmb14/forthepeople
+ * ForThePeople.in — Unified AI Provider (OpenRouter)
+ * Routes to different models based on task purpose.
+ * All AI calls in the codebase go through callAI().
  */
 
-// ═══════════════════════════════════════════════════════════
-// ForThePeople.in — Unified AI Provider
-// Wraps Gemini + Anthropic with auto-fallback
-// All AI calls in the codebase should go through callAI()
-// ═══════════════════════════════════════════════════════════
-import Anthropic from "@anthropic-ai/sdk";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "@/lib/db";
-import { decrypt } from "@/lib/encryption";
-
-// ── Key resolution: DB override → env var fallback ──────────
-const keyCache: Record<string, { val: string | null; ts: number }> = {};
-const KEY_CACHE_TTL = 30_000; // 30 seconds
-
-export async function getAPIKey(provider: "gemini" | "anthropic"): Promise<string | null> {
-  // For anthropic, check which source is active (opuscode vs official)
-  if (provider === "anthropic") {
-    const s = await getSettings();
-    const keyName = s.anthropicSource === "official" ? "anthropic_official" : "anthropic";
-    const cacheKey = `anthropic_${s.anthropicSource}`;
-    const cached = keyCache[cacheKey];
-    if (cached && Date.now() - cached.ts < KEY_CACHE_TTL) return cached.val;
-
-    let val: string | null = null;
-    try {
-      const row = await prisma.adminAPIKey.findUnique({ where: { provider: keyName } });
-      if (row?.isActive) val = decrypt(row.encryptedKey);
-    } catch { /* fall through */ }
-
-    if (!val) val = process.env.ANTHROPIC_API_KEY ?? null;
-    keyCache[cacheKey] = { val, ts: Date.now() };
-    return val;
-  }
-
-  // Gemini
-  const cached = keyCache[provider];
-  if (cached && Date.now() - cached.ts < KEY_CACHE_TTL) return cached.val;
-
-  let val: string | null = null;
-  try {
-    const row = await prisma.adminAPIKey.findUnique({ where: { provider } });
-    if (row?.isActive) val = decrypt(row.encryptedKey);
-  } catch { /* DB failure → fall through */ }
-
-  if (!val) val = process.env.GEMINI_API_KEY ?? null;
-  keyCache[provider] = { val, ts: Date.now() };
-  return val;
-}
-
-export function invalidateKeyCache(provider?: string) {
-  if (provider) {
-    delete keyCache[provider];
-    delete keyCache[`anthropic_official`];
-    delete keyCache[`anthropic_opuscode`];
-  } else {
-    Object.keys(keyCache).forEach((k) => delete keyCache[k]);
-  }
-}
 
 // ── Types ───────────────────────────────────────────────────
 export interface AIRequest {
   systemPrompt: string;
   userPrompt: string;
+  purpose?: string;
+  model?: string;
   jsonMode?: boolean;
   maxTokens?: number;
   temperature?: number;
+  district?: string;
 }
 
 export interface AIResponse {
   text: string;
-  provider: "gemini" | "anthropic";
+  provider: string;
   model: string;
   usedFallback: boolean;
 }
 
-// ── Settings cache ───────────────────────────────────────────
+// ── Tiered model routing ────────────────────────────────────
+function getModelForPurpose(purpose: string): string {
+  switch (purpose) {
+    // TIER 1 — Free models
+    case "classify":
+    case "summarize":
+    case "format":
+      return "google/gemini-2.5-flash:free";
+
+    // TIER 2 — Mid-range (user-facing quality)
+    case "insight":
+    case "fact-check":
+    case "news-analysis":
+      return "anthropic/claude-sonnet-4";
+
+    // TIER 3 — Large context (government documents)
+    case "document":
+    case "document-large":
+      return "google/gemini-2.5-pro";
+
+    default:
+      return "google/gemini-2.5-flash:free";
+  }
+}
+
+// ── OpenRouter call ─────────────────────────────────────────
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
+async function callOpenRouter(
+  req: AIRequest,
+  model: string,
+  maxTokens: number,
+  temp: number
+): Promise<{ text: string; usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number } }> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
+
+  let sys = req.systemPrompt;
+  if (req.jsonMode) {
+    sys += "\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown fences, no preamble. Pure JSON only.";
+  }
+
+  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://forthepeople.in",
+      "X-Title": "ForThePeople.in",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: req.userPrompt },
+      ],
+      max_tokens: maxTokens,
+      temperature: temp,
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    throw new Error(`OpenRouter ${res.status}: ${errBody.slice(0, 200)}`);
+  }
+
+  const data = await res.json();
+  let text = data.choices?.[0]?.message?.content || "";
+
+  if (req.jsonMode) {
+    text = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  }
+
+  return { text, usage: data.usage };
+}
+
+// ── Usage logging ───────────────────────────────────────────
+async function logUsage(
+  model: string,
+  purpose: string,
+  district: string | undefined,
+  usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } | undefined,
+  durationMs: number,
+  success: boolean,
+  errorMsg?: string
+) {
+  try {
+    await prisma.aIUsageLog.create({
+      data: {
+        provider: "openrouter",
+        model,
+        purpose,
+        district: district || null,
+        inputTokens: usage?.prompt_tokens || 0,
+        outputTokens: usage?.completion_tokens || 0,
+        totalTokens: usage?.total_tokens || 0,
+        costUSD: 0,
+        costINR: 0,
+        durationMs,
+        success,
+        errorMsg: errorMsg?.slice(0, 500),
+      },
+    });
+  } catch {
+    // Never let logging break the AI call
+  }
+}
+
+// ── Settings cache (for backward compat with admin panel) ───
 let cachedSettings: {
   activeProvider: string;
   geminiModel: string;
@@ -99,59 +153,38 @@ export function invalidateAISettingsCache() {
   cacheTs = 0;
 }
 
+export function invalidateKeyCache(_provider?: string) {
+  // No-op — kept for backward compat with admin API routes
+}
+
+export async function getAPIKey(_provider?: string): Promise<string | null> {
+  return process.env.OPENROUTER_API_KEY ?? null;
+}
+
 async function getSettings() {
   if (cachedSettings && Date.now() - cacheTs < CACHE_TTL) return cachedSettings;
   try {
-    let s = await prisma.aIProviderSettings.findUnique({ where: { id: "singleton" } });
-    if (!s) {
-      const envBaseUrlInit = process.env.ANTHROPIC_BASE_URL;
-      s = await prisma.aIProviderSettings.create({
-        data: {
-          id: "singleton",
-          activeProvider: "anthropic",
-          geminiModel: "gemini-2.5-flash",
-          anthropicModel: "claude-opus-4-6",
-          anthropicBaseUrl: envBaseUrlInit || "https://api.anthropic.com",
-          anthropicSource: envBaseUrlInit?.includes("opuscode") ? "opuscode" : "official",
-          fallbackEnabled: true,
-          fallbackProvider: "gemini",
-          maxTokens: 2048,
-          temperature: 0.3,
-        },
-      });
-    }
-    const envBaseUrl = process.env.ANTHROPIC_BASE_URL;
-    const isOpusCodeEnv = envBaseUrl && envBaseUrl.includes("opuscode");
-
+    const s = await prisma.aIProviderSettings.findUnique({ where: { id: "singleton" } });
     cachedSettings = {
-      activeProvider: isOpusCodeEnv ? "anthropic" : s.activeProvider,
-      geminiModel: s.geminiModel,
-      anthropicModel: s.anthropicModel,
-      anthropicBaseUrl: envBaseUrl || (s as { anthropicBaseUrl?: string }).anthropicBaseUrl || "https://api.anthropic.com",
-      anthropicSource: isOpusCodeEnv ? "opuscode" : ((s as { anthropicSource?: string }).anthropicSource ?? "official"),
-      fallbackEnabled: s.fallbackEnabled,
-      fallbackProvider: s.fallbackProvider,
-      maxTokens: s.maxTokens,
-      temperature: s.temperature,
+      activeProvider: "openrouter",
+      geminiModel: s?.geminiModel ?? "gemini-2.5-flash",
+      anthropicModel: s?.anthropicModel ?? "claude-sonnet-4",
+      anthropicBaseUrl: "https://openrouter.ai/api/v1",
+      anthropicSource: "openrouter",
+      fallbackEnabled: s?.fallbackEnabled ?? true,
+      fallbackProvider: s?.fallbackProvider ?? "gemini",
+      maxTokens: s?.maxTokens ?? 2048,
+      temperature: s?.temperature ?? 0.3,
     };
     cacheTs = Date.now();
-
-    // Auto-update DB if env var signals OpusCode but DB still says official
-    if (isOpusCodeEnv && (s.activeProvider !== "anthropic" || (s as { anthropicSource?: string }).anthropicSource !== "opuscode")) {
-      prisma.aIProviderSettings.update({
-        where: { id: "singleton" },
-        data: { activeProvider: "anthropic", anthropicSource: "opuscode", anthropicBaseUrl: envBaseUrl, lastSwitchedAt: new Date() },
-      }).catch(() => {});
-    }
-
     return cachedSettings;
   } catch {
     return {
-      activeProvider: "gemini",
+      activeProvider: "openrouter",
       geminiModel: "gemini-2.5-flash",
-      anthropicModel: "claude-opus-4-6",
-      anthropicBaseUrl: process.env.ANTHROPIC_BASE_URL ?? "https://api.anthropic.com",
-      anthropicSource: "official",
+      anthropicModel: "claude-sonnet-4",
+      anthropicBaseUrl: "https://openrouter.ai/api/v1",
+      anthropicSource: "openrouter",
       fallbackEnabled: true,
       fallbackProvider: "gemini",
       maxTokens: 2048,
@@ -160,126 +193,57 @@ async function getSettings() {
   }
 }
 
-// ── Gemini call ─────────────────────────────────────────────
-async function callGemini(
-  req: AIRequest,
-  model: string,
-  maxTokens: number,
-  temp: number
-): Promise<string> {
-  const key = await getAPIKey("gemini");
-  if (!key) throw new Error("Gemini API key not set (neither in admin panel nor environment)");
-  const genAI = new GoogleGenerativeAI(key);
-  const m = genAI.getGenerativeModel({
-    model,
-    generationConfig: {
-      maxOutputTokens: maxTokens,
-      temperature: temp,
-      ...(req.jsonMode ? { responseMimeType: "application/json" } : {}),
-    },
-  });
-  const result = await m.generateContent(`${req.systemPrompt}\n\n${req.userPrompt}`);
-  return result.response.text();
-}
-
-// ── Anthropic call ───────────────────────────────────────────
-async function callAnthropic(
-  req: AIRequest,
-  model: string,
-  maxTokens: number,
-  temp: number
-): Promise<string> {
-  const key = await getAPIKey("anthropic");
-  if (!key) throw new Error("Anthropic API key not set (neither in admin panel nor environment)");
-
-  const settings = await getSettings();
-  const baseURL = process.env.ANTHROPIC_BASE_URL || settings.anthropicBaseUrl || "https://api.anthropic.com";
-  console.log(`[AI] Anthropic base URL: ${baseURL} (source: ${settings.anthropicSource})`);
-
-  const client = new Anthropic({ apiKey: key, baseURL });
-  let sys = req.systemPrompt;
-  if (req.jsonMode) {
-    sys += "\n\nIMPORTANT: Respond ONLY with valid JSON. No markdown fences, no preamble. Pure JSON only.";
-  }
-  const msg = await client.messages.create({
-    model,
-    max_tokens: maxTokens,
-    temperature: temp,
-    system: sys,
-    messages: [{ role: "user", content: req.userPrompt }],
-  });
-  const block = msg.content.find((b) => b.type === "text");
-  if (!block || block.type !== "text") throw new Error("No text block in Anthropic response");
-  let text = block.text;
-  if (req.jsonMode) {
-    text = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
-  }
-  return text;
-}
-
-// ── Main callAI function with auto-fallback ─────────────────
+// ── Main callAI function ────────────────────────────────────
 export async function callAI(request: AIRequest): Promise<AIResponse> {
   const s = await getSettings();
   const maxTokens = request.maxTokens ?? s.maxTokens;
   const temp = request.temperature ?? s.temperature;
-  const provider = s.activeProvider as "gemini" | "anthropic";
-  const model = provider === "anthropic" ? s.anthropicModel : s.geminiModel;
+  const purpose = request.purpose ?? "summarize";
+  const model = request.model ?? getModelForPurpose(purpose);
+
+  const startTime = Date.now();
 
   try {
-    const text =
-      provider === "anthropic"
-        ? await callAnthropic(request, model, maxTokens, temp)
-        : await callGemini(request, model, maxTokens, temp);
+    const { text, usage } = await callOpenRouter(request, model, maxTokens, temp);
 
+    // Update legacy counters
     prisma.aIProviderSettings
       .update({
         where: { id: "singleton" },
-        data:
-          provider === "anthropic"
-            ? { totalAnthropicCalls: { increment: 1 } }
-            : { totalGeminiCalls: { increment: 1 } },
+        data: { totalGeminiCalls: { increment: 1 } },
       })
       .catch(() => {});
 
-    return { text, provider, model, usedFallback: false };
+    // Log usage
+    logUsage(model, purpose, request.district, usage, Date.now() - startTime, true);
+
+    return { text, provider: "openrouter", model, usedFallback: false };
   } catch (primaryError) {
-    console.error(`[AI] ${provider} failed:`, primaryError);
+    console.error(`[AI] OpenRouter (${model}) failed:`, primaryError);
+
+    const errMsg = primaryError instanceof Error ? primaryError.message : String(primaryError);
+    logUsage(model, purpose, request.district, undefined, Date.now() - startTime, false, errMsg);
 
     prisma.aIProviderSettings
       .update({
         where: { id: "singleton" },
-        data: {
-          lastError: primaryError instanceof Error ? primaryError.message : String(primaryError),
-          lastErrorAt: new Date(),
-        },
+        data: { lastError: errMsg.slice(0, 500), lastErrorAt: new Date() },
       })
       .catch(() => {});
 
-    if (s.fallbackEnabled && s.fallbackProvider !== provider) {
-      const fbProvider = s.fallbackProvider as "gemini" | "anthropic";
-      const fbModel = fbProvider === "anthropic" ? s.anthropicModel : s.geminiModel;
-      console.log(`[AI] Falling back to ${fbProvider} (${fbModel})`);
+    // Fallback: try the free model if the primary model failed
+    if (model !== "google/gemini-2.5-flash:free") {
+      const fbModel = "google/gemini-2.5-flash:free";
+      console.log(`[AI] Falling back to ${fbModel}`);
+      const fbStart = Date.now();
       try {
-        const text =
-          fbProvider === "anthropic"
-            ? await callAnthropic(request, fbModel, maxTokens, temp)
-            : await callGemini(request, fbModel, maxTokens, temp);
-
-        prisma.aIProviderSettings
-          .update({
-            where: { id: "singleton" },
-            data:
-              fbProvider === "anthropic"
-                ? { totalAnthropicCalls: { increment: 1 } }
-                : { totalGeminiCalls: { increment: 1 } },
-          })
-          .catch(() => {});
-
-        return { text, provider: fbProvider, model: fbModel, usedFallback: true };
+        const { text, usage } = await callOpenRouter(request, fbModel, maxTokens, temp);
+        logUsage(fbModel, purpose, request.district, usage, Date.now() - fbStart, true);
+        return { text, provider: "openrouter", model: fbModel, usedFallback: true };
       } catch (fbError) {
-        throw new Error(
-          `Both providers failed. ${provider}: ${primaryError}. ${fbProvider}: ${fbError}`
-        );
+        logUsage(fbModel, purpose, request.district, undefined, Date.now() - fbStart, false,
+          fbError instanceof Error ? fbError.message : String(fbError));
+        throw new Error(`OpenRouter failed: ${errMsg}. Fallback also failed: ${fbError}`);
       }
     }
     throw primaryError;
@@ -295,6 +259,6 @@ export async function callAIJSON<T = unknown>(
     const data = JSON.parse(res.text) as T;
     return { data, ...res };
   } catch (e) {
-    throw new Error(`AI returned invalid JSON from ${res.provider}: ${e}`);
+    throw new Error(`AI returned invalid JSON from ${res.model}: ${e}`);
   }
 }

@@ -86,6 +86,7 @@ Use "news" module if it doesn't clearly fit another. confidence = how certain yo
     const response = await callAI({
       systemPrompt: "You are a news classifier. Return ONLY valid JSON. No markdown, no explanation.",
       userPrompt: prompt,
+      purpose: "news-analysis",
       jsonMode: true,
       maxTokens: 1024,
       temperature: 0.1,

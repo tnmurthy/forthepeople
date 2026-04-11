@@ -12,10 +12,12 @@ import {
   MessageSquare,
   Heart,
   TrendingUp,
+  DollarSign,
 } from "lucide-react";
 import SystemHealth from "./SystemHealth";
 import AlertsAndLogs from "./AlertsAndLogs";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import CostsTab from "./CostsTab";
 
 type TabId =
   | "dashboard"
@@ -26,7 +28,8 @@ type TabId =
   | "review"
   | "feedback"
   | "supporters"
-  | "analytics";
+  | "analytics"
+  | "costs";
 
 interface Tab {
   id: TabId;
@@ -46,6 +49,7 @@ const TABS: Tab[] = [
   { id: "feedback", label: "Feedback", icon: MessageSquare, href: "/admin/feedback" },
   { id: "supporters", label: "Supporters", icon: Heart, href: "/admin/supporters" },
   { id: "analytics", label: "Analytics", icon: TrendingUp, inline: true },
+  { id: "costs", label: "Costs", icon: DollarSign, inline: true },
 ];
 
 export default function AdminClient({
@@ -141,6 +145,7 @@ export default function AdminClient({
       {activeTab === "system" && <SystemHealth />}
       {activeTab === "alerts" && <AlertsAndLogs />}
       {activeTab === "analytics" && <AnalyticsDashboard />}
+      {activeTab === "costs" && <CostsTab />}
     </div>
   );
 }

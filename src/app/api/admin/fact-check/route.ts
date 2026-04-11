@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
           }>({
             systemPrompt: `You are a fact-checking engine for ForThePeople.in, a civic transparency platform. Today is ${now.toISOString().split("T")[0]}. Respond ONLY with valid JSON.`,
             userPrompt: `These alerts have been showing on the ${district.name} district page. Check if each is still relevant:\n\n${alertList}\n\nReturn JSON:\n{\n  "alerts": [\n    { "title": "...", "status": "keep"|"expire"|"needs_update", "reason": "...", "confidence": 0.0-1.0 }\n  ]\n}`,
+            purpose: "fact-check",
             maxTokens: 1024,
             temperature: 0.2,
           });
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
           const { data } = await callAIJSON({
             systemPrompt: `Fact-check leadership data for ${districtLabel}. Use knowledge up to early 2025. If uncertain, say so. Today is ${now.toISOString().split("T")[0]}. Return JSON only.`,
             userPrompt: `Verify these officials:\n\n${leaderList}\n\nReturn JSON:\n{\n  "module": "leadership",\n  "totalChecked": ${leaders.length},\n  "issues": [\n    { "name": "...", "designation": "...", "status": "correct"|"outdated"|"wrong"|"uncertain", "correction": "...", "confidence": 0.0-1.0 }\n  ],\n  "summary": "Brief assessment"\n}`,
+            purpose: "fact-check",
             maxTokens: 2048,
             temperature: 0.2,
           });
@@ -141,6 +143,7 @@ export async function POST(req: NextRequest) {
         : "No budget data in database.";
       try {
         const { data } = await callAIJSON({
+          purpose: "fact-check",
           systemPrompt: `Fact-check budget data for ${districtLabel}. Reference state budget 2024-25. Return JSON only.`,
           userPrompt: `Verify budget figures:\n\n${budgetList}\n\nReturn JSON:\n{\n  "module": "budget",\n  "totalChecked": ${budgets.length},\n  "issues": [\n    { "sector": "...", "status": "correct"|"wrong"|"uncertain"|"outdated", "correction": "...", "confidence": 0.0-1.0 }\n  ],\n  "missingDepartments": [],\n  "summary": "Brief assessment"\n}`,
           maxTokens: 1024,
@@ -163,6 +166,7 @@ export async function POST(req: NextRequest) {
         : "No project data.";
       try {
         const { data } = await callAIJSON({
+          purpose: "fact-check",
           systemPrompt: `Fact-check infrastructure projects for ${districtLabel}. Return JSON only.`,
           userPrompt: `Verify projects:\n\n${projectList}\n\nReturn JSON:\n{\n  "module": "infrastructure",\n  "totalChecked": ${projects.length},\n  "issues": [\n    { "project": "...", "status": "correct"|"outdated"|"wrong"|"uncertain", "correction": "...", "confidence": 0.0-1.0 }\n  ],\n  "missingProjects": [],\n  "summary": "Brief assessment"\n}`,
           maxTokens: 1024,
@@ -182,6 +186,7 @@ export async function POST(req: NextRequest) {
       });
       try {
         const { data } = await callAIJSON({
+          purpose: "fact-check",
           systemPrompt: `Provide verified demographic data for ${districtLabel} from Census 2011. Return JSON only.`,
           userPrompt: `Website shows: Population ${d?.population ?? "unknown"}, Area ${d?.area ?? "unknown"} km², Literacy ${d?.literacy ?? "unknown"}%, ${d?.talukCount ?? "unknown"} Taluks.\n\nVerify and return JSON:\n{\n  "module": "demographics",\n  "population": { "correct": true/false, "actual": "...", "source": "Census 2011" },\n  "area": { "correct": true/false, "actual": "..." },\n  "literacy": { "correct": true/false, "actual": "..." },\n  "taluks": { "correct": true/false, "actual": 0, "names": [] },\n  "summary": "Brief assessment"\n}`,
           maxTokens: 512,
@@ -197,6 +202,7 @@ export async function POST(req: NextRequest) {
     if (!moduleName || moduleName === "all" || moduleName === "courts") {
       try {
         const { data } = await callAIJSON({
+          purpose: "fact-check",
           systemPrompt: `Verify courts and police data for ${districtLabel}. Return JSON only.`,
           userPrompt: `Provide verified courts data:\n\nReturn JSON:\n{\n  "module": "courts",\n  "districtCourt": { "judgeName": "...", "confidence": 0.0-1.0 },\n  "policeStations": { "count": 0 },\n  "currentSP": { "name": "...", "confidence": 0.0-1.0 },\n  "summary": "Brief assessment"\n}`,
           maxTokens: 512,

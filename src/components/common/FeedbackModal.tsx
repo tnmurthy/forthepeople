@@ -198,25 +198,48 @@ export default function FeedbackModal({
                   }}
                 />
 
-                <div style={{ display: "flex", gap: 10 }}>
-                  <input
-                    maxLength={100} placeholder="Your name (optional)"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    style={{
-                      flex: 1, padding: "9px 12px", border: "1px solid #E8E8E4",
-                      borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit",
-                    }}
-                  />
-                  <input
-                    type="email" maxLength={200} placeholder="Email (optional)"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      flex: 1, padding: "9px 12px", border: "1px solid #E8E8E4",
-                      borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit",
-                    }}
-                  />
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 11, color: "#9B9B9B", fontWeight: 600, display: "block", marginBottom: 3 }}>
+                        Your Name (optional)
+                      </label>
+                      <input
+                        maxLength={100} placeholder="So we know who to thank"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        style={{
+                          width: "100%", padding: "9px 12px", border: "1px solid #E8E8E4",
+                          borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: 11, color: "#9B9B9B", fontWeight: 600, display: "block", marginBottom: 3 }}>
+                        Your Email (optional)
+                      </label>
+                      <input
+                        type="email" maxLength={200} placeholder="Add your email to receive a reply"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={{
+                          width: "100%", padding: "9px 12px", border: "1px solid #E8E8E4",
+                          borderRadius: 8, fontSize: 13, outline: "none", fontFamily: "inherit",
+                          boxSizing: "border-box",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {name && email ? (
+                    <div style={{ fontSize: 11, color: "#16A34A", fontWeight: 500 }}>
+                      We&apos;ll get back to you!
+                    </div>
+                  ) : !email ? (
+                    <div style={{ fontSize: 11, color: "#9B9B9B" }}>
+                      Without an email, we can&apos;t reply — but we still read every message.
+                    </div>
+                  ) : null}
                 </div>
 
                 {districtSlug && (

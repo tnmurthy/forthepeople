@@ -7,6 +7,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { alertNewFeedback } from "@/lib/admin-alerts";
+import { isAutoClassifyEnabled } from "@/lib/admin-settings";
+import { classifyFeedback } from "@/lib/feedback-classifier";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,6 +51,13 @@ export async function POST(req: NextRequest) {
     });
 
     alertNewFeedback(body.type || "general", body.subject || "No subject").catch(() => {});
+
+    // Auto-classify if enabled (background, don't block response)
+    isAutoClassifyEnabled().then((enabled) => {
+      if (enabled) {
+        classifyFeedback(feedback.id, type, subject, message, module, districtSlug).catch(() => {});
+      }
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, id: feedback.id });
   } catch (err) {
