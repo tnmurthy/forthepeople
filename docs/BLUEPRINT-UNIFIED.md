@@ -2026,6 +2026,47 @@ Powers the Traffic tab with real-time visitors, top pages, referrers, devices, c
 - Instrumented: vault ops, manual-supporter, supporter edit, expense add/edit/delete,
   platform-report manual generation, user create/update/deactivate.
 
+### Content Editor (April 2026)
+- New tab under ⚙️ Operations: `/admin?tab=content-editor`.
+- Selects State → District, shows module grid with editable cards.
+- Inline table editor for a vetted allowlist (`CONTENT_MODULES` in
+  `src/app/api/admin/content/route.ts`): leaders, infrastructure, schemes,
+  offices, police, schools, famous personalities. Scraper-generated modules
+  (weather/news/crops/dams/power/alerts) stay read-only.
+- `GET /api/admin/content?district=&module=` lists editable rows + field list.
+- `POST /api/admin/content/save` applies updates/creates/deletes, invalidates
+  Redis cache keys (`ftp:<slug>:<module>` + `ftp:<slug>:overview`), and
+  writes UpdateLog + AdminAuditLog entries for every change.
+
+### Update Log
+- Model: `UpdateLog(source, actorLabel, tableName, recordId, action, fieldName,
+  oldValue, newValue, districtId, districtName, moduleName, description)`
+- Util: `src/lib/update-log.ts` → `logUpdate()` (never throws).
+- UI tab: `/admin?tab=update-log` with source/module filters, date grouping,
+  expandable old/new diff view, CSV export.
+
+### Admin Bot
+- Floating bottom-right widget, rendered in `admin/layout.tsx`.
+- Pattern-matched queries answered from the DB with zero AI cost:
+  revenue/expense totals, stale districts, pending review/feedback/alerts,
+  counts, and a parser for `Add expense: <description> ₹<amount>` (supports
+  $ → ₹ conversion at ₹84/$1).
+- Unmatched prompts return a requires-AI nudge directing the user to the
+  Dashboard Platform Report for real analysis.
+- Message history in `AdminBotMessage`.
+
+### Cost + Alert Hygiene (April 2026)
+- `/api/cron/generate-insights` schedule: `0 */2 * * *` → `0 0,12 * * *`
+  (every 2h → twice daily). Combined with existing per-module TTLs this cuts
+  OpenRouter spend dramatically. `FREE_FALLBACK_MODELS` reordered to try
+  `qwen/qwen3-235b-a22b:free` first since OSS-20b:free has been hitting
+  200 req/day limits.
+- `src/lib/admin-alerts.ts`: `isTransientError()` filter skips email + DB
+  alerts for fetch-failed / timeout / 5xx / ECONN* / aborted errors.
+  `alertScraperFailed` and `alertCronFailed` short-circuit when the error
+  matches. Freshness panel still reflects stale state so the problem remains
+  visible — we just stop paging. Dashboard recent-activity feed drops them too.
+
 ### AI Platform Analysis
 Weekly AI-generated platform health report with action items + cost tips.
 - Model: `PlatformReport` (type, summary, actionItems, metrics, costTips, growthNotes,

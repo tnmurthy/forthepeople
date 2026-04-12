@@ -16,6 +16,8 @@ import CostsTab from "./CostsTab";
 import ExpenditureTab from "./ExpenditureTab";
 import TrafficTab from "./TrafficTab";
 import VaultTab from "./VaultTab";
+import ContentEditorTab from "./ContentEditorTab";
+import UpdateLogTab from "./UpdateLogTab";
 
 type TabId =
   | "dashboard"
@@ -25,7 +27,9 @@ type TabId =
   | "costs"
   | "expenditure"
   | "traffic"
-  | "vault";
+  | "vault"
+  | "content-editor"
+  | "update-log";
 
 function normalizeTab(raw: string | null): TabId {
   switch (raw) {
@@ -36,6 +40,8 @@ function normalizeTab(raw: string | null): TabId {
     case "expenditure":
     case "traffic":
     case "vault":
+    case "content-editor":
+    case "update-log":
       return raw;
     default:
       return "dashboard";
@@ -56,6 +62,8 @@ export default function AdminClient({ children }: { children: ReactNode; locale:
       {tab === "expenditure" && <ExpenditureTab />}
       {tab === "traffic" && <TrafficTab />}
       {tab === "vault" && <VaultTab />}
+      {tab === "content-editor" && <ContentEditorTab />}
+      {tab === "update-log" && <UpdateLogTab />}
     </div>
   );
 }

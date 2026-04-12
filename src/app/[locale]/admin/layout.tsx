@@ -6,6 +6,7 @@
 
 import { cookies } from "next/headers";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminBot from "@/components/admin/AdminBot";
 import { loginAction, totpAction } from "./actions";
 
 const COOKIE = "ftp_admin_v1";
@@ -210,6 +211,7 @@ export default async function AdminLayout({
       >
         {children}
       </main>
+      <AdminBot />
     </div>
   );
 }

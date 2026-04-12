@@ -27,6 +27,8 @@ import {
   TrendingDown,
   Globe,
   KeyRound,
+  Pencil,
+  History,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -44,6 +46,8 @@ type ItemId =
   | "traffic"
   | "security"
   | "vault"
+  | "content-editor"
+  | "update-log"
   | "feedback";
 
 interface NavItem {
@@ -98,6 +102,22 @@ const GROUPS: Group[] = [
         inPageTab: true,
         help: "Notifications for scraper failures, payments, and feedback",
         badgeKey: "unreadAlerts",
+      },
+      {
+        id: "content-editor",
+        label: "Content Editor",
+        icon: Pencil,
+        buildHref: (locale) => `/${locale}/admin?tab=content-editor`,
+        inPageTab: true,
+        help: "Inline edit seeded district data (leaders, schemes, offices, etc.)",
+      },
+      {
+        id: "update-log",
+        label: "Update Log",
+        icon: History,
+        buildHref: (locale) => `/${locale}/admin?tab=update-log`,
+        inPageTab: true,
+        help: "Every data change with before/after values — filterable by source/module",
       },
     ],
   },
@@ -522,6 +542,8 @@ function resolveActiveItem(
   if (tab === "expenditure") return "expenditure";
   if (tab === "traffic") return "traffic";
   if (tab === "vault") return "vault";
+  if (tab === "content-editor") return "content-editor";
+  if (tab === "update-log") return "update-log";
   return "dashboard";
 }
 

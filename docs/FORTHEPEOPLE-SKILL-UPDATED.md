@@ -20,8 +20,9 @@ ALL STATES:       36 states/UTs browsable (locked ones show preview + sponsor CT
 ALL DISTRICTS:    152 districts in DB (locked ones show LockedDistrictPreview)
 STATE MAPS:       33 GeoJSON maps from DataMeet Census 2011 + Karnataka hand-tuned
 PROJECT ID:       FTP-JMB-2026-IN (watermark ID)
-LAST UPDATED:     April 13, 2026 (security: API Key Vault with separate 2FA gate, multi-user
-                  admin foundation, audit logging across admin ops)
+LAST UPDATED:     April 13, 2026 (power features: Content Editor, Update Log,
+                  AI Admin Bot, Tax Overview + bug fixes: subscription dedup,
+                  credentials encryption, scraper alert suppression, AI cost cut)
 ```
 
 ---
@@ -348,7 +349,17 @@ src/app/api/admin/users/[id]/route.ts             — PATCH/DELETE admin user
 src/app/api/admin/audit-log/route.ts              — GET paginated audit entries
 src/app/[locale]/admin/VaultTab.tsx               — Vault tab (gate + key list + add form)
 src/app/[locale]/admin/security/SessionInfoCard.tsx — Session info + team members + audit log
+src/app/[locale]/admin/ContentEditorTab.tsx       — Content Editor (district → module → inline table)
+src/app/[locale]/admin/UpdateLogTab.tsx           — Update Log viewer (filter + diff + CSV)
+src/components/admin/AdminBot.tsx                 — Floating bot widget (pattern-matched queries)
+src/lib/update-log.ts                             — logUpdate util (never throws)
+src/app/api/admin/content/route.ts                — Content Editor module + row loader
+src/app/api/admin/content/save/route.ts           — Apply updates/creates/deletes + cache bust
+src/app/api/admin/update-log/route.ts             — Paginated update log viewer
+src/app/api/admin/bot/route.ts                    — Bot GET history + POST handle message
+src/app/api/admin/subscriptions/[id]/reveal/route.ts — Decrypt subscription login password
 scripts/seed-vault-keys.ts                        — Seed existing env-var keys into the vault
+scripts/fix-duplicate-subscriptions.ts            — One-shot dedup of Subscription rows
 ```
 
 ### Scraper

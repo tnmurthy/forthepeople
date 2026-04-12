@@ -50,9 +50,16 @@ docs/GEO-AUDIT-REPORT.md           ← SEO/GEO audit results
 
 ## Current State (April 13, 2026)
 - 10 live districts, 7 states
-- Admin: unified left sidebar (13 tabs grouped: Overview, Operations, AI & Data, Finance,
-  Analytics [Analytics + Traffic], Security [Access & 2FA + API Vault], Community).
-  URL `?tab=` routing for in-page sub-tabs.
+- Admin: unified left sidebar (15 tabs grouped: Overview, Operations
+  [+ Content Editor + Update Log], AI & Data, Finance, Analytics + Traffic,
+  Security + API Vault, Community). URL `?tab=` routing for in-page sub-tabs.
+- Floating AI Admin Bot (bottom-right): pattern-matched queries with zero AI
+  cost; unmatched → Dashboard AI Report.
+- Content Editor for 7 seeded module types per district with cache invalidation.
+- UpdateLog tracks every content change with old/new diff.
+- Subscription cleanup: deduped 4 rows, login credentials encrypted at rest.
+- Scraper alerts: transient gov-portal timeouts suppressed (noise removed).
+- AI cost: insight cron every 12h (was 2h), free fallback chain reordered.
 - API Key Vault: encrypted key storage with separate 10-min TOTP session (Redis-backed).
   Reveals are rate-limited + audit logged.
 - Multi-user admin: foundation only (AdminUser + AdminAuditLog tables, user management UI).

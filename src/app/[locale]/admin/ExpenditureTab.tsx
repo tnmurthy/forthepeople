@@ -40,6 +40,7 @@ interface Expense {
 }
 
 interface FinanceSummary {
+  revenue?: { total: number };
   expense: { total: number; thisMonth: number; recurringMonthly: number };
   pnl: { thisMonth: number; allTime: number };
   monthlyBreakdown: Array<{ month: string; revenue: number; expense: number; net: number }>;
@@ -505,6 +506,8 @@ export default function ExpenditureTab() {
         </>
       )}
 
+      {summary && <TaxOverview summary={summary} expenses={expenses} />}
+
       {showAdd && (
         <ExpenseForm
           onClose={() => setShowAdd(false)}
@@ -524,6 +527,132 @@ export default function ExpenditureTab() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function TaxOverview({ summary, expenses }: { summary: FinanceSummary; expenses: Expense[] }) {
+  const [open, setOpen] = useState(false);
+
+  // Indian FY: 1 April → 31 March. If today is before April 1, FY started last year.
+  const today = new Date();
+  const fyStart = new Date(
+    today.getMonth() >= 3 ? today.getFullYear() : today.getFullYear() - 1,
+    3, // April (0-indexed)
+    1
+  );
+  const fyEnd = new Date(fyStart.getFullYear() + 1, 2, 31); // 31 March next year
+  const fyLabel = `FY ${fyStart.getFullYear()}-${String((fyStart.getFullYear() + 1) % 100).padStart(2, "0")}`;
+
+  const fyExpenses = expenses.filter((e) => {
+    const d = new Date(e.date);
+    return d >= fyStart && d <= fyEnd;
+  });
+  const fyExpenseTotal = fyExpenses.reduce((s, e) => s + e.amountINR, 0);
+
+  // Revenue for FY: pull from monthlyBreakdown by filtering months in the FY range.
+  const fyRevenue = summary.monthlyBreakdown
+    .filter((m) => {
+      const [y, mm] = m.month.split("-").map(Number);
+      const d = new Date(y, mm - 1, 1);
+      return d >= fyStart && d <= fyEnd;
+    })
+    .reduce((s, m) => s + m.revenue, 0);
+
+  // Tax-relevant groupings (order of typical ITR relevance)
+  const byCategory = new Map<string, number>();
+  for (const e of fyExpenses) {
+    byCategory.set(e.category, (byCategory.get(e.category) ?? 0) + e.amountINR);
+  }
+  const deductibleCats = ["hosting", "domain", "ai_credits", "development", "design", "legal"];
+  const deductible = deductibleCats
+    .map((c) => ({ category: c, amount: byCategory.get(c) ?? 0 }))
+    .filter((c) => c.amount > 0);
+
+  return (
+    <div style={card}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#1A1A1A",
+        }}
+      >
+        📊 Tax Overview ({fyLabel})
+        <span style={{ fontSize: 10, color: "#9B9B9B" }}>{open ? "▼" : "▶"}</span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 12, fontSize: 12, color: "#1A1A1A", lineHeight: 1.7 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 10 }}>
+            <SummaryBox label="Gross Revenue (FY)" value={`₹${fyRevenue.toLocaleString("en-IN")}`} color="#16A34A" />
+            <SummaryBox label="Total Expenses (FY)" value={`₹${fyExpenseTotal.toLocaleString("en-IN")}`} color="#DC2626" />
+            <SummaryBox
+              label="Net Income (FY)"
+              value={`${fyRevenue - fyExpenseTotal >= 0 ? "+" : "−"}₹${Math.abs(fyRevenue - fyExpenseTotal).toLocaleString("en-IN")}`}
+              color={fyRevenue - fyExpenseTotal >= 0 ? "#16A34A" : "#DC2626"}
+            />
+          </div>
+          {deductible.length > 0 && (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#6B6B6B", marginBottom: 4 }}>
+                Tax-relevant expenses (likely deductible — confirm with CA):
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {deductible.map((c) => (
+                  <li key={c.category}>
+                    <span style={{ textTransform: "capitalize" }}>{c.category.replace(/_/g, " ")}</span>:
+                    ₹{c.amount.toLocaleString("en-IN")}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <div
+            style={{
+              marginTop: 12,
+              padding: 8,
+              background: "#FEF3C7",
+              border: "1px solid #FDE68A",
+              borderRadius: 6,
+              color: "#92400E",
+              fontSize: 11,
+            }}
+          >
+            ⚠️ Not financial advice. This summary is derived from admin records for reference only.
+            Consult a Chartered Accountant for ITR filing and GST classification.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SummaryBox({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div style={{ background: "#FAFAF8", padding: 8, borderRadius: 6 }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: "#9B9B9B",
+          textTransform: "uppercase",
+          letterSpacing: "0.06em",
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ fontSize: 16, fontWeight: 700, color, fontFamily: "var(--font-mono, monospace)" }}>
+        {value}
+      </div>
     </div>
   );
 }
