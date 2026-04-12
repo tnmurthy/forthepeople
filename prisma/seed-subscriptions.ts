@@ -155,11 +155,6 @@ async function main() {
   let updated = 0;
 
   for (const s of services) {
-    const existing = await prisma.subscription.findFirst({
-      where: { serviceName: s.serviceName },
-      select: { id: true },
-    });
-
     const data = {
       name: s.displayName,
       displayName: s.displayName,
@@ -176,6 +171,11 @@ async function main() {
       notes: s.notes ?? null,
     };
 
+    // serviceName is @unique — use upsert so re-runs don't duplicate rows.
+    const existing = await prisma.subscription.findUnique({
+      where: { serviceName: s.serviceName },
+      select: { id: true },
+    });
     if (existing) {
       await prisma.subscription.update({ where: { id: existing.id }, data });
       updated++;

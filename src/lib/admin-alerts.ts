@@ -100,9 +100,44 @@ export async function sendAdminAlert(payload: AlertPayload): Promise<boolean> {
   return emailed;
 }
 
+// ── Transient error filter ────────────────────────────────
+// External government portals (water.karnataka.gov.in, bescom.karnataka.gov.in, etc.)
+// and upstream news feeds go down frequently. These aren't code bugs — alerting on
+// them floods the admin panel with non-actionable noise. The data freshness panel
+// still shows the stale state so we don't hide the problem, we just stop paging.
+const TRANSIENT_PATTERNS = [
+  "fetch failed",
+  "etimedout",
+  "econnrefused",
+  "econnreset",
+  "enotfound",
+  "socket hang up",
+  "network timeout",
+  "aborterror",
+  "aborterror: ",
+  "signal is aborted",
+  "the operation was aborted",
+  "http 502",
+  "http 503",
+  "http 504",
+  "http 429",
+  "getaddrinfo enotfound",
+  "request timed out",
+];
+
+export function isTransientError(error: string | null | undefined): boolean {
+  if (!error) return false;
+  const lower = error.toLowerCase();
+  return TRANSIENT_PATTERNS.some((p) => lower.includes(p));
+}
+
 // ── Helper functions for common alerts ────────────────────
 
 export function alertScraperFailed(scraper: string, error: string) {
+  if (isTransientError(error)) {
+    // Skip email + DB alert — still logged to ScraperLog by the caller.
+    return Promise.resolve(false);
+  }
   return sendAdminAlert({
     level: "critical",
     title: `Scraper Failed: ${scraper}`,
@@ -141,6 +176,9 @@ export function alertStaleData(district: string, modules: string[]) {
 }
 
 export function alertCronFailed(cronName: string, error: string) {
+  if (isTransientError(error)) {
+    return Promise.resolve(false);
+  }
   return sendAdminAlert({
     level: "critical",
     title: `Cron Job Failed: ${cronName}`,

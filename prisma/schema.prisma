@@ -1565,11 +1565,52 @@ model Subscription {
   autoRenew    Boolean   @default(true)
   accountEmail String?                            // Which email is logged in at the service
 
+  // April 13, 2026 — subscription credentials (encrypted at rest)
+  loginUsername    String?                        // Masked in UI; plain-text acceptable
+  loginPassword    String?                        // AES-256-CBC encrypted via src/lib/encryption.ts
+  loginMethod      String?                        // "email_password" | "google_sso" | "github_sso" | "api_key_only"
+  loginNotes       String?                        // Free-form, e.g. "via Google SSO"
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@index([expiryDate])
   @@index([category])
+}
+
+model UpdateLog {
+  id           String    @id @default(cuid())
+  source       String                           // "admin_edit" | "scraper" | "cron" | "api" | "ai_bot"
+  actorLabel   String?                           // "Admin" | "System" | username
+  tableName    String                            // Prisma model name (e.g. "Leader")
+  recordId     String
+  action       String                            // "create" | "update" | "delete"
+  fieldName    String?                           // Specific column changed (null for create/delete)
+  oldValue     String?   @db.Text
+  newValue     String?   @db.Text
+  districtId   String?
+  districtName String?
+  moduleName   String?
+  description  String?   @db.Text
+  timestamp    DateTime  @default(now())
+
+  @@index([tableName, timestamp])
+  @@index([districtId, timestamp])
+  @@index([source, timestamp])
+  @@index([moduleName, timestamp])
+}
+
+model AdminBotMessage {
+  id           String    @id @default(cuid())
+  role         String                            // "user" | "assistant"
+  content      String    @db.Text
+  action       String?                           // Matched pattern or "ai_call"
+  actionResult Json?
+  aiModel      String?
+  aiCostUSD    Float     @default(0)
+  timestamp    DateTime  @default(now())
+
+  @@index([timestamp])
 }
 
 model PlatformReport {

@@ -10,6 +10,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import redis from "@/lib/redis";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { isTransientError } from "@/lib/admin-alerts";
 import type { OpenRouterUsage } from "../openrouter-usage/route";
 
 export const runtime = "nodejs";
@@ -267,6 +268,9 @@ export async function GET() {
       });
     }
     for (const e of scraperErrors) {
+      // Skip transient gov-portal timeouts — freshness panel still shows them,
+      // no need to surface in the global activity feed.
+      if (isTransientError(e.error)) continue;
       activity.push({
         ts: e.startedAt.toISOString(),
         kind: "error",

@@ -50,12 +50,15 @@ function getModelForPurpose(purpose: string): string {
   }
 }
 
-// Fallback chain: if primary model fails (rate limit, unavailable), try these in order
+// Fallback chain: if primary model fails (rate limit, unavailable), try these in order.
+// qwen3-235b runs first now — in April 2026 the OSS-20b free tier has been hitting
+// 200 req/day limits consistently, which forces paid fallbacks on the tiered router.
 const FREE_FALLBACK_MODELS = [
+  "qwen/qwen3-235b-a22b:free",
   "openai/gpt-oss-20b:free",
   "openai/gpt-oss-120b:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
   "z-ai/glm-4.5-air:free",
-  "google/gemma-4-26b-a4b-it:free",
 ];
 
 // ── OpenRouter call ─────────────────────────────────────────

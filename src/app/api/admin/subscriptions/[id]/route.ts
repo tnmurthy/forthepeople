@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma";
+import { encrypt } from "@/lib/encryption";
+import { logAuditAuto } from "@/lib/audit-log";
 
 const COOKIE = "ftp_admin_v1";
 
@@ -46,10 +48,21 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     "notes",
     "currency",
     "accountEmail",
+    "loginUsername",
+    "loginMethod",
+    "loginNotes",
   ] as const;
   for (const f of stringFields) {
     if (body[f] !== undefined) {
       (data as Record<string, unknown>)[f] = body[f] ?? null;
+    }
+  }
+  // Password: encrypt when provided, set null when explicitly cleared.
+  if (body.loginPassword !== undefined) {
+    if (body.loginPassword === null || body.loginPassword === "") {
+      (data as Record<string, unknown>).loginPassword = null;
+    } else {
+      (data as Record<string, unknown>).loginPassword = encrypt(String(body.loginPassword));
     }
   }
   if (body.costINR !== undefined) data.costINR = Number(body.costINR);
@@ -63,6 +76,16 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   if (body.autoRenew !== undefined) data.autoRenew = Boolean(body.autoRenew);
 
   const sub = await prisma.subscription.update({ where: { id }, data });
+  await logAuditAuto({
+    action: "subscription_edit",
+    resource: "Subscription",
+    resourceId: id,
+    details: {
+      fields: Object.keys(data),
+      credentialsChanged:
+        "loginPassword" in data || "loginUsername" in data || "loginMethod" in data,
+    },
+  });
   return NextResponse.json({ subscription: sub });
 }
 
