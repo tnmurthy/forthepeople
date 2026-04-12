@@ -127,7 +127,7 @@ export default function AISettingsPage() {
         <div style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", marginBottom: 8 }}>Model Routing</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
           {[
-            { purpose: "Classification / Summaries / Format", model: "google/gemma-4-26b-a4b-it:free", cost: "Free" },
+            { purpose: "Classification / Summaries / Format", model: "openai/gpt-oss-20b:free", cost: "Free" },
             { purpose: "District Insights / News / Documents", model: "google/gemini-2.5-pro", cost: "~$1.25/M tokens" },
             { purpose: "Fact-check (critical accuracy)", model: "anthropic/claude-sonnet-4", cost: "~$3/M tokens" },
           ].map((r) => (
