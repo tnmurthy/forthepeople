@@ -1151,6 +1151,82 @@ Contributor Wall: shown on /support + compact version on homepage
 
 ---
 
+## 19B. FINANCE SYSTEM (April 2026)
+
+Three admin tabs under 💰 FINANCE, all backed by database queries — zero hardcoded values:
+
+**Revenue & Supporters** (`/admin/supporters` — full route)
+- Summary cards: total revenue, this month/week, supporter count, weekly trend %
+- Monthly breakdown chart (last 12 months, revenue only)
+- "Add Manual Supporter" modal: name, email, amount, tier, payment method, reference, date,
+  sponsored district/state, social link, message, public toggle.
+- Click any supporter row → inline edit modal (tier, district, state, message, public)
+- Source badge: `MANUAL` pill on manually-added supporters vs Razorpay webhook rows
+- Razorpay sync + CSV export (preserved from earlier iteration)
+- Cache invalidation: `ftp:contributors:v1|all|leaderboard|district-rankings` are set to null with
+  1s TTL on every manual add / edit so the public Wall refreshes immediately.
+
+**Expenditure** (`/admin?tab=expenditure` — in-page tab)
+- Summary cards: total expense, this month, net P&L (month), recurring monthly total
+- Add/edit/delete expenses (modal): date, category, description, INR + USD amount with
+  exchange rate snapshot, payment method, reference, invoice link, recurring interval, notes
+- List view with category + recurring filter + search
+- **P&L view** — monthly table comparing revenue vs expenses for last 12 months with Profit/Loss status
+- CSV export of filtered rows
+- **Invoice attachment: link-only for now.** `Expense.invoiceBlobUrl` reserved for future
+  Vercel Blob upload — not wired (would need `@vercel/blob` + `BLOB_READ_WRITE_TOKEN`).
+
+**Costs & Billing** (`/admin?tab=costs` — in-page tab)
+- Top summary: Monthly Cost (INR + USD), Yearly Cost, Expiring Soon count
+- OpenRouter live credit spend card (from Prompt 1)
+- AI usage + per-model estimated cost
+- Subscription table with: displayName, plan, account email, INR+USD cost, purchase date,
+  expiry countdown (red <7d, yellow ≤30d, red if past due), inline renewal date edit
+
+### Models (prisma/schema.prisma)
+
+**Subscription** (extended from Prompt 1; `ServiceSubscription` merged in):
+  id, name, displayName, serviceName @unique, provider, category, plan,
+  costINR, costUSD, currency, costOriginal, exchangeRate,
+  billingCycle, purchaseDate, expiryDate, renewalDate (legacy), status,
+  autoRenew, accountEmail, apiKeyEnvVar, dashboardUrl, notes
+
+**Expense** (new):
+  id, date, category, description, amountINR, amountUSD, exchangeRate,
+  paymentMethod, referenceNumber, invoiceUrl, invoiceBlobUrl,
+  isRecurring, recurringInterval, notes, createdBy
+
+**Supporter** (extended): + `source "razorpay"|"manual"`, `referenceNumber`
+
+### API Routes
+
+```
+GET    /api/admin/expenses?category=&from=&to=&recurring=  — list
+POST   /api/admin/expenses                                   — create
+PATCH  /api/admin/expenses/[id]                              — update
+DELETE /api/admin/expenses/[id]                              — delete
+
+GET    /api/admin/subscriptions                              — list (existing)
+POST   /api/admin/subscriptions                              — create (existing)
+PATCH  /api/admin/subscriptions/[id]                         — update (new, REST-style)
+DELETE /api/admin/subscriptions/[id]                         — hard delete (new)
+
+POST   /api/admin/manual-supporter                           — create offline supporter +
+                                                               invalidate contributor caches
+PATCH  /api/admin/supporters/[id]                            — edit (tier/district/msg/public)
+
+GET    /api/admin/finance-summary                            — combined revenue + expenses +
+                                                               subscriptions (5min Redis cache)
+```
+
+### Seed
+
+`prisma/seed-subscriptions.ts` — upserts 9 default services (OpenRouter, Upstash, Neon,
+Domain, Resend, Vercel Pro, Plausible, Sentry, Razorpay) idempotently keyed on `serviceName`.
+Run with: `npx tsx prisma/seed-subscriptions.ts`
+
+---
+
 ## 20. ENVIRONMENT VARIABLES
 
 ### Required — Production (Vercel)

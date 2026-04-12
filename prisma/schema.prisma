@@ -1189,6 +1189,8 @@ model Supporter {
   razorpaySubscriptionId String?                 // Razorpay subscription_id (recurring)
   method       String?                           // "upi", "card", "netbanking", "wallet"
   status       String    @default("success")     // "success", "failed", "pending", "refunded"
+  source       String    @default("razorpay")    // "razorpay" | "manual" — how the record was created
+  referenceNumber String?                        // Offline transaction reference (for manual supporters)
   message      String?
   district     String?                           // Legacy plain-text district name
 
@@ -1492,11 +1494,49 @@ model Subscription {
   currency     String    @default("INR")
   costOriginal Float?
   billingCycle String    @default("monthly")
-  renewalDate  DateTime?
+  renewalDate  DateTime?                          // Legacy — use expiryDate going forward
   status       String    @default("active")
   apiKeyEnvVar String?
   dashboardUrl String?
   notes        String?
+
+  // April 2026 — finance system additions
+  serviceName  String?   @unique                  // Stable machine identifier: "vercel_pro", "openrouter", etc.
+  displayName  String?                            // Human-readable name; falls back to `name` if null
+  plan         String?                            // "Free" | "Pro" | "Business" | "Usage-based"
+  costUSD      Float     @default(0)              // Cost in USD (0 for INR-only services)
+  exchangeRate Float?                             // USD→INR rate snapshotted on purchase
+  purchaseDate DateTime?                          // When the subscription was activated
+  expiryDate   DateTime?                          // Next renewal / expiry date — prefer over renewalDate
+  autoRenew    Boolean   @default(true)
+  accountEmail String?                            // Which email is logged in at the service
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([expiryDate])
+  @@index([category])
+}
+
+model Expense {
+  id               String    @id @default(cuid())
+  date             DateTime
+  category         String                          // "hosting" | "domain" | "ai_credits" | "development" | "design" | "marketing" | "legal" | "hardware" | "travel" | "salary" | "other"
+  description      String
+  amountINR        Float
+  amountUSD        Float?
+  exchangeRate     Float?                          // USD→INR rate on purchase date
+  paymentMethod    String?                         // "upi" | "bank_transfer" | "card" | "cash" | "crypto" | "other"
+  referenceNumber  String?
+  invoiceUrl       String?                         // External link (Drive, etc.)
+  invoiceBlobUrl   String?                         // Reserved for future Vercel Blob uploads
+  isRecurring      Boolean   @default(false)
+  recurringInterval String?                        // "monthly" | "quarterly" | "yearly"
+  notes            String?
+  createdBy        String    @default("admin")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([date])
+  @@index([category])
 }

@@ -20,11 +20,20 @@ interface Sub {
   provider: string;
   category: string;
   costINR: number;
+  costUSD: number;
   billingCycle: string;
   status: string;
   dashboardUrl?: string | null;
   notes?: string | null;
   renewalDate?: string | null;
+  expiryDate?: string | null;
+  purchaseDate?: string | null;
+  serviceName?: string | null;
+  displayName?: string | null;
+  plan?: string | null;
+  accountEmail?: string | null;
+  autoRenew?: boolean;
+  exchangeRate?: number | null;
   createdAt?: string;
 }
 
@@ -32,6 +41,15 @@ interface SubData {
   subscriptions: Sub[];
   totalMonthly: number;
   totalYearlyPerMonth: number;
+}
+
+interface FinanceSummary {
+  subscriptions: {
+    totalMonthlyINR: number;
+    totalMonthlyUSD: number;
+    paidCount: number;
+    expiringSoon: number;
+  };
 }
 
 interface OpenRouterUsage {
@@ -85,6 +103,7 @@ export default function CostsTab() {
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [subs, setSubs] = useState<SubData | null>(null);
   const [openRouter, setOpenRouter] = useState<OpenRouterUsage | null>(null);
+  const [finance, setFinance] = useState<FinanceSummary | null>(null);
   const [range, setRange] = useState("30");
   const [editing, setEditing] = useState<string | null>(null);
   const [editRenewal, setEditRenewal] = useState<string>("");
@@ -103,6 +122,10 @@ export default function CostsTab() {
     fetch("/api/admin/openrouter-usage")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => d && setOpenRouter(d))
+      .catch(() => {});
+    fetch("/api/admin/finance-summary")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setFinance(d))
       .catch(() => {});
   }, [range]);
 
@@ -200,6 +223,47 @@ export default function CostsTab() {
           ))}
         </div>
       </div>
+
+      {/* Service cost summary */}
+      {finance && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+          <div style={card}>
+            <div style={tinyLabel}>Monthly Cost</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A", fontFamily: "var(--font-mono, monospace)" }}>
+              ₹{Math.round(finance.subscriptions.totalMonthlyINR).toLocaleString("en-IN")}
+            </div>
+            <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 4 }}>
+              ~${finance.subscriptions.totalMonthlyUSD.toFixed(2)} · {finance.subscriptions.paidCount} paid service
+              {finance.subscriptions.paidCount === 1 ? "" : "s"}
+            </div>
+          </div>
+          <div style={card}>
+            <div style={tinyLabel}>Yearly Cost</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A", fontFamily: "var(--font-mono, monospace)" }}>
+              ₹{Math.round(finance.subscriptions.totalMonthlyINR * 12).toLocaleString("en-IN")}
+            </div>
+            <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 4 }}>
+              ~${(finance.subscriptions.totalMonthlyUSD * 12).toFixed(2)}
+            </div>
+          </div>
+          <div style={card}>
+            <div style={tinyLabel}>Expiring Soon (30d)</div>
+            <div
+              style={{
+                fontSize: 20,
+                fontWeight: 700,
+                color: finance.subscriptions.expiringSoon > 0 ? "#D97706" : "#16A34A",
+                fontFamily: "var(--font-mono, monospace)",
+              }}
+            >
+              {finance.subscriptions.expiringSoon}
+            </div>
+            <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 4 }}>
+              services need attention
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Low-credit warning */}
       {or && or.limit != null && or.remaining != null && or.remaining < or.limit * 0.3 && (
@@ -541,28 +605,39 @@ export default function CostsTab() {
               </thead>
               <tbody>
                 {subs.subscriptions.map((s) => {
-                  const d = daysUntil(s.renewalDate);
+                  const effectiveExpiry = s.expiryDate ?? s.renewalDate ?? null;
+                  const d = daysUntil(effectiveExpiry);
                   const countdown =
                     d != null && d >= 0 && d <= 30
                       ? `Expires in ${d} day${d === 1 ? "" : "s"}`
+                      : d != null && d < 0
+                      ? `Expired ${Math.abs(d)} day${d === -1 ? "" : "s"} ago`
                       : null;
                   const countdownColor =
-                    d != null && d <= 7 ? "#DC2626" : d != null && d <= 30 ? "#D97706" : "#6B6B6B";
-                  const purchased = s.createdAt
-                    ? new Date(s.createdAt).toLocaleDateString("en-IN", {
+                    d != null && d < 0 ? "#DC2626" : d != null && d <= 7 ? "#DC2626" : d != null && d <= 30 ? "#D97706" : "#6B6B6B";
+                  const purchased = s.purchaseDate ?? s.createdAt;
+                  const purchasedLabel = purchased
+                    ? new Date(purchased).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })
                     : "—";
-                  const renews = s.renewalDate
-                    ? new Date(s.renewalDate).toLocaleDateString("en-IN", {
+                  const renews = effectiveExpiry
+                    ? new Date(effectiveExpiry).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })
                     : "—";
                   const isEditing = editing === s.id;
+                  const displayName = s.displayName ?? s.name;
+                  const costLabel =
+                    s.costINR > 0 || s.costUSD > 0
+                      ? s.costUSD > 0
+                        ? `$${s.costUSD.toFixed(2)} (₹${Math.round(s.costINR).toLocaleString("en-IN")})`
+                        : `₹${s.costINR.toLocaleString("en-IN")}`
+                      : "Free";
 
                   return (
                     <tr key={s.id} style={{ borderBottom: "1px solid #F5F5F0" }}>
@@ -574,21 +649,25 @@ export default function CostsTab() {
                             rel="noopener noreferrer"
                             style={{ color: "#2563EB", textDecoration: "none" }}
                           >
-                            {s.name}
+                            {displayName}
                           </a>
                         ) : (
-                          s.name
+                          displayName
+                        )}
+                        {s.plan && (
+                          <div style={{ fontSize: 10, color: "#9B9B9B", marginTop: 1 }}>
+                            {s.plan}
+                            {s.accountEmail ? ` · ${s.accountEmail}` : ""}
+                          </div>
                         )}
                       </td>
                       <td style={{ padding: "6px 8px", color: "#6B6B6B" }}>{s.category}</td>
-                      <td style={tdRight}>
-                        {s.costINR > 0 ? `₹${s.costINR.toLocaleString("en-IN")}` : "Free"}
-                      </td>
+                      <td style={tdRight}>{costLabel}</td>
                       <td style={{ padding: "6px 8px", textAlign: "center", color: "#9B9B9B" }}>
                         {s.billingCycle}
                       </td>
                       <td style={{ padding: "6px 8px", textAlign: "center", color: "#6B6B6B" }}>
-                        {purchased}
+                        {purchasedLabel}
                       </td>
                       <td style={{ padding: "6px 8px", textAlign: "center" }}>
                         {isEditing ? (

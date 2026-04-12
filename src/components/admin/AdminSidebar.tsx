@@ -24,6 +24,7 @@ import {
   X,
   ArrowLeft,
   LogOut,
+  TrendingDown,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -35,6 +36,7 @@ type ItemId =
   | "ai-settings"
   | "review"
   | "revenue"
+  | "expenditure"
   | "costs"
   | "analytics"
   | "security"
@@ -129,7 +131,15 @@ const GROUPS: Group[] = [
         buildHref: (locale) => `/${locale}/admin/supporters`,
         inPageTab: false,
         routeSegment: "supporters",
-        help: "Track contributions, manage supporters, sync Razorpay",
+        help: "Track contributions, add manual supporters, sync Razorpay",
+      },
+      {
+        id: "expenditure",
+        label: "Expenditure",
+        icon: TrendingDown,
+        buildHref: (locale) => `/${locale}/admin?tab=expenditure`,
+        inPageTab: true,
+        help: "Log one-time and recurring expenses, attach invoices, view monthly P&L",
       },
       {
         id: "costs",
@@ -137,7 +147,7 @@ const GROUPS: Group[] = [
         icon: Receipt,
         buildHref: (locale) => `/${locale}/admin?tab=costs`,
         inPageTab: true,
-        help: "Monitor service costs, AI spend, and subscription renewals",
+        help: "Service subscriptions with expiry countdowns + real OpenRouter credit spend",
       },
     ],
   },
@@ -489,6 +499,7 @@ function resolveActiveItem(
   if (tab === "alerts") return "alerts";
   if (tab === "analytics") return "analytics";
   if (tab === "costs") return "costs";
+  if (tab === "expenditure") return "expenditure";
   return "dashboard";
 }
 

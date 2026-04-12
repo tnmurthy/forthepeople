@@ -20,8 +20,8 @@ ALL STATES:       36 states/UTs browsable (locked ones show preview + sponsor CT
 ALL DISTRICTS:    152 districts in DB (locked ones show LockedDistrictPreview)
 STATE MAPS:       33 GeoJSON maps from DataMeet Census 2011 + Karnataka hand-tuned
 PROJECT ID:       FTP-JMB-2026-IN (watermark ID)
-LAST UPDATED:     April 12, 2026 (admin overhaul: unified sidebar, OpenRouter live spend,
-                  manual scraper triggers, dashboard roll-up endpoint)
+LAST UPDATED:     April 13, 2026 (finance system: expenditure tracking, manual supporters,
+                  service subscriptions with expiry countdowns, combined finance-summary endpoint)
 ```
 
 ---
@@ -301,6 +301,13 @@ src/app/api/admin/dashboard-summary/route.ts    — Dashboard roll-up (30s Redis
 src/app/api/admin/openrouter-usage/route.ts     — OpenRouter live credit tracking (5min cache)
 src/app/api/admin/run-scraper/route.ts          — Manual per-district scraper trigger
 src/app/api/admin/scraper-logs/route.ts         — GET last 50 logs + DELETE old (cookie-auth)
+src/app/api/admin/finance-summary/route.ts      — Combined revenue + expenses + subs (5min cache)
+src/app/api/admin/expenses/route.ts             — Expense GET/POST
+src/app/api/admin/expenses/[id]/route.ts        — Expense PATCH/DELETE
+src/app/api/admin/subscriptions/[id]/route.ts   — Subscription PATCH/DELETE (REST-style)
+src/app/api/admin/manual-supporter/route.ts     — Add offline supporter + bust contributor cache
+src/app/api/admin/supporters/[id]/route.ts      — Edit supporter (tier/district/msg/public)
+prisma/seed-subscriptions.ts                    — Idempotent seed of 9 default services
 ```
 
 ### Admin components (April 2026)
@@ -313,7 +320,12 @@ src/app/[locale]/admin/AdminClient.tsx           — ?tab= routing for in-page s
 src/app/[locale]/admin/DashboardView.tsx         — Action Required, Health, Revenue, Activity feed
 src/app/[locale]/admin/SystemHealth.tsx          — Run Now buttons + expandable error details
 src/app/[locale]/admin/AlertsAndLogs.tsx         — Filters (level/source/date/district), CSV export
-src/app/[locale]/admin/CostsTab.tsx              — OpenRouter real spend, per-model est. cost
+src/app/[locale]/admin/CostsTab.tsx              — OpenRouter real spend, per-model est. cost,
+                                                   monthly/yearly totals, service renewal countdowns
+src/app/[locale]/admin/ExpenditureTab.tsx        — Expense tracking, P&L view, CSV export (in-page tab)
+src/app/[locale]/admin/supporters/SupportersSection.tsx — Revenue+supporters client wrapper
+src/app/[locale]/admin/supporters/RevenueSummary.tsx    — Revenue cards + monthly chart
+src/app/[locale]/admin/supporters/ManualSupporterForm.tsx — Offline supporter modal
 ```
 
 ### Scraper
