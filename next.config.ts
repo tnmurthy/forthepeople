@@ -41,6 +41,23 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Slug aliases → canonical module routes (308, SEO-friendly).
+  // Keeps external/bookmarked links working after folder rename.
+  async redirects() {
+    const pairs: Array<[string, string]> = [
+      ["budget", "finance"],
+      ["famous", "famous-personalities"],
+      ["citizen", "citizen-corner"],
+      ["panchayat", "gram-panchayat"],
+      ["farm-advisory", "farm"],
+    ];
+    return pairs.map(([from, to]) => ({
+      source: "/:locale/:state/:district/" + from,
+      destination: "/:locale/:state/:district/" + to,
+      permanent: true,
+    }));
+  },
+
   // Remove default "x-powered-by: Next.js" header (we set our own above)
   poweredByHeader: false,
 
