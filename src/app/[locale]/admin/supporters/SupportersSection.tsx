@@ -119,8 +119,16 @@ function EditSupporterModal({
   const [stateId, setStateId] = useState(supporter.stateId ?? "");
   const [message, setMessage] = useState(supporter.message ?? "");
   const [isPublic, setIsPublic] = useState(supporter.isPublic);
+  const [socialLink, setSocialLink] = useState(supporter.socialLink ?? "");
+  const [expiresAt, setExpiresAt] = useState(
+    supporter.expiresAt ? new Date(supporter.expiresAt).toISOString().slice(0, 10) : ""
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Hide irrelevant location dropdowns based on tier
+  const showState = tier === "state" || tier === "district" || tier === "custom" || tier === "chai" || tier === "monthly";
+  const showDistrict = tier === "district" || tier === "custom" || tier === "chai" || tier === "monthly";
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +144,9 @@ function EditSupporterModal({
           stateId: stateId || null,
           message: message || null,
           isPublic,
+          socialLink: socialLink.trim() || null,
+          // empty input → null = permanent visibility
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         }),
       });
       if (!res.ok) {
@@ -148,6 +159,8 @@ function EditSupporterModal({
         tier: json.supporter.tier,
         message: json.supporter.message,
         isPublic: json.supporter.isPublic,
+        socialLink: json.supporter.socialLink ?? null,
+        expiresAt: json.supporter.expiresAt ?? null,
         districtId: json.supporter.districtId ?? null,
         stateId: json.supporter.stateId ?? null,
         districtName:
@@ -248,35 +261,69 @@ function EditSupporterModal({
               ))}
             </select>
           </label>
+          {showDistrict && (
+            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>District</span>
+              <select
+                value={districtId}
+                onChange={(e) => setDistrictId(e.target.value)}
+                style={input}
+              >
+                <option value="">None</option>
+                {districts.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {showState && (
+            <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>State</span>
+              <select
+                value={stateId}
+                onChange={(e) => setStateId(e.target.value)}
+                style={input}
+              >
+                <option value="">None</option>
+                {states.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {!showDistrict && !showState && (
+            <div style={{ gridColumn: "1 / -1", fontSize: 11, color: "#6B6B6B", padding: "4px 0" }}>
+              🇮🇳 National tier — visible everywhere, no state/district selection needed.
+            </div>
+          )}
           <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>District</span>
-            <select
-              value={districtId}
-              onChange={(e) => setDistrictId(e.target.value)}
+            <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>
+              Visibility expires{" "}
+              <span style={{ color: "#9B9B9B", fontWeight: 400 }}>(blank = permanent)</span>
+            </span>
+            <input
+              type="date"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
               style={input}
-            >
-              <option value="">None</option>
-              {districts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+            />
+            {expiresAt && new Date(expiresAt) < new Date() && (
+              <span style={{ fontSize: 11, color: "#DC2626" }}>⚠ Date is in the past — supporter will be hidden.</span>
+            )}
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>State</span>
-            <select
-              value={stateId}
-              onChange={(e) => setStateId(e.target.value)}
+            <span style={{ fontSize: 11, color: "#6B6B6B", fontWeight: 600 }}>Social link</span>
+            <input
+              type="text"
+              placeholder="https://... or bare domain"
+              value={socialLink}
+              onChange={(e) => setSocialLink(e.target.value)}
               style={input}
-            >
-              <option value="">None</option>
-              {states.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+            />
           </label>
           <label
             style={{

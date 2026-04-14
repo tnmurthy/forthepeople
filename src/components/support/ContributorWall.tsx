@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Instagram, Linkedin, Github, Twitter, ExternalLink } from "lucide-react";
 import type { ContributorsResponse, ContributorItem } from "@/app/api/payment/contributors/route";
+import { normalizeSocialLink } from "@/lib/social-link";
 
 const TIER_EMOJI: Record<string, string> = {
   chai: "☕",
@@ -74,7 +75,11 @@ function ContributorCard({ item }: { item: ContributorItem }) {
 
 function SubscriberCard({ item }: { item: SubscriberItem }) {
   const emoji = TIER_EMOJI[item.tier] || "🙏";
-  const SocialIcon = item.socialPlatform ? SOCIAL_ICONS[item.socialPlatform] : null;
+  const safeLink = normalizeSocialLink(item.socialLink);
+  // Even when platform is missing we still render the ExternalLink icon as
+  // long as we have a usable URL — keeps bare-domain entries clickable.
+  const SocialIcon =
+    (item.socialPlatform ? SOCIAL_ICONS[item.socialPlatform] : null) ?? (safeLink ? ExternalLink : null);
   return (
     <div
       style={{
@@ -95,8 +100,14 @@ function SubscriberCard({ item }: { item: SubscriberItem }) {
         <span style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
           {item.name}
         </span>
-        {SocialIcon && item.socialLink && (
-          <a href={item.socialLink} target="_blank" rel="noopener noreferrer" style={{ color: "#9B9B9B", lineHeight: 0, flexShrink: 0 }}>
+        {SocialIcon && safeLink && (
+          <a
+            href={safeLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={safeLink}
+            style={{ color: "#2563EB", lineHeight: 0, flexShrink: 0 }}
+          >
             <SocialIcon size={12} />
           </a>
         )}

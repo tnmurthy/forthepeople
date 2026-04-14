@@ -134,6 +134,18 @@ function notExpired() {
   };
 }
 
+// ── Amount-based visibility thresholds (April 2026) ─────────
+// Tier strings are display-only; visibility is decided by amount so a
+// one-time ₹50,000 donor is treated identically to a tagged "patron"
+// subscriber.
+export const VISIBILITY_THRESHOLD = {
+  national: 9999,   // homepage + every district page
+  state:    1999,   // every district page in that state
+  district: 99,     // a specific district page
+} as const;
+
+const NATIONAL_TIERS = ["founder", "patron"] as const;
+
 function parsePaging(url: URL, defaultLimit: number): { limit: number; offset: number } {
   const rawLimit = Number(url.searchParams.get("limit"));
   const rawOffset = Number(url.searchParams.get("offset"));
@@ -196,10 +208,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // ── State page sponsors (founders + patrons + state-tier for this state) ──
+    // ── State page sponsors ─────────────────────────────────
+    // Visibility on a state page = NATIONAL contributors (tier OR amount
+    // ≥ ₹9,999) PLUS anyone who explicitly sponsored this state OR donated
+    // ≥ ₹1,999 within this state (subscription or one-time).
     if (type === "state-page" && stateSlug) {
       const { limit, offset } = parsePaging(url, 60);
-      const cacheKey = `ftp:contributors:state-page:${stateSlug}`;
+      const cacheKey = `ftp:contributors:state-page:${stateSlug}:v3`;
       const cached = await cacheGet<PublicContributor[]>(cacheKey);
 
       let sortedAll: PublicContributor[];
@@ -210,14 +225,16 @@ export async function GET(req: NextRequest) {
         const stateId = state?.id ?? null;
         const contributors = await prisma.supporter.findMany({
           where: {
-            isRecurring: true,
-            subscriptionStatus: "active",
             status: "success",
             AND: [notExpired()],
             OR: [
-              { tier: "founder" },
-              { tier: "patron" },
-              ...(stateId ? [{ tier: "state", stateId }] : []),
+              { tier: { in: [...NATIONAL_TIERS] } },
+              { amount: { gte: VISIBILITY_THRESHOLD.national } },
+              ...(stateId ? [
+                { tier: "state", stateId },
+                { stateId, amount: { gte: VISIBILITY_THRESHOLD.state } },
+                { sponsoredDistrict: { stateId }, amount: { gte: VISIBILITY_THRESHOLD.state } },
+              ] : []),
             ],
           },
           select: SELECT_FIELDS,
@@ -260,21 +277,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ points });
     }
 
-    // ── Top-tier only (founders + patrons) — for homepage showcase ──
+    // ── Top-tier (national visibility) — homepage + every district page ──
+    // Anyone with tier in (founder, patron) OR amount ≥ ₹9,999 (one-time
+    // OR recurring) qualifies. Admin-tagged tier wins for label, but the
+    // visibility gate is amount-based so a one-time ₹50,000 donor lands
+    // here automatically.
     if (type === "top-tier") {
       const { limit, offset } = parsePaging(url, 20);
-      const cacheKey = "ftp:contributors:top-tier";
+      const cacheKey = "ftp:contributors:top-tier:v3";
       const cached = await cacheGet<PublicContributor[]>(cacheKey);
       const sortedAll = cached
         ? cached
         : (await (async () => {
             const top = await prisma.supporter.findMany({
               where: {
-                isRecurring: true,
-                subscriptionStatus: "active",
                 status: "success",
-                tier: { in: ["founder", "patron"] },
-                ...notExpired(),
+                AND: [notExpired()],
+                OR: [
+                  { tier: { in: [...NATIONAL_TIERS] } },
+                  { amount: { gte: VISIBILITY_THRESHOLD.national } },
+                ],
               },
               select: SELECT_FIELDS,
               orderBy: [{ amount: "desc" }, { activatedAt: "asc" }],
@@ -290,9 +312,13 @@ export async function GET(req: NextRequest) {
     }
 
     // ── District page sponsors ──────────────────────────────
+    // Visibility on a district page = NATIONAL contributors + STATE
+    // contributors (in this state) + DISTRICT contributors (in this
+    // district). Decided by amount thresholds (or matching tier),
+    // for both subscriptions AND one-time donations.
     if (districtSlug || stateSlug) {
       const { limit, offset } = parsePaging(url, 120);
-      const cacheKey = `ftp:contributors:district:${districtSlug ?? ""}:${stateSlug ?? ""}`;
+      const cacheKey = `ftp:contributors:district:${districtSlug ?? ""}:${stateSlug ?? ""}:v3`;
       const cached = await cacheGet<PublicContributor[]>(cacheKey);
 
       let combined: PublicContributor[];
@@ -320,40 +346,39 @@ export async function GET(req: NextRequest) {
           if (state) resolvedStateId = state.id;
         }
 
-        const sponsors = await prisma.supporter.findMany({
+        const visibilityOr: Array<Record<string, unknown>> = [
+          // National visibility — show everywhere
+          { tier: { in: [...NATIONAL_TIERS] } },
+          { amount: { gte: VISIBILITY_THRESHOLD.national } },
+        ];
+        if (resolvedStateId) {
+          visibilityOr.push(
+            { tier: "state", stateId: resolvedStateId },
+            { stateId: resolvedStateId, amount: { gte: VISIBILITY_THRESHOLD.state } },
+            { sponsoredDistrict: { stateId: resolvedStateId }, amount: { gte: VISIBILITY_THRESHOLD.state } },
+          );
+        }
+        if (resolvedDistrictId) {
+          visibilityOr.push(
+            { tier: "district", districtId: resolvedDistrictId },
+            { districtId: resolvedDistrictId, amount: { gte: VISIBILITY_THRESHOLD.district } },
+          );
+        }
+
+        const rows = await prisma.supporter.findMany({
           where: {
-            isRecurring: true,
-            subscriptionStatus: "active",
             status: "success",
             AND: [notExpired()],
-            OR: [
-              { tier: "founder" },
-              { tier: "patron" },
-              ...(resolvedStateId ? [{ tier: "state", stateId: resolvedStateId }] : []),
-              ...(resolvedDistrictId ? [{ tier: "district", districtId: resolvedDistrictId }] : []),
-            ],
+            OR: visibilityOr,
           },
           select: SELECT_FIELDS,
-          orderBy: [{ amount: "desc" }, { activatedAt: "asc" }],
+          orderBy: [{ amount: "desc" }, { activatedAt: "asc" }, { createdAt: "desc" }],
         });
 
-        const oneTimeForDistrict = await prisma.supporter.findMany({
-          where: {
-            isRecurring: false,
-            status: "success",
-            AND: [notExpired()],
-            OR: [
-              ...(resolvedDistrictId ? [{ districtId: resolvedDistrictId }] : []),
-              ...(resolvedStateId ? [{ stateId: resolvedStateId, districtId: null }] : []),
-            ],
-          },
-          select: SELECT_FIELDS,
-          orderBy: [{ amount: "desc" }, { createdAt: "desc" }],
-        });
-
-        combined = [...sponsors, ...oneTimeForDistrict]
-          .map(toPublic)
-          .sort(tierPrioritySort);
+        // Dedupe (the OR can match the same row through multiple branches)
+        const byId = new Map<string, typeof rows[number]>();
+        for (const r of rows) byId.set(r.id, r);
+        combined = [...byId.values()].map(toPublic).sort(tierPrioritySort);
 
         await cacheSet(cacheKey, combined, CACHE_TTL);
       }

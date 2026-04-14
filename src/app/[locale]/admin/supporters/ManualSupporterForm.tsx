@@ -1,7 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, X } from "lucide-react";
+
+// Suggested visibility expiry (days from today) by donation amount.
+// These are SUGGESTIONS only — admin can override or leave blank for permanent.
+function suggestedExpiryDays(amount: number): number | null {
+  if (amount <= 0) return null;
+  if (amount < 1000) return 90;     // ₹99-999  → 3 months
+  if (amount < 10000) return 180;   // ₹1k-9,999 → 6 months
+  return 365;                        // ₹10k+    → 12 months
+}
+
+function dateNDaysAhead(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
 
 interface District {
   id: string;
@@ -85,7 +100,33 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
       if (preset.amount > 0) setAmount(preset.amount);
       setIsRecurring(preset.isRecurring);
     }
+    // Reset location dropdowns when switching to a tier that doesn't use them
+    if (v === "patron" || v === "founder") {
+      setDistrictId("");
+      setStateId("");
+    } else if (v === "state") {
+      setDistrictId("");
+    }
   };
+
+  // Conditional rendering: which location dropdowns make sense for the tier
+  const showState = useMemo(() => {
+    return tier === "state" || tier === "district" || tier === "custom" || tier === "chai";
+  }, [tier]);
+  const showDistrict = useMemo(() => {
+    return tier === "district" || tier === "custom" || tier === "chai";
+  }, [tier]);
+  // Patron / founder are NATIONAL — hide both dropdowns
+
+  // Auto-suggest visibility expiry from amount when user hasn't typed one yet.
+  useEffect(() => {
+    if (expiresAt) return; // respect manual entry
+    const days = suggestedExpiryDays(amount);
+    if (days != null) setExpiresAt(dateNDaysAhead(days));
+    // Intentionally NOT including expiresAt in deps — we only auto-fill once
+    // per amount change, never overwriting a value the admin explicitly typed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amount]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,30 +360,42 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
                   style={input}
                 />
               </Field>
-              <Field label="Sponsored district">
-                <select
-                  value={districtId}
-                  onChange={(e) => setDistrictId(e.target.value)}
-                  style={input}
-                >
-                  <option value="">None</option>
-                  {districts.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Sponsored state">
-                <select value={stateId} onChange={(e) => setStateId(e.target.value)} style={input}>
-                  <option value="">None</option>
-                  {states.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              {showDistrict && (
+                <Field label="Sponsored district">
+                  <select
+                    value={districtId}
+                    onChange={(e) => setDistrictId(e.target.value)}
+                    style={input}
+                  >
+                    <option value="">None</option>
+                    {districts.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+              {showState && (
+                <Field label="Sponsored state">
+                  <select value={stateId} onChange={(e) => setStateId(e.target.value)} style={input}>
+                    <option value="">None</option>
+                    {states.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+              {!showDistrict && !showState && (
+                <Field label="Visibility scope" full>
+                  <div style={{ fontSize: 11, color: "#6B6B6B", padding: "6px 0" }}>
+                    🇮🇳 National — visible on every district + the homepage. No
+                    state/district selection needed.
+                  </div>
+                </Field>
+              )}
               <Field label="Social link" full>
                 <input
                   type="url"

@@ -10,13 +10,17 @@ import prisma from "@/lib/db";
 import { cacheSet } from "@/lib/cache";
 import { calculateOneTimeExpiry } from "@/lib/contribution-expiry";
 
-// All cache keys used by /api/data/contributors — must invalidate ALL on payment
+// All cache keys used by /api/data/contributors — must invalidate ALL on payment.
+// Includes the v3 versioned keys introduced when amount-based visibility shipped.
 const CONTRIBUTOR_CACHE_KEYS = [
   "ftp:contributors:v1",
+  "ftp:contributors:v2",
   "ftp:contributors:all",
   "ftp:contributors:leaderboard",
   "ftp:contributors:district-rankings",
   "ftp:contributors:top-tier",
+  "ftp:contributors:top-tier:v3",
+  "ftp:contributors:growth-trend",
 ];
 
 export async function POST(req: NextRequest) {
@@ -71,28 +75,71 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Also save to Supporter table (for admin /supporters view)
+    // Also save to Supporter table (for admin /supporters view).
+    // Returning-subscriber dedup: if a Supporter with this email or phone
+    // already exists, UPDATE that row (preserving createdAt + tenure)
+    // instead of creating a duplicate. Visibility is reactivated by
+    // clearing the previous expiresAt (or extending it via the standard
+    // expiry calculator).
     try {
       const amountRupees = contribution.amount / 100; // paise → rupees
-      const expiresAt = calculateOneTimeExpiry(amountRupees);
-      await prisma.supporter.upsert({
-        where: { paymentId: razorpay_payment_id },
-        update: { status: "success", expiresAt },
-        create: {
-          name: contribution.name,
-          email: contribution.email ?? null,
-          amount: amountRupees,
-          currency: contribution.currency,
-          tier: contribution.tier ?? "one-time",
-          paymentId: razorpay_payment_id,
-          orderId: razorpay_order_id,
-          status: "success",
-          message: contribution.message ?? null,
-          isRecurring: false,
-          expiresAt,
-          isPublic: contribution.isPublic,
-        },
-      });
+      const newExpiresAt = calculateOneTimeExpiry(amountRupees);
+
+      // Look for an existing supporter that this payment belongs to.
+      // Match email first (more reliable), then phone.
+      let existing = null as Awaited<ReturnType<typeof prisma.supporter.findFirst>>;
+      if (contribution.email) {
+        existing = await prisma.supporter.findFirst({
+          where: { email: contribution.email },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+      if (!existing && (contribution as { phone?: string | null }).phone) {
+        existing = await prisma.supporter.findFirst({
+          where: { phone: (contribution as { phone?: string | null }).phone ?? undefined },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+
+      if (existing) {
+        // Returning supporter — refresh visibility, do NOT overwrite identity.
+        const extendedExpiry = newExpiresAt && existing.expiresAt && existing.expiresAt > newExpiresAt
+          ? existing.expiresAt   // keep the longer existing expiry
+          : newExpiresAt;
+        await prisma.supporter.update({
+          where: { id: existing.id },
+          data: {
+            status: "success",
+            paymentId: razorpay_payment_id,
+            orderId: razorpay_order_id,
+            amount: amountRupees,
+            tier: contribution.tier ?? existing.tier,
+            message: contribution.message ?? existing.message,
+            isPublic: contribution.isPublic,
+            expiresAt: extendedExpiry,
+          },
+        });
+        console.log(`[verify] Returning supporter ${existing.id} (${existing.email ?? existing.phone}) — refreshed.`);
+      } else {
+        await prisma.supporter.upsert({
+          where: { paymentId: razorpay_payment_id },
+          update: { status: "success", expiresAt: newExpiresAt },
+          create: {
+            name: contribution.name,
+            email: contribution.email ?? null,
+            amount: amountRupees,
+            currency: contribution.currency,
+            tier: contribution.tier ?? "one-time",
+            paymentId: razorpay_payment_id,
+            orderId: razorpay_order_id,
+            status: "success",
+            message: contribution.message ?? null,
+            isRecurring: false,
+            expiresAt: newExpiresAt,
+            isPublic: contribution.isPublic,
+          },
+        });
+      }
     } catch (supporterErr) {
       console.error("[verify] Supporter upsert failed:", supporterErr);
     }
