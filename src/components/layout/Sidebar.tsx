@@ -22,7 +22,7 @@ interface SidebarProps {
 const SIDEBAR_CATEGORIES = [
   {
     label: "QUICK ACCESS",
-    slugs: ["overview", "crops", "weather", "water", "finance"],
+    slugs: ["overview", "crops", "weather", "water", "finance", "infrastructure"],
   },
   {
     label: "LIVE DATA",

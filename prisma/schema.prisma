@@ -175,8 +175,81 @@ model InfraProject {
   source        String?
   updatedAt     DateTime  @updatedAt
 
+  // ── News-driven tracker (April 2026) ───────────────────────
+  // Who announced & who runs it
+  announcedBy         String?
+  announcedByRole     String?
+  party               String?
+  executingAgency     String?
+  keyPeople           Json?       // [{name, role, party, context}]
+
+  // Budget lifecycle
+  originalBudget      Float?
+  revisedBudget       Float?
+  costOverrun         Float?
+  costOverrunPct      Float?
+
+  // Timeline
+  announcedDate       DateTime?
+  approvedDate        DateTime?
+  tenderDate          DateTime?
+  actualStartDate     DateTime?
+  originalEndDate     DateTime?
+  revisedEndDate      DateTime?
+  completionDate      DateTime?
+  cancelledDate       DateTime?
+  cancellationReason  String?
+  delayMonths         Int?
+
+  // Classification + news tracking
+  shortName           String?
+  scope               String?     @default("DISTRICT") // DISTRICT | STATE | NATIONAL
+  sourceUrls          Json?
+  lastNewsAt          DateTime?
+  lastVerifiedAt      DateTime?
+  verificationCount   Int?        @default(0)
+
+  updates             InfraUpdate[]
+
   @@index([districtId, status])
   @@index([districtId, category])
+  @@index([shortName])
+  @@index([scope])
+}
+
+model InfraUpdate {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       InfraProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  date          DateTime
+  headline      String
+  summary       String?      @db.Text
+  updateType    String       // ANNOUNCEMENT, APPROVAL, TENDER, CONSTRUCTION_START,
+                              // BUDGET_INCREASE, BUDGET_DECREASE, DELAY, STALL,
+                              // PROGRESS_UPDATE, CONTROVERSY, COMPLETION,
+                              // CANCELLATION, PHASE_COMPLETE, INAUGURATION, REVIEW, SEED
+
+  personName    String?
+  personRole    String?
+  personParty   String?
+
+  budgetChange  Float?
+  progressPct   Float?
+  statusChange  String?
+
+  newsUrl       String       // every update MUST link to a source
+  newsTitle     String?
+  newsSource    String?
+  newsDate      DateTime?
+
+  verified      Boolean      @default(false)
+  verifiedAt    DateTime?
+
+  createdAt     DateTime     @default(now())
+
+  @@index([projectId, date])
+  @@index([updateType])
+  @@index([newsUrl])
 }
 
 // ═══ FINANCE & BUDGET ════════════════════════════════════

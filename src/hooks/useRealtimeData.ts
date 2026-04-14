@@ -164,6 +164,25 @@ export interface CanalRelease {
   source: string;
 }
 
+export interface InfraUpdate {
+  id: string;
+  date: string;
+  headline: string;
+  summary: string | null;
+  updateType: string;
+  personName: string | null;
+  personRole: string | null;
+  personParty: string | null;
+  budgetChange: number | null;
+  progressPct: number | null;
+  statusChange: string | null;
+  newsUrl: string;
+  newsTitle: string | null;
+  newsSource: string | null;
+  newsDate: string | null;
+  verified: boolean;
+}
+
 export interface InfraProject {
   id: string;
   name: string;
@@ -177,6 +196,33 @@ export interface InfraProject {
   startDate?: string | null;
   expectedEnd?: string | null;
   source?: string | null;
+  // News-driven fields
+  shortName?: string | null;
+  scope?: string | null;
+  announcedBy?: string | null;
+  announcedByRole?: string | null;
+  party?: string | null;
+  executingAgency?: string | null;
+  keyPeople?: Array<{ name: string; role: string | null; party: string | null; context: string | null }> | null;
+  originalBudget?: number | null;
+  revisedBudget?: number | null;
+  costOverrun?: number | null;
+  costOverrunPct?: number | null;
+  announcedDate?: string | null;
+  approvedDate?: string | null;
+  tenderDate?: string | null;
+  actualStartDate?: string | null;
+  originalEndDate?: string | null;
+  revisedEndDate?: string | null;
+  completionDate?: string | null;
+  cancelledDate?: string | null;
+  cancellationReason?: string | null;
+  delayMonths?: number | null;
+  sourceUrls?: string[] | null;
+  lastNewsAt?: string | null;
+  lastVerifiedAt?: string | null;
+  verificationCount?: number | null;
+  updates?: InfraUpdate[];
 }
 
 export interface Scheme {

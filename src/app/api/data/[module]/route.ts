@@ -243,7 +243,20 @@ async function fetchModule(
     case "infrastructure": {
       const data = await prisma.infraProject.findMany({
         where: { districtId: did },
-        orderBy: [{ status: "asc" }, { startDate: "desc" }],
+        include: {
+          updates: {
+            orderBy: { date: "desc" },
+            take: 25,
+            select: {
+              id: true, date: true, headline: true, summary: true,
+              updateType: true, personName: true, personRole: true, personParty: true,
+              budgetChange: true, progressPct: true, statusChange: true,
+              newsUrl: true, newsTitle: true, newsSource: true, newsDate: true,
+              verified: true,
+            },
+          },
+        },
+        orderBy: [{ lastNewsAt: "desc" }, { status: "asc" }, { startDate: "desc" }],
       });
       const infraUpdated = data.reduce<Date | null>((latest, p) => {
         const ts = (p as { updatedAt?: Date }).updatedAt;

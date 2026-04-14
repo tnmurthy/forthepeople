@@ -78,10 +78,15 @@ export const MODULE_INSIGHT_CONFIGS: ModuleInsightConfig[] = [
   },
   {
     module: "infrastructure",
-    label: "Infrastructure Projects",
+    label: "Infrastructure Tracker",
     ttlHours: H24,
-    dataKeys: ["projects", "completion", "delayed"],
-    promptHint: "Project delays, completion rates, and public impact.",
+    dataKeys: ["projects", "completion", "delayed", "costOverrunPct", "scope", "executingAgency"],
+    promptHint:
+      "Neutral district-level infrastructure summary derived from news-sourced project " +
+      "records. Mention counts of active/completed/delayed/cancelled projects, notable " +
+      "cost overruns or deadline extensions (figures only, no judgment), and the executing " +
+      "agencies most active. Never use 'scam/loot/corrupt/waste'. Never attribute blame. " +
+      "Link every claim back to the underlying project record.",
   },
   {
     module: "leaders",

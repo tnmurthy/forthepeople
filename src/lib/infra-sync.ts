@@ -1,0 +1,601 @@
+/**
+ * ForThePeople.in — News-driven InfraProject sync
+ *
+ * NewsItem classified as module="infrastructure" →
+ *   extractInfraFromNews (free-tier AI) →
+ *   verifyInfraExtraction (second free-tier AI pass, different prompt) →
+ *   syncInfraFromNews (fuzzy upsert + InfraUpdate timeline entry)
+ *
+ * Every timeline entry MUST link to a news URL. Status never downgrades
+ * (except CANCELLED which is terminal). null values never overwrite
+ * concrete existing data.
+ *
+ * Tone / legal:
+ *   - AI prompts are instructed to be neutral. No "scam/loot/corrupt/waste".
+ *   - Party and person attribution must come from the article text itself.
+ *   - If the article only says "the government", announcedBy is null.
+ */
+
+import { Prisma } from "@/generated/prisma";
+import { prisma } from "./db";
+import { callAI } from "./ai-provider";
+import { cacheKey, cacheSet } from "./cache";
+import { logUpdate } from "./update-log";
+
+// ═══════════════════════════════════════════════════════════
+// Types
+// ═══════════════════════════════════════════════════════════
+
+export type InfraCategory =
+  | "ROAD" | "METRO" | "RAIL" | "BRIDGE" | "FLYOVER" | "WATER" | "SEWAGE"
+  | "HOUSING" | "PORT" | "AIRPORT" | "POWER" | "TELECOM" | "HOSPITAL"
+  | "SCHOOL" | "OTHER";
+
+export type InfraStatus =
+  | "PROPOSED" | "APPROVED" | "TENDER_ISSUED" | "UNDER_CONSTRUCTION"
+  | "ON_TRACK" | "DELAYED" | "STALLED" | "CANCELLED" | "COMPLETED";
+
+export type InfraUpdateType =
+  | "ANNOUNCEMENT" | "APPROVAL" | "TENDER" | "CONSTRUCTION_START"
+  | "BUDGET_INCREASE" | "BUDGET_DECREASE" | "DELAY" | "STALL"
+  | "PROGRESS_UPDATE" | "CONTROVERSY" | "COMPLETION" | "CANCELLATION"
+  | "PHASE_COMPLETE" | "INAUGURATION" | "REVIEW" | "SEED";
+
+export type InfraScope = "DISTRICT" | "STATE" | "NATIONAL";
+
+export interface KeyPerson {
+  name: string;
+  role: string | null;
+  party: string | null;
+  context: string | null;
+}
+
+export interface InfraExtraction {
+  projectName: string;
+  shortName: string;
+  category: InfraCategory;
+  updateType: InfraUpdateType;
+  announcedBy: string | null;
+  announcedByRole: string | null;
+  party: string | null;
+  keyPeople: KeyPerson[];
+  executingAgency: string | null;
+  budget: number | null; // rupees
+  progressPct: number | null;
+  status: InfraStatus;
+  startDate: string | null;
+  expectedEndDate: string | null;
+  cancellationReason: string | null;
+  scope: InfraScope;
+  districtNames: string[];
+  summary: string;
+  confidence: number;
+}
+
+export interface InfraVerification {
+  verified: boolean;
+  corrections: Partial<InfraExtraction> | null;
+  flags: string[];
+}
+
+export interface NewsArticleRef {
+  title: string;
+  url: string;
+  publishedAt: Date;
+  source?: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Status ordering (CANCELLED terminal, rest ladder)
+// ═══════════════════════════════════════════════════════════
+
+const STATUS_RANK: Record<string, number> = {
+  // legacy lowercase (in existing seed data)
+  planned: 0, proposed: 0,
+  approved: 1, sanctioned: 1,
+  tendered: 2, "tender issued": 2,
+  ongoing: 3, "in-progress": 3, "under_construction": 3, "under construction": 3, active: 3,
+  "on_track": 3, "on track": 3,
+  delayed: 4, stalled: 4,
+  completed: 5, inaugurated: 5,
+  cancelled: 99,
+  // New uppercase
+  PROPOSED: 0,
+  APPROVED: 1,
+  TENDER_ISSUED: 2,
+  UNDER_CONSTRUCTION: 3,
+  ON_TRACK: 3,
+  DELAYED: 4,
+  STALLED: 4,
+  COMPLETED: 5,
+  CANCELLED: 99,
+};
+
+function statusRank(s: string | null | undefined): number {
+  if (!s) return -1;
+  return STATUS_RANK[s] ?? STATUS_RANK[s.toLowerCase()] ?? -1;
+}
+
+function parseDate(v: string | null | undefined): Date | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI: extraction
+// ═══════════════════════════════════════════════════════════
+
+const EXTRACTION_SYSTEM =
+  "You extract structured infrastructure project metadata from Indian news articles. " +
+  "Return ONLY valid JSON (no markdown, no commentary). Every field you cannot confirm " +
+  "from the article text MUST be null — never guess dates, budgets, names, or parties. " +
+  "Be factually neutral. Never use words like 'scam', 'loot', 'corrupt', or 'waste'. " +
+  "If an article alleges wrongdoing, report it as-is without endorsing the characterisation.";
+
+function buildExtractionPrompt(article: NewsArticleRef): string {
+  return `Article title: "${article.title}"
+Source: ${article.source ?? article.url}
+Published: ${article.publishedAt.toISOString().split("T")[0]}
+
+Extract infrastructure project metadata. Return JSON shaped:
+
+{
+  "projectName": "Full project name, e.g. 'Mumbai Coastal Road Phase 2'",
+  "shortName": "Canonical short name, 2-4 words, e.g. 'Coastal Road'",
+  "category": "ROAD|METRO|RAIL|BRIDGE|FLYOVER|WATER|SEWAGE|HOUSING|PORT|AIRPORT|POWER|TELECOM|HOSPITAL|SCHOOL|OTHER",
+  "updateType": "ANNOUNCEMENT|APPROVAL|TENDER|CONSTRUCTION_START|BUDGET_INCREASE|BUDGET_DECREASE|DELAY|STALL|PROGRESS_UPDATE|CONTROVERSY|COMPLETION|CANCELLATION|PHASE_COMPLETE|INAUGURATION|REVIEW",
+  "announcedBy": "The person named in the article who announced/approved this, or null if only 'the government' is mentioned",
+  "announcedByRole": "Their designation (e.g. 'Chief Minister, Maharashtra'), or null",
+  "party": "Their party affiliation ONLY if the article mentions it, or null",
+  "keyPeople": [{"name":"...", "role":"...", "party":"... or null", "context":"what they did in this article"}],
+  "executingAgency": "NHAI|MMRDA|BMC|PWD|Metro Rail Corp|...  or null",
+  "budget": "Budget in RUPEES as a plain integer (₹12,700 Cr → 127000000000, ₹500 Lakh → 50000000), or null",
+  "progressPct": "Number 0-100 or null",
+  "status": "PROPOSED|APPROVED|TENDER_ISSUED|UNDER_CONSTRUCTION|ON_TRACK|DELAYED|STALLED|CANCELLED|COMPLETED",
+  "startDate": "YYYY-MM-DD or null",
+  "expectedEndDate": "YYYY-MM-DD or null",
+  "cancellationReason": "string if CANCELLED/STALLED with reason given, else null",
+  "scope": "DISTRICT|STATE|NATIONAL",
+  "districtNames": ["Mumbai", "Thane"],
+  "summary": "One factual sentence describing THIS update (not the whole project).",
+  "confidence": 0.0-1.0
+}
+
+Hard rules:
+- Budget: convert "₹X Cr" → X*10000000, "₹X Lakh" → X*100000, "₹X crore" → X*10000000.
+- Never infer party affiliation if the article doesn't state it — set party to null.
+- Never assume a person if the article says "the government", "officials", "sources".
+- Never invent dates. If only a year is mentioned without month/day, set the date to null.
+- districtNames must be places actually named in the article.
+- If the article is not about an identifiable infrastructure project, return {"projectName":""}.`;
+}
+
+export async function extractInfraFromNews(
+  article: NewsArticleRef
+): Promise<InfraExtraction | null> {
+  try {
+    const response = await callAI({
+      systemPrompt: EXTRACTION_SYSTEM,
+      userPrompt: buildExtractionPrompt(article),
+      purpose: "classify", // free tier per spec
+      jsonMode: true,
+      maxTokens: 1400,
+      temperature: 0,
+    });
+    const cleaned = response.text.trim().replace(/```(?:json)?/g, "").trim();
+    const parsed = JSON.parse(cleaned) as Partial<InfraExtraction>;
+    if (!parsed.projectName || typeof parsed.projectName !== "string" || parsed.projectName.trim().length < 3) {
+      return null;
+    }
+    const safe: InfraExtraction = {
+      projectName: parsed.projectName.trim(),
+      shortName: (parsed.shortName ?? parsed.projectName).toString().trim(),
+      category: (parsed.category as InfraCategory) ?? "OTHER",
+      updateType: (parsed.updateType as InfraUpdateType) ?? "ANNOUNCEMENT",
+      announcedBy: parsed.announcedBy ?? null,
+      announcedByRole: parsed.announcedByRole ?? null,
+      party: parsed.party ?? null,
+      keyPeople: Array.isArray(parsed.keyPeople)
+        ? parsed.keyPeople
+            .filter((p): p is KeyPerson => !!p && typeof (p as KeyPerson).name === "string")
+            .slice(0, 10)
+        : [],
+      executingAgency: parsed.executingAgency ?? null,
+      budget: typeof parsed.budget === "number" ? parsed.budget : null,
+      progressPct: typeof parsed.progressPct === "number" ? Math.min(100, Math.max(0, parsed.progressPct)) : null,
+      status: (parsed.status as InfraStatus) ?? "PROPOSED",
+      startDate: parsed.startDate ?? null,
+      expectedEndDate: parsed.expectedEndDate ?? null,
+      cancellationReason: parsed.cancellationReason ?? null,
+      scope: (parsed.scope as InfraScope) ?? "DISTRICT",
+      districtNames: Array.isArray(parsed.districtNames) ? parsed.districtNames.filter((s): s is string => typeof s === "string") : [],
+      summary: parsed.summary ?? article.title,
+      confidence: typeof parsed.confidence === "number" ? Math.min(1, Math.max(0, parsed.confidence)) : 0.5,
+    };
+    return safe;
+  } catch (err) {
+    console.error("[infra-sync] extract failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI: verification (second pass, different prompt)
+// ═══════════════════════════════════════════════════════════
+
+const VERIFY_SYSTEM =
+  "You are a verifier for an infrastructure-tracking pipeline. Given an article and a prior extraction, " +
+  "flag anything that cannot be verified directly from the article text. Return ONLY JSON.";
+
+function buildVerifyPrompt(article: NewsArticleRef, extraction: InfraExtraction): string {
+  return `Article: "${article.title}"
+Source: ${article.source ?? article.url}
+Published: ${article.publishedAt.toISOString().split("T")[0]}
+
+Prior extraction:
+${JSON.stringify(extraction, null, 2)}
+
+Verify:
+1. Is "projectName" actually named (or clearly referenced) in the article?
+2. Are announcedBy / keyPeople / party values supported by the article text?
+3. Is the budget figure correctly converted to RUPEES (not Crores, not Lakhs)?
+4. Is the status mapping consistent with the article's language?
+5. Are any dates inferred rather than stated?
+
+Return JSON:
+{
+  "verified": true|false,
+  "corrections": {<any fields the extraction got wrong — same shape as extraction, include only the corrected fields>},
+  "flags": ["short human-readable notes — e.g. 'party assumed, not in article'"]
+}
+
+Set verified=false if the article doesn't support the core facts. Be conservative.`;
+}
+
+export async function verifyInfraExtraction(
+  article: NewsArticleRef,
+  extraction: InfraExtraction
+): Promise<InfraVerification> {
+  try {
+    const response = await callAI({
+      systemPrompt: VERIFY_SYSTEM,
+      userPrompt: buildVerifyPrompt(article, extraction),
+      purpose: "classify", // free tier
+      jsonMode: true,
+      maxTokens: 800,
+      temperature: 0,
+    });
+    const cleaned = response.text.trim().replace(/```(?:json)?/g, "").trim();
+    const parsed = JSON.parse(cleaned) as Partial<InfraVerification>;
+    return {
+      verified: parsed.verified === true,
+      corrections: parsed.corrections ?? null,
+      flags: Array.isArray(parsed.flags) ? parsed.flags.filter((s): s is string => typeof s === "string").slice(0, 10) : [],
+    };
+  } catch (err) {
+    console.error("[infra-sync] verify failed:", err instanceof Error ? err.message : err);
+    // On verifier failure, don't falsely mark verified — return neutral
+    return { verified: false, corrections: null, flags: ["verifier_error"] };
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Sync: upsert + timeline entry
+// ═══════════════════════════════════════════════════════════
+
+async function findTargetDistricts(extraction: InfraExtraction, sourceDistrictId: string) {
+  if (extraction.scope === "NATIONAL") {
+    const rows = await prisma.district.findMany({
+      where: { active: true },
+      select: { id: true, slug: true, stateId: true, state: { select: { slug: true } } },
+    });
+    return rows.map((r) => ({ id: r.id, slug: r.slug, stateId: r.stateId }));
+  }
+  if (extraction.scope === "STATE" && extraction.districtNames.length > 0) {
+    // Match by district name within the source state (via the source article's district)
+    const src = await prisma.district.findUnique({
+      where: { id: sourceDistrictId },
+      select: { stateId: true },
+    });
+    if (!src) return [];
+    const rows = await prisma.district.findMany({
+      where: { stateId: src.stateId, active: true },
+      select: { id: true, slug: true, stateId: true },
+    });
+    return rows.map((r) => ({ id: r.id, slug: r.slug, stateId: r.stateId }));
+  }
+  // DISTRICT: if article names specific districts, try to hit them by name;
+  // else default to the source district.
+  if (extraction.districtNames.length > 0) {
+    const rows = await prisma.district.findMany({
+      where: {
+        active: true,
+        OR: extraction.districtNames.map((n) => ({ name: { equals: n, mode: "insensitive" as const } })),
+      },
+      select: { id: true, slug: true, stateId: true },
+    });
+    if (rows.length > 0) return rows;
+  }
+  const src = await prisma.district.findUnique({
+    where: { id: sourceDistrictId },
+    select: { id: true, slug: true, stateId: true },
+  });
+  return src ? [src] : [];
+}
+
+function mergeSourceUrls(existing: unknown, next: string): string[] {
+  const arr = Array.isArray(existing) ? (existing as unknown[]).filter((v): v is string => typeof v === "string") : [];
+  if (!arr.includes(next)) arr.push(next);
+  return arr.slice(-20); // keep last 20
+}
+
+function mergeKeyPeople(existing: unknown, incoming: KeyPerson[]): KeyPerson[] {
+  const prev: KeyPerson[] = Array.isArray(existing)
+    ? (existing as unknown[])
+        .map((p) => (p && typeof p === "object" ? (p as KeyPerson) : null))
+        .filter((p): p is KeyPerson => !!p && typeof p.name === "string")
+    : [];
+  const byKey = new Map<string, KeyPerson>();
+  for (const p of prev) byKey.set(`${p.name}|${p.role ?? ""}`.toLowerCase(), p);
+  for (const p of incoming) {
+    const key = `${p.name}|${p.role ?? ""}`.toLowerCase();
+    if (!byKey.has(key)) byKey.set(key, p);
+  }
+  return [...byKey.values()].slice(0, 25);
+}
+
+export interface InfraSyncResult {
+  projectsTouched: number;
+  created: number;
+  updatedProjects: number;
+  timelineCreated: number;
+  duplicatesSkipped: number;
+}
+
+export async function syncInfraFromNews(
+  extraction: InfraExtraction,
+  article: NewsArticleRef,
+  sourceDistrictId: string,
+  verified: boolean = false
+): Promise<InfraSyncResult> {
+  const targets = await findTargetDistricts(extraction, sourceDistrictId);
+  if (targets.length === 0) {
+    return { projectsTouched: 0, created: 0, updatedProjects: 0, timelineCreated: 0, duplicatesSkipped: 0 };
+  }
+
+  const now = new Date();
+  const namePrefix = extraction.projectName.split(/\s+/).slice(0, 3).join(" ");
+  const startDate = parseDate(extraction.startDate);
+  const expectedEnd = parseDate(extraction.expectedEndDate);
+  const isCancel = extraction.status === "CANCELLED";
+
+  let created = 0;
+  let updatedProjects = 0;
+  let timelineCreated = 0;
+  let duplicatesSkipped = 0;
+
+  for (const t of targets) {
+    let project = await prisma.infraProject.findFirst({
+      where: {
+        districtId: t.id,
+        OR: [
+          { shortName: { equals: extraction.shortName, mode: "insensitive" } },
+          { name: { contains: extraction.shortName, mode: "insensitive" } },
+          { name: { contains: namePrefix, mode: "insensitive" } },
+        ],
+      },
+    });
+
+    // ── CREATE ────────────────────────────────────────────
+    if (!project) {
+      project = await prisma.infraProject.create({
+        data: {
+          districtId: t.id,
+          name: extraction.projectName,
+          shortName: extraction.shortName,
+          category: extraction.category,
+          status: extraction.status,
+          scope: extraction.scope,
+          announcedBy: extraction.announcedBy,
+          announcedByRole: extraction.announcedByRole,
+          party: extraction.party,
+          executingAgency: extraction.executingAgency,
+          keyPeople: extraction.keyPeople.length ? (extraction.keyPeople as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+          originalBudget: extraction.budget,
+          revisedBudget: extraction.budget,
+          budget: extraction.budget,
+          progressPct: extraction.progressPct,
+          announcedDate: isCancel ? null : now,
+          actualStartDate: startDate,
+          startDate: startDate,
+          originalEndDate: expectedEnd,
+          expectedEnd: expectedEnd,
+          cancelledDate: isCancel ? now : null,
+          cancellationReason: isCancel ? extraction.cancellationReason : null,
+          source: article.url,
+          sourceUrls: [article.url] as Prisma.InputJsonValue,
+          lastNewsAt: now,
+          lastVerifiedAt: verified ? now : null,
+          verificationCount: verified ? 1 : 0,
+        },
+      });
+      created++;
+    } else {
+      // ── UPDATE (never downgrade, never overwrite concrete with null) ──
+      const incomingRank = statusRank(extraction.status);
+      const existingRank = statusRank(project.status);
+
+      const patch: Prisma.InfraProjectUpdateInput = {
+        lastNewsAt: now,
+      };
+
+      // Status: allow cancel from any state; otherwise only upward
+      if (isCancel && project.status !== "CANCELLED" && project.status !== "cancelled") {
+        patch.status = "CANCELLED";
+        if (!project.cancelledDate) patch.cancelledDate = now;
+        if (!project.cancellationReason && extraction.cancellationReason) patch.cancellationReason = extraction.cancellationReason;
+      } else if (incomingRank > existingRank && statusRank(project.status) !== 99) {
+        patch.status = extraction.status;
+      }
+
+      // Budget lifecycle
+      if (extraction.budget != null) {
+        if (project.originalBudget == null) {
+          patch.originalBudget = extraction.budget;
+          patch.budget = extraction.budget;
+          patch.revisedBudget = extraction.budget;
+        } else if (extraction.budget !== project.revisedBudget) {
+          patch.revisedBudget = extraction.budget;
+          patch.budget = extraction.budget;
+          const overrun = extraction.budget - project.originalBudget;
+          patch.costOverrun = overrun;
+          patch.costOverrunPct = project.originalBudget > 0 ? (overrun / project.originalBudget) * 100 : null;
+        }
+      }
+
+      // Progress: only update if newer and higher
+      if (extraction.progressPct != null) {
+        if (project.progressPct == null || extraction.progressPct >= project.progressPct) {
+          patch.progressPct = extraction.progressPct;
+        }
+      }
+
+      // Dates: fill-only
+      if (!project.actualStartDate && startDate) {
+        patch.actualStartDate = startDate;
+        if (!project.startDate) patch.startDate = startDate;
+      }
+      if (!project.originalEndDate && expectedEnd) {
+        patch.originalEndDate = expectedEnd;
+        if (!project.expectedEnd) patch.expectedEnd = expectedEnd;
+      } else if (project.originalEndDate && expectedEnd && expectedEnd.getTime() > project.originalEndDate.getTime()) {
+        // Deadline extended
+        patch.revisedEndDate = expectedEnd;
+        const monthsDelay = Math.round((expectedEnd.getTime() - project.originalEndDate.getTime()) / (30 * 86_400_000));
+        if (monthsDelay > 0) patch.delayMonths = monthsDelay;
+      }
+
+      // People: fill-only for principals, APPEND for keyPeople
+      if (!project.announcedBy && extraction.announcedBy) patch.announcedBy = extraction.announcedBy;
+      if (!project.announcedByRole && extraction.announcedByRole) patch.announcedByRole = extraction.announcedByRole;
+      if (!project.party && extraction.party) patch.party = extraction.party;
+      if (!project.executingAgency && extraction.executingAgency) patch.executingAgency = extraction.executingAgency;
+      if (!project.shortName) patch.shortName = extraction.shortName;
+      if (!project.scope) patch.scope = extraction.scope;
+
+      if (extraction.keyPeople.length > 0) {
+        const merged = mergeKeyPeople(project.keyPeople, extraction.keyPeople);
+        patch.keyPeople = merged as unknown as Prisma.InputJsonValue;
+      }
+
+      patch.sourceUrls = mergeSourceUrls(project.sourceUrls, article.url) as unknown as Prisma.InputJsonValue;
+      if (verified) {
+        patch.lastVerifiedAt = now;
+        patch.verificationCount = { increment: 1 };
+      }
+
+      if (Object.keys(patch).length > 2) {
+        await prisma.infraProject.update({ where: { id: project.id }, data: patch });
+        updatedProjects++;
+      } else {
+        await prisma.infraProject.update({ where: { id: project.id }, data: { lastNewsAt: now, sourceUrls: patch.sourceUrls } });
+        duplicatesSkipped++;
+      }
+    }
+
+    // ── TIMELINE ENTRY (dedupe by newsUrl) ────────────────
+    const existingEntry = await prisma.infraUpdate.findFirst({
+      where: { projectId: project.id, newsUrl: article.url },
+      select: { id: true },
+    });
+    if (!existingEntry) {
+      const budgetChange =
+        extraction.updateType === "BUDGET_INCREASE" || extraction.updateType === "BUDGET_DECREASE"
+          ? extraction.budget ?? null
+          : null;
+      await prisma.infraUpdate.create({
+        data: {
+          projectId: project.id,
+          date: article.publishedAt,
+          headline: extraction.summary || article.title,
+          summary: extraction.summary || null,
+          updateType: extraction.updateType,
+          personName: extraction.announcedBy ?? (extraction.keyPeople[0]?.name ?? null),
+          personRole: extraction.announcedByRole ?? (extraction.keyPeople[0]?.role ?? null),
+          personParty: extraction.party ?? (extraction.keyPeople[0]?.party ?? null),
+          budgetChange,
+          progressPct: extraction.progressPct,
+          statusChange: extraction.status,
+          newsUrl: article.url,
+          newsTitle: article.title,
+          newsSource: article.source ?? null,
+          newsDate: article.publishedAt,
+          verified,
+          verifiedAt: verified ? now : null,
+        },
+      });
+      timelineCreated++;
+    }
+
+    // Cache bust
+    try {
+      await cacheSet(cacheKey(t.slug, "infrastructure"), null, 1);
+    } catch {
+      /* cache optional */
+    }
+
+    // UpdateLog
+    await logUpdate({
+      source: "scraper",
+      actorLabel: "news-cron",
+      tableName: "InfraProject",
+      recordId: project.id,
+      action: existingEntry ? "update" : "update",
+      districtId: t.id,
+      moduleName: "infrastructure",
+      description: `${extraction.shortName}: ${extraction.updateType}`,
+      recordCount: 1,
+      details: {
+        scope: extraction.scope,
+        status: extraction.status,
+        verified,
+        newsUrl: article.url,
+      },
+    });
+  }
+
+  return {
+    projectsTouched: targets.length,
+    created,
+    updatedProjects,
+    timelineCreated,
+    duplicatesSkipped,
+  };
+}
+
+/**
+ * Top-level orchestrator: extract → verify → sync.
+ * Returns null when the article isn't about a real project or verification fails.
+ */
+export async function extractVerifyAndSyncInfra(
+  article: NewsArticleRef,
+  sourceDistrictId: string
+): Promise<InfraSyncResult | null> {
+  const extraction = await extractInfraFromNews(article);
+  if (!extraction) return null;
+  if (extraction.confidence < 0.5) return null;
+
+  const verification = await verifyInfraExtraction(article, extraction);
+  const merged: InfraExtraction = verification.corrections
+    ? { ...extraction, ...verification.corrections }
+    : extraction;
+
+  // Sync only if verifier said ok OR confidence is very high
+  if (!verification.verified && merged.confidence < 0.85) {
+    console.log(`[infra-sync] skipped unverified: "${article.title.slice(0, 80)}" flags=${verification.flags.join(",")}`);
+    return null;
+  }
+
+  return syncInfraFromNews(merged, article, sourceDistrictId, verification.verified);
+}

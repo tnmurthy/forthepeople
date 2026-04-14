@@ -32,7 +32,7 @@ function getDataSources(stateSlug: string) {
     { module: "Schemes", source: "MyScheme.gov.in", frequency: "Weekly", type: "API", status: "static", url: "https://myscheme.gov.in" },
     { module: "Elections", source: "Election Commission of India", frequency: "Post-election", type: "Static", status: "static", url: "https://eci.gov.in" },
     { module: "Budget & Revenue", source: s.budget, frequency: "Quarterly", type: "PDF Parse", status: "static", url: null },
-    { module: "Infrastructure", source: "PMGSY / State PWD Portal", frequency: "Monthly", type: "Collected", status: "static", url: null },
+    { module: "Infrastructure", source: "News articles (Google News RSS, regional media) + government press releases", frequency: "Hourly (news cron)", type: "RSS", status: "live", url: null },
     { module: "Schools", source: "UDISE+ (MoE)", frequency: "Annual", type: "API", status: "static", url: "https://udiseplus.gov.in" },
     { module: "Jal Jeevan Mission", source: "JJM National Dashboard", frequency: "Weekly", type: "API", status: "live", url: "https://ejalshakti.gov.in/jjmreport" },
     { module: "Housing", source: "AwaasSoft (PMAY)", frequency: "Monthly", type: "API", status: "live", url: "https://pmayg.nic.in" },

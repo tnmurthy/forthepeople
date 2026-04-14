@@ -83,6 +83,75 @@
 #     stampede at station, train, platform, station, irctc.
 #     Crops keyword list unchanged.
 #
+# 2026-04-14 — Infrastructure: news-driven tracker with timelines + AI analysis:
+#   • Schema (additive, prisma db push): InfraProject gains announcedBy/
+#     announcedByRole/party, executingAgency, keyPeople Json, originalBudget/
+#     revisedBudget/costOverrun/costOverrunPct, timeline dates (announced/
+#     approved/tender/actualStart/originalEnd/revisedEnd/completion/cancelled
+#     + cancellationReason + delayMonths), shortName, scope, sourceUrls Json,
+#     lastNewsAt, lastVerifiedAt, verificationCount. NEW model InfraUpdate
+#     (one timeline row per news mention; newsUrl MANDATORY; type enum
+#     ANNOUNCEMENT/APPROVAL/TENDER/… including SEED; (projectId, date) index).
+#   • src/lib/infra-sync.ts:
+#       – extractInfraFromNews(article): free-tier AI (purpose="classify").
+#         Budget converted to RUPEES (₹12,700 Cr → 127000000000). Party/person
+#         attribution strictly from article text; null otherwise. Never uses
+#         scam/loot/corrupt/waste vocabulary.
+#       – verifyInfraExtraction(article, extraction): SECOND free-tier AI
+#         pass with a different prompt, returns {verified, corrections, flags}.
+#         Verifier failure = not verified, never silently passes.
+#       – syncInfraFromNews: fuzzy upsert (shortName/title prefix). Status
+#         never downgrades; CANCELLED terminal. Budget lifecycle: first write
+#         sets originalBudget; later writes update revisedBudget + computed
+#         costOverrun / costOverrunPct. keyPeople appended (not replaced),
+#         capped 25. sourceUrls capped 20. Every call creates an InfraUpdate
+#         row keyed by newsUrl (dedupe). Cache-busts Redis per district.
+#         Logs UpdateLog entry for every affected district.
+#       – extractVerifyAndSyncInfra: orchestrator used by the news pipeline.
+#         Gates: confidence>=0.5 + (verified||confidence>=0.85). Everything
+#         else silently skipped (with log line) so the news cron never breaks.
+#   • news-action-engine infrastructure case rewired to call the orchestrator;
+#     old ad-hoc create/update logic removed.
+#   • /api/data/infrastructure now includes updates[] (most recent 25 per
+#     project) so project cards render the "Latest news" strip and the full
+#     timeline accordion without a second fetch.
+#   • /api/data/infra-analysis?projectId=… (NEW): lazy Gemini 2.5 Pro
+#     (purpose="insight") project analysis. System prompt enforces neutral
+#     tone + source-anchored facts. 24h Redis cache keyed
+#     ftp:infra-analysis:<id>:v1. Only fires when the user clicks the
+#     "Generate project analysis" button in an expanded timeline — not during
+#     initial page load.
+#   • infrastructure/page.tsx full redesign:
+#       – Mandatory amber Data Transparency disclaimer banner at top.
+#       – Stat tiles: Total/Active/Completed/Delayed/Cancelled + Total Budget
+#         (+ Funds Released when non-zero).
+#       – Category + Status filter pills with live counts.
+#       – Sort: Latest Update / Budget / Most Complete / Most Delayed.
+#       – Project cards: title + category + executing agency, "Announced by"
+#         + party attribution, key people strip, budget block with overrun,
+#         timeline dates, progress bar (hidden for CANCELLED), latest news
+#         strip, verificationCount line ("⚠ Single source" when count=1),
+#         expandable full timeline accordion with per-entry source link.
+#         LazyAnalysis button for AI analysis under the open timeline.
+#       – "Cancelled / Shelved Projects" section at the bottom, separated.
+#   • ExamStepper unchanged (infra has its own timeline UI).
+#   • Sidebar: new Infrastructure entry promoted to QUICK ACCESS right after
+#     Finance & Budget (desktop + mobile both). HardHat icon, 🏗️ emoji.
+#     sidebar-modules.ts SIDEBAR_MODULES now 36 entries.
+#   • state-config getModuleSources for infrastructure updated to reflect the
+#     news-driven source; /data-sources page row also updated.
+#   • insight-config promptHint for infrastructure rewritten to require
+#     neutral tone, include new fields (costOverrunPct/scope/executingAgency).
+#   • scripts/backfill-infra-from-news.ts: --limit (default 10, cap 40) +
+#     --dry-run. KEYWORD_RE pre-filter + title-prefix dedupe to keep AI cost
+#     bounded. Phase 2 within the same script: seeds a SEED-type timeline row
+#     for every legacy InfraProject that has a source URL but zero
+#     InfraUpdates — so cards always carry at least one provenance link.
+#   • Update Log sanity-tested across every active district
+#     (/en/<state>/<slug>/update-log): all 9 districts return 200 for the
+#     page, the API (/api/data/update-log?district=…), and the rebuilt
+#     infrastructure page. Sidebar shows Update Log for every district.
+#
 # 2026-04-14 — Exams: news-driven sync + daily status cron + milestone UI:
 #   • GovernmentExam schema extended additively with shortName, organizingBody,
 #     category, scope (NATIONAL|STATE), notificationDate, sourceUrls (Json),

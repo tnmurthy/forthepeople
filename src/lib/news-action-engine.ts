@@ -12,6 +12,7 @@ import { prisma } from "./db";
 import { Prisma } from "@/generated/prisma";
 import { callAI } from "./ai-provider";
 import { extractExamFromNews, syncExamFromNews } from "./exam-sync";
+import { extractVerifyAndSyncInfra } from "./infra-sync";
 
 export interface NewsClassification {
   articleId: string;
@@ -165,38 +166,26 @@ export async function executeNewsAction(
       }
 
       case "infrastructure": {
-        const data = extractedData as Record<string, unknown>;
-        const projectName = (data.projectName as string) ?? articleTitle;
-        const namePrefix = projectName.split(" ").slice(0, 3).join(" ");
-        const existing = await prisma.infraProject.findFirst({
-          where: {
-            districtId,
-            name: { contains: namePrefix, mode: "insensitive" },
-          },
-        });
-        if (existing) {
-          await prisma.infraProject.update({
-            where: { id: existing.id },
-            data: {
-              status: (data.status as string) ?? existing.status,
-              progressPct: (data.progressPct as number) ?? existing.progressPct,
-              source: articleUrl,
-            },
-          });
-          console.log(`[NewsAction] ✅ Updated InfraProject: ${existing.name}`);
-        } else {
-          await prisma.infraProject.create({
-            data: {
-              districtId,
-              name: projectName,
-              category: (data.category as string) ?? "General",
-              budget: (data.budgetCrores as number) ?? null,
-              status: (data.status as string) ?? "Announced",
-              progressPct: 0,
-              source: articleUrl,
-            },
-          });
-          console.log(`[NewsAction] ✅ Created InfraProject: ${projectName}`);
+        // News-driven infra sync: extract → verify → fuzzy upsert + timeline entry.
+        // Non-fatal on failure — the NewsItem still persists via the outer pipeline.
+        try {
+          const result = await extractVerifyAndSyncInfra(
+            { title: articleTitle, url: articleUrl, publishedAt: new Date() },
+            districtId
+          );
+          if (!result) {
+            console.log(`[NewsAction] infra: skipped (no projectName / low confidence / verify fail): ${articleTitle.slice(0, 60)}`);
+          } else {
+            console.log(
+              `[NewsAction] ✅ Infra sync: created ${result.created}, updated ${result.updatedProjects}, ` +
+              `timeline +${result.timelineCreated}, deduped ${result.duplicatesSkipped} across ${result.projectsTouched} districts`
+            );
+          }
+        } catch (err) {
+          console.error(
+            "[NewsAction] infra sync failed:",
+            err instanceof Error ? err.message : err
+          );
         }
         break;
       }

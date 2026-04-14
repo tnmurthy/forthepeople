@@ -424,7 +424,7 @@ export function getModuleSources(moduleName: string, stateSlug: string): ModuleS
     jjm:               { sources: ["Jal Jeevan Mission National Dashboard (eJalShakti)"], frequency: "Weekly", isLive: true },
     housing:           { sources: ["AwaasSoft (PMAY Dashboard)"], frequency: "Monthly" },
     industries:        { sources: ["District Industries Centre", "State Industrial Dev. Corp."], frequency: "Quarterly" },
-    infrastructure:    { sources: ["PMGSY", "State PWD Portal"], frequency: "Monthly" },
+    infrastructure:    { sources: ["News articles (Google News RSS + regional media)", "Government press releases"], frequency: "Hourly (news cron)", isLive: true },
     farm:              { sources: ["Soil Health Card Portal", "KVK / ICAR"], frequency: "Seasonal" },
     "gram-panchayat":  { sources: ["eGramSwaraj", "NREGA.nic.in"], frequency: "Monthly" },
     news:              { sources: ["Google News RSS", "Regional news aggregation"], frequency: "Every hour", isLive: true },
