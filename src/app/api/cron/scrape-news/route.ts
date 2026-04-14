@@ -15,6 +15,7 @@ import { cacheKey } from "@/lib/cache";
 import { redis } from "@/lib/redis";
 import { scrapeNews } from "@/scraper/jobs/news";
 import { alertCronFailed } from "@/lib/admin-alerts";
+import { resetExtractionCounters } from "@/lib/news-action-engine";
 import type { JobContext } from "@/scraper/types";
 
 export const runtime = "nodejs";
@@ -29,6 +30,11 @@ export async function GET(request: Request) {
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Reset module-scoped extraction counters so this cron starts fresh.
+  // (news-action-engine caps expensive extractions like infrastructure at
+  //  10 per cron run to bound AI spend.)
+  resetExtractionCounters();
 
   const results: Array<{ district: string; success: boolean; newCount: number; dedupRemoved: number; alertsExpired: number; error?: string }> = [];
   let totalAlertsExpired = 0;

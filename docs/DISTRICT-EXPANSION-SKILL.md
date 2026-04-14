@@ -215,6 +215,66 @@ UNIQUE DATA:
   - University data (University of Mysore, JSS, SJCE)
 ```
 
+## News-Driven Modules (No Manual Seeding Required)
+
+Two modules populate themselves from the news pipeline — they do **NOT**
+need a seed file for a new district. They ship with `"Awaiting data"`
+placeholders and fill in as soon as the hourly `scrape-news` cron runs:
+
+### Infrastructure Tracker (`/infrastructure`)
+- Schema: `InfraProject` + `InfraUpdate` timeline rows.
+- Pipeline: NewsItem classified `module="infrastructure"` →
+  `extractInfraFromNews()` (free-tier AI) → `verifyInfraExtraction()`
+  (second free-tier pass) → `syncInfraFromNews()` fuzzy-upsert.
+- NATIONAL-scope projects (Bullet Train, Vande Bharat, NH corridors)
+  fan out to every active district automatically.
+- STATE-scope projects fan out to all active districts in the matching
+  state. DISTRICT-scope stays local.
+- Per-cron extraction cap: **10 infra extractions / news-cron run**
+  (enforced in `news-action-engine`, reset via
+  `resetExtractionCounters()`).
+- New-district onboarding (optional top-up):
+  ```bash
+  npx tsx -e "
+    import './_env';
+    import { onboardDistrictExams } from '@/lib/exam-onboard';
+    // If you also want a bulk national-project clone, add a similar
+    // infra-onboard helper or just wait one news-cron cycle.
+  "
+  ```
+- Manual admin editing: available in the admin Content Editor
+  (CONTENT_MODULES["infrastructure"]). Each admin save writes an
+  `InfraUpdate` row with `updateType="ADMIN_EDIT"` so the public
+  timeline records the provenance.
+- Backfill legacy news: `npx tsx scripts/backfill-infra-from-news.ts --limit 10 [--dry-run]`
+- Merge duplicates: `npx tsx scripts/dedup-infra-projects.ts --dry-run [--district <slug>]`
+- Disclaimer banner is mandatory at the top of the page — never
+  remove it.
+
+### Exams Tracker (`/exams`)
+- Schema: `GovernmentExam` (extended with news-driven fields).
+- Pipeline: NewsItem classified `module="exams"` →
+  `extractExamFromNews()` → `syncExamFromNews()` fuzzy upsert by
+  `shortName` + first-three-word title match.
+- NATIONAL exams (UPSC, SSC, IBPS, RRB) fan out to every active
+  district.
+- Daily status cron: `/api/cron/update-exams` advances status from
+  calendar dates (APPLICATIONS_OPEN when within window, ADMIT_CARD_OUT,
+  etc.) and flags `needsVerification=true` on rows stale >30 days.
+- New-district onboarding: `onboardDistrictExams(districtId)` clones
+  NATIONAL + matching STATE exams from other districts (deduped by
+  `shortName`).
+- Backfill: `npx tsx scripts/backfill-exams-from-news.ts --limit 10 [--dry-run]`
+
+### AI cost guardrails (applies to BOTH modules)
+- Use `purpose: "classify"` (free tier: `openai/gpt-oss-20b:free` with
+  fallback chain to other free models).
+- `purpose: "insight"` (Gemini 2.5 Pro) is only used for the lazy
+  /api/data/infra-analysis endpoint, triggered by the user clicking
+  "Generate AI Analysis". 24h Redis cache.
+- try/catch around every extract/verify/sync call — one failure never
+  aborts the news pipeline.
+
 ## Seeding Checklist (Per District)
 
 ```
@@ -222,7 +282,9 @@ For EACH new district, seed ALL of these:
 □ State (if not exists) + District + Taluks + Villages
 □ Leaders (all 10 tiers — MP, MLAs, DC, SP, judges, tahsildars, etc.)
 □ Famous Personalities (15-25 real people with Wikipedia photos)
-□ Infrastructure Projects (ALL ongoing — 50-200 depending on city size)
+□ Infrastructure Projects — SKIP manual seeding; populated automatically
+  by the news-driven pipeline (see "News-Driven Modules" section above).
+  Optional: run scripts/backfill-infra-from-news.ts after going live.
 □ Budget Data (department-wise, 3 fiscal years)
 □ Revenue Collections (monthly, all categories)
 □ Population History (1991, 2001, 2011, 2024 est.)

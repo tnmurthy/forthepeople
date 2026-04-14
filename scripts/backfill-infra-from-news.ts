@@ -19,7 +19,7 @@
  *   One failure never aborts the run
  */
 
-import "dotenv/config";
+import "./_env"; // MUST be first: loads .env + .env.local before any module reads process.env
 import { PrismaClient } from "../src/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { extractVerifyAndSyncInfra } from "../src/lib/infra-sync";

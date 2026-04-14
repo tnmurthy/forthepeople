@@ -14,6 +14,19 @@ import { callAI } from "./ai-provider";
 import { extractExamFromNews, syncExamFromNews } from "./exam-sync";
 import { extractVerifyAndSyncInfra } from "./infra-sync";
 
+// ── Per-cron extraction cap ─────────────────────────────────
+// Each news cron invocation calls resetExtractionCounters() once at start.
+// Inside executeNewsAction, the infrastructure case bails out after 10 AI
+// extractions so a burst of infra-tagged articles can't blow through the
+// free-tier quota in a single run.
+const EXTRACTION_CAPS = {
+  infrastructure: 10,
+} as const;
+let infraExtractionsThisRun = 0;
+export function resetExtractionCounters() {
+  infraExtractionsThisRun = 0;
+}
+
 export interface NewsClassification {
   articleId: string;
   articleTitle: string;
@@ -168,6 +181,13 @@ export async function executeNewsAction(
       case "infrastructure": {
         // News-driven infra sync: extract → verify → fuzzy upsert + timeline entry.
         // Non-fatal on failure — the NewsItem still persists via the outer pipeline.
+        if (infraExtractionsThisRun >= EXTRACTION_CAPS.infrastructure) {
+          console.log(
+            `[NewsAction] infra: per-cron cap of ${EXTRACTION_CAPS.infrastructure} reached — skipping "${articleTitle.slice(0, 60)}"`
+          );
+          break;
+        }
+        infraExtractionsThisRun++;
         try {
           const result = await extractVerifyAndSyncInfra(
             { title: articleTitle, url: articleUrl, publishedAt: new Date() },
