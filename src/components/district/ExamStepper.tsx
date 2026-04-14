@@ -5,10 +5,11 @@
  */
 
 // ═══════════════════════════════════════════════════════════
-// ExamStepper — Locked progress bar for exam lifecycle
-// Shows: Announced → Applications → Admit Card → Exam → Results
-// Locked steps show 🔒 with "Locked" label
-// Active steps show date + "Apply Now" button when open
+// ExamStepper — date-driven milestone strip (no padlocks)
+//   ✅ green — milestone date is in the past
+//   🔵 blue  — upcoming, shows date + "in N days"
+//   ⬜ grey  — date not announced ("TBA")
+// Status pill colors the connector. No paywall feel.
 // ═══════════════════════════════════════════════════════════
 "use client";
 import { ExternalLink } from "lucide-react";
@@ -16,6 +17,7 @@ import { ExternalLink } from "lucide-react";
 interface ExamStepperProps {
   status: string;
   announcedDate?: string | null;
+  notificationDate?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   admitCardDate?: string | null;
@@ -24,156 +26,151 @@ interface ExamStepperProps {
   applyUrl?: string | null;
 }
 
+type MilestoneState = "done" | "upcoming" | "tba";
+
+const STEPS: Array<{ key: string; label: string }> = [
+  { key: "notification", label: "Notification" },
+  { key: "apply",        label: "Applications" },
+  { key: "admitCard",    label: "Admit Card" },
+  { key: "exam",         label: "Exam" },
+  { key: "result",       label: "Result" },
+];
+
 function fmtDate(d: string | null | undefined): string {
   if (!d) return "";
   try {
     return new Date(d).toLocaleDateString("en-IN", {
-      day: "numeric", month: "short", year: "numeric",
-      timeZone: "Asia/Kolkata",
+      day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata",
     });
   } catch {
     return "";
   }
 }
 
-const STEPS = [
-  { key: "announced",  icon: "📢", label: "Announced" },
-  { key: "applications", icon: "📝", label: "Applications" },
-  { key: "admitCard",   icon: "🎫", label: "Admit Card" },
-  { key: "exam",        icon: "✍️", label: "Exam Date" },
-  { key: "results",     icon: "🏆", label: "Results" },
-];
-
-function getStepState(
-  stepKey: string,
-  idx: number,
-  props: ExamStepperProps
-): "completed" | "active" | "locked" {
-  const { status, announcedDate, startDate, endDate, admitCardDate, examDate, resultDate } = props;
-
-  // Determine how far this exam has progressed
-  const hasAnnounced = !!announcedDate;
-  const hasApplications = !!startDate || status === "open" || status === "closed" || status === "results";
-  const hasAdmitCard = !!admitCardDate || status === "closed" || status === "results";
-  const hasExam = !!examDate || status === "closed" || status === "results";
-  const hasResults = !!resultDate || status === "results";
-
-  const progressMap: Record<string, boolean> = {
-    announced:   hasAnnounced,
-    applications: hasApplications,
-    admitCard:   hasAdmitCard,
-    exam:       hasExam,
-    results:    hasResults,
-  };
-
-  const completedCount = Object.values(progressMap).filter(Boolean).length;
-
-  if (progressMap[stepKey as keyof typeof progressMap]) {
-    if (idx < completedCount - 1) return "completed";
-    if (idx === completedCount - 1) return "active";
-    return "locked";
+function daysBetween(future: string): number | null {
+  try {
+    const diff = new Date(future).getTime() - Date.now();
+    return Math.ceil(diff / 86_400_000);
+  } catch {
+    return null;
   }
-  return "locked";
 }
+
+function stateFor(date: string | null | undefined): MilestoneState {
+  if (!date) return "tba";
+  const t = new Date(date).getTime();
+  if (Number.isNaN(t)) return "tba";
+  return t <= Date.now() ? "done" : "upcoming";
+}
+
+const COLORS: Record<MilestoneState, { bg: string; border: string; dot: string; text: string }> = {
+  done:     { bg: "#F0FDF4", border: "#86EFAC", dot: "#16A34A", text: "#166534" },
+  upcoming: { bg: "#EFF6FF", border: "#BFDBFE", dot: "#2563EB", text: "#1E40AF" },
+  tba:      { bg: "#F5F5F0", border: "#E8E8E4", dot: "#C0C0BA", text: "#9B9B9B" },
+};
+
+const STATUS_ACCENT: Record<string, string> = {
+  upcoming:             "#2563EB",
+  NOTIFICATION_OUT:     "#2563EB",
+  open:                 "#16A34A",
+  APPLICATIONS_OPEN:    "#16A34A",
+  closed:               "#6B7280",
+  APPLICATIONS_CLOSED:  "#6B7280",
+  ADMIT_CARD_OUT:       "#D97706",
+  EXAM_SCHEDULED:       "#DC2626",
+  RESULT_PENDING:       "#D97706",
+  results:              "#D97706",
+  RESULT_OUT:           "#D97706",
+  COMPLETED:            "#6B7280",
+};
 
 export default function ExamStepper(props: ExamStepperProps) {
   const { status, applyUrl } = props;
-  const isOpen = status === "open";
+  const accent = STATUS_ACCENT[status] ?? "#2563EB";
 
-  // Color the connector line
-  const connectorColor = status === "open" ? "#16A34A"
-    : status === "results" ? "#D97706"
-    : "#E8E8E4";
+  const milestoneDates: Record<string, string | null | undefined> = {
+    notification: props.notificationDate ?? props.announcedDate ?? null,
+    apply:        props.startDate ?? null,
+    admitCard:    props.admitCardDate ?? null,
+    exam:         props.examDate ?? null,
+    result:       props.resultDate ?? null,
+  };
+
+  const isApplicationsOpen =
+    status === "open" || status === "APPLICATIONS_OPEN" || status === "NOTIFICATION_OUT";
 
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "flex-start",
-      gap: 0,
-      overflowX: "auto",
-      paddingBottom: 4,
-    }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "stretch",
+        gap: 0,
+        overflowX: "auto",
+        paddingBottom: 4,
+      }}
+    >
       {STEPS.map((step, idx) => {
-        const state = getStepState(step.key, idx, props);
-        const isCompleted = state === "completed";
-        const isActive = state === "active";
-        const isLocked = state === "locked";
+        const date = milestoneDates[step.key];
+        const s = stateFor(date);
+        const c = COLORS[s];
 
-        // Step color
-        const dotColor = isCompleted ? "#16A34A"
-          : isActive ? (status === "open" ? "#16A34A" : status === "results" ? "#D97706" : "#2563EB")
-          : "#D1D5DB";
-
-        const bgColor = isCompleted ? "#DCFCE7"
-          : isActive ? (status === "open" ? "#DCFCE7" : "#EFF6FF")
-          : "#F9FAFB";
-
-        const borderColor = isCompleted ? "#16A34A"
-          : isActive ? dotColor
-          : "#E8E8E4";
-
-        // Connector line (between steps)
-        const connector = idx < STEPS.length - 1 ? (
-          <div style={{
-            flex: "1 0 20px",
-            height: 2,
-            background: isCompleted || isActive ? connectorColor : "#E8E8E4",
-            marginTop: 20,
-            borderRadius: 1,
-            transition: "background 400ms ease",
-            minWidth: 16,
-          }} />
-        ) : null;
-
-        // Content for this step
-        let stepDate = "";
-        if (step.key === "announced")  stepDate = fmtDate(props.announcedDate);
-        if (step.key === "applications") {
-          stepDate = fmtDate(props.startDate);
-          if (!stepDate && props.endDate) stepDate = `Ends ${fmtDate(props.endDate)}`;
+        // Subtitle: dated ISO or "TBA"
+        let subtitle = "";
+        if (s === "done") subtitle = fmtDate(date);
+        else if (s === "upcoming") {
+          const days = date ? daysBetween(date) : null;
+          subtitle = days != null && days >= 0
+            ? `${fmtDate(date)} · in ${days} day${days !== 1 ? "s" : ""}`
+            : fmtDate(date);
+        } else {
+          subtitle = "TBA";
         }
-        if (step.key === "admitCard")   stepDate = fmtDate(props.admitCardDate) || fmtDate(props.examDate);
-        if (step.key === "exam")        stepDate = fmtDate(props.examDate);
-        if (step.key === "results")      stepDate = fmtDate(props.resultDate);
 
-        const isApplicationsStep = step.key === "applications";
+        const connectorColor = idx < STEPS.length - 1
+          ? (s === "done" ? "#86EFAC" : s === "upcoming" ? accent : "#E8E8E4")
+          : undefined;
 
         return (
-          <div key={step.key} style={{ display: "flex", alignItems: "flex-start", flex: "1 0 auto" }}>
-            {/* Step circle */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 60 }}>
-              <div style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: bgColor,
-                border: `2px solid ${borderColor}`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 18,
-                flexShrink: 0,
-                transition: "all 400ms ease",
-                boxShadow: isActive ? `0 0 0 3px ${dotColor}25` : "none",
-              }}>
-                {isLocked ? "🔒" : isCompleted ? "✅" : step.icon}
+          <div key={step.key} style={{ display: "flex", alignItems: "stretch", flex: "1 0 auto", minWidth: 120 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 80, flex: 1 }}>
+              {/* Dot */}
+              <div
+                aria-label={`${step.label}: ${s === "tba" ? "date not announced" : s === "done" ? "completed" : "upcoming"}`}
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  background: c.bg,
+                  border: `2px solid ${c.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 14,
+                  fontWeight: 800,
+                  color: c.dot,
+                }}
+              >
+                {s === "done" ? "✓" : s === "upcoming" ? "●" : "·"}
               </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: isLocked ? "#D1D5DB" : "#6B7280", marginTop: 6, textAlign: "center", letterSpacing: "0.03em" }}>
+              {/* Label */}
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#1A1A1A", marginTop: 6, textAlign: "center" }}>
                 {step.label}
               </div>
-              {stepDate && !isLocked && (
-                <div style={{ fontSize: 10, color: "#9B9B9B", marginTop: 2, textAlign: "center" }}>
-                  {stepDate}
-                </div>
-              )}
-              {isLocked && (
-                <div style={{ fontSize: 10, color: "#D1D5DB", marginTop: 2, textAlign: "center" }}>
-                  Locked
-                </div>
-              )}
-
-              {/* Apply Now button for Applications step */}
-              {isApplicationsStep && isOpen && applyUrl && (
+              {/* Subtitle */}
+              <div
+                style={{
+                  fontSize: 10,
+                  color: c.text,
+                  marginTop: 2,
+                  textAlign: "center",
+                  lineHeight: 1.3,
+                  minHeight: 14,
+                }}
+              >
+                {subtitle}
+              </div>
+              {/* Apply button sits under the Applications step when still open */}
+              {step.key === "apply" && isApplicationsOpen && applyUrl && (
                 <a
                   href={applyUrl.startsWith("http") ? applyUrl : `https://${applyUrl}`}
                   target="_blank"
@@ -182,7 +179,7 @@ export default function ExamStepper(props: ExamStepperProps) {
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 4,
-                    marginTop: 6,
+                    marginTop: 8,
                     padding: "4px 10px",
                     background: "#16A34A",
                     color: "#FFF",
@@ -193,11 +190,22 @@ export default function ExamStepper(props: ExamStepperProps) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  Apply Now <ExternalLink size={9} />
+                  Apply ↗
+                  <ExternalLink size={9} />
                 </a>
               )}
             </div>
-            {connector}
+            {connectorColor && (
+              <div
+                style={{
+                  flex: "0 0 18px",
+                  height: 2,
+                  background: connectorColor,
+                  marginTop: 20,
+                  alignSelf: "flex-start",
+                }}
+              />
+            )}
           </div>
         );
       })}

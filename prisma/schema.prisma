@@ -1463,19 +1463,34 @@ model GovernmentExam {
   notificationUrl  String?   // Official PDF
   syllabusUrl      String?
 
-  status           String    @default("upcoming") // "upcoming", "open", "closed", "results"
+  status           String    @default("upcoming") // legacy: "upcoming"/"open"/"closed"/"results"
+                                                  // new (news-sourced): NOTIFICATION_OUT/APPLICATIONS_OPEN/
+                                                  // APPLICATIONS_CLOSED/ADMIT_CARD_OUT/EXAM_SCHEDULED/
+                                                  // RESULT_PENDING/RESULT_OUT/COMPLETED
   announcedDate    DateTime?
-  startDate        DateTime?
-  endDate          DateTime?
+  startDate        DateTime? // = applicationStartDate
+  endDate          DateTime? // = applicationEndDate
   admitCardDate    DateTime?
   examDate         DateTime?
   resultDate       DateTime?
+
+  // ── News-driven sync (April 2026) ──────────────────────
+  shortName         String?    // "UPSC CSE 2026" for fuzzy upsert matching
+  organizingBody    String?    // "UPSC" / "SSC" / "MPSC" — populated alongside department
+  category          String?    // CENTRAL | STATE_PSC | BANKING | RAILWAY | DEFENCE | TEACHING | OTHER
+  scope             String?    @default("NATIONAL") // NATIONAL | STATE
+  notificationDate  DateTime?  // distinct from announcedDate — when govt released the notification
+  sourceUrls        Json?      // Array of news URLs that fed this exam
+  lastVerifiedAt    DateTime?  // When a news article most recently confirmed this exam
+  needsVerification Boolean   @default(false)       // Daily cron flags stale exams
 
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   @@index([stateId, status])
   @@index([districtId, status])
+  @@index([shortName])
+  @@index([scope])
 }
 
 model DepartmentStaffing {

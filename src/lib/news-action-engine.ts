@@ -11,6 +11,7 @@
 import { prisma } from "./db";
 import { Prisma } from "@/generated/prisma";
 import { callAI } from "./ai-provider";
+import { extractExamFromNews, syncExamFromNews } from "./exam-sync";
 
 export interface NewsClassification {
   articleId: string;
@@ -302,24 +303,33 @@ export async function executeNewsAction(
       }
 
       case "exams": {
-        const data = extractedData as Record<string, unknown>;
-        if (data.examTitle && data.department) {
-          const state = await prisma.state.findFirst({ where: { districts: { some: { id: districtId } } } });
-          await prisma.governmentExam.create({
-            data: {
-              level: "state",
-              stateId: state?.id ?? null,
-              districtId,
-              title: data.examTitle as string,
-              department: data.department as string,
-              vacancies: typeof data.vacancies === "number" ? data.vacancies : null,
-              status: (data.status as string) ?? "upcoming",
-              applyUrl: (data.applyUrl as string) ?? articleUrl,
-              notificationUrl: articleUrl,
-              announcedDate: new Date(),
-            },
+        // News-driven exam sync — extract structured metadata then upsert.
+        // Failure is non-fatal: the NewsItem still persists via the outer pipeline.
+        try {
+          const extraction = await extractExamFromNews({
+            title: articleTitle,
+            url: articleUrl,
+            publishedAt: new Date(),
           });
-          console.log(`[NewsAction] ✅ Created GovernmentExam: ${data.examTitle}`);
+          if (!extraction) {
+            console.log(`[NewsAction] exams: extraction returned null for "${articleTitle.slice(0, 60)}"`);
+            break;
+          }
+          const result = await syncExamFromNews(
+            extraction,
+            { title: articleTitle, url: articleUrl, publishedAt: new Date() },
+            districtId
+          );
+          console.log(
+            `[NewsAction] ✅ Exam sync: ${extraction.shortName} → ` +
+            `created ${result.created}, updated ${result.updated}, skipped ${result.skipped} ` +
+            `across ${result.affectedDistricts} districts (scope=${extraction.scope})`
+          );
+        } catch (err) {
+          console.error(
+            "[NewsAction] exam sync failed:",
+            err instanceof Error ? err.message : err
+          );
         }
         break;
       }

@@ -40,6 +40,15 @@ interface GovernmentExam {
   admitCardDate: string | null;
   examDate: string | null;
   resultDate: string | null;
+  // News-driven fields (April 2026)
+  shortName?: string | null;
+  organizingBody?: string | null;
+  category?: string | null;
+  scope?: string | null;
+  notificationDate?: string | null;
+  sourceUrls?: string[] | null;
+  lastVerifiedAt?: string | null;
+  needsVerification?: boolean | null;
 }
 
 interface DepartmentStaffing {
@@ -67,13 +76,46 @@ interface ExamsResponse {
   };
 }
 
-// ── Status config ────────────────────────────────────────
+// ── Status config — covers both legacy lowercase + news-sourced uppercase ──
 const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  upcoming: { color: "#2563EB", bg: "#EFF6FF", label: "Upcoming" },
-  open:     { color: "#16A34A", bg: "#DCFCE7", label: "Applications Open" },
-  closed:   { color: "#6B7280", bg: "#F3F4F6", label: "Closed" },
-  results:   { color: "#D97706", bg: "#FEF3C7", label: "Results Out" },
+  // legacy
+  upcoming:            { color: "#2563EB", bg: "#EFF6FF", label: "Upcoming" },
+  open:                { color: "#16A34A", bg: "#DCFCE7", label: "Applications Open" },
+  closed:              { color: "#6B7280", bg: "#F3F4F6", label: "Closed" },
+  results:             { color: "#D97706", bg: "#FEF3C7", label: "Results Out" },
+  // news-driven
+  NOTIFICATION_OUT:    { color: "#2563EB", bg: "#EFF6FF", label: "Notification Out" },
+  APPLICATIONS_OPEN:   { color: "#16A34A", bg: "#DCFCE7", label: "Applications Open" },
+  APPLICATIONS_CLOSED: { color: "#6B7280", bg: "#F3F4F6", label: "Applications Closed" },
+  ADMIT_CARD_OUT:      { color: "#D97706", bg: "#FEF3C7", label: "Admit Card Out" },
+  EXAM_SCHEDULED:      { color: "#DC2626", bg: "#FEF2F2", label: "Exam Scheduled" },
+  RESULT_PENDING:      { color: "#D97706", bg: "#FEF3C7", label: "Result Pending" },
+  RESULT_OUT:          { color: "#D97706", bg: "#FEF3C7", label: "Result Out" },
+  COMPLETED:           { color: "#6B7280", bg: "#F3F4F6", label: "Completed" },
 };
+
+// Bucket an exam into open / upcoming / closed for section grouping.
+function examBucket(e: GovernmentExam): "open" | "upcoming" | "closed" {
+  const s = e.status;
+  if (s === "open" || s === "APPLICATIONS_OPEN" || s === "ADMIT_CARD_OUT" || s === "EXAM_SCHEDULED") return "open";
+  if (s === "closed" || s === "APPLICATIONS_CLOSED" || s === "results" || s === "RESULT_PENDING" || s === "RESULT_OUT" || s === "COMPLETED") return "closed";
+  return "upcoming"; // upcoming, NOTIFICATION_OUT, anything unknown
+}
+
+function relativeTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return "";
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString("en-IN");
+}
 
 // ── Staffing widget ────────────────────────────────────────
 function StaffingWidget({ staffing }: { staffing: DepartmentStaffing[] }) {
@@ -157,7 +199,9 @@ function StaffingWidget({ staffing }: { staffing: DepartmentStaffing[] }) {
 
 // ── Exam detail card ───────────────────────────────────────
 function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: boolean }) {
+  void isStateLevel;
   const cfg = STATUS_CONFIG[exam.status] ?? STATUS_CONFIG.upcoming;
+  const firstSource = Array.isArray(exam.sourceUrls) && exam.sourceUrls.length > 0 ? exam.sourceUrls[0] : null;
 
   return (
     <div style={{
@@ -176,21 +220,34 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
           <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3, marginBottom: 3 }}>
             {exam.title}
           </div>
-          <div style={{ fontSize: 12, color: "#6B7280" }}>{exam.department}</div>
+          <div style={{ fontSize: 12, color: "#6B7280" }}>{exam.organizingBody ?? exam.department}</div>
         </div>
-        <span style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color: cfg.color,
-          background: cfg.bg,
-          padding: "3px 10px",
-          borderRadius: 20,
-          flexShrink: 0,
-          border: `1px solid ${cfg.color}30`,
-          whiteSpace: "nowrap",
-        }}>
-          {cfg.label}
-        </span>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: cfg.color,
+            background: cfg.bg,
+            padding: "3px 10px",
+            borderRadius: 20,
+            border: `1px solid ${cfg.color}30`,
+            whiteSpace: "nowrap",
+          }}>
+            {cfg.label}
+          </span>
+          {exam.needsVerification && (
+            <span
+              title={`Last verified ${exam.lastVerifiedAt ? relativeTime(exam.lastVerifiedAt) : "—"}. No recent news confirmation.`}
+              style={{
+                fontSize: 10, fontWeight: 600, color: "#A16207",
+                background: "#FEFCE8", border: "1px solid #FDE68A",
+                padding: "2px 8px", borderRadius: 10,
+              }}
+            >
+              ⚠ Unverified
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Stepper */}
@@ -198,6 +255,7 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
         <ExamStepper
           status={exam.status}
           announcedDate={exam.announcedDate}
+          notificationDate={exam.notificationDate ?? null}
           startDate={exam.startDate}
           endDate={exam.endDate}
           admitCardDate={exam.admitCardDate}
@@ -235,7 +293,7 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
 
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: "auto" }}>
-        {exam.applyUrl && exam.status === "open" && (
+        {exam.applyUrl && examBucket(exam) !== "closed" && (
           <a
             href={exam.applyUrl.startsWith("http") ? exam.applyUrl : `https://${exam.applyUrl}`}
             target="_blank"
@@ -301,6 +359,38 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
           </a>
         )}
       </div>
+
+      {/* Provenance footer — last verified + source link */}
+      {(exam.lastVerifiedAt || firstSource) && (
+        <div
+          style={{
+            marginTop: 12,
+            paddingTop: 10,
+            borderTop: "1px solid #F0F0EC",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+            fontSize: 11,
+            color: "#9B9B9B",
+          }}
+        >
+          {exam.lastVerifiedAt && (
+            <span>Last updated from news: {relativeTime(exam.lastVerifiedAt)}</span>
+          )}
+          {firstSource && (
+            <a
+              href={firstSource.startsWith("http") ? firstSource : `https://${firstSource}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#2563EB", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 3 }}
+            >
+              Source <ExternalLink size={10} />
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -363,9 +453,9 @@ function ExamsPageInner({ params }: { params: Promise<{ locale: string; state: s
     ? allExamsRaw
     : allExamsRaw.filter((e) => getExamCategory(e) === examCategory);
 
-  const openExams = allExams.filter((e) => e.status === "open");
-  const upcomingExams = allExams.filter((e) => e.status === "upcoming");
-  const closedExams = allExams.filter((e) => e.status === "closed" || e.status === "results");
+  const openExams = allExams.filter((e) => examBucket(e) === "open");
+  const upcomingExams = allExams.filter((e) => examBucket(e) === "upcoming");
+  const closedExams = allExams.filter((e) => examBucket(e) === "closed");
 
   return (
     <div style={{ padding: 24 }}>

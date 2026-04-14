@@ -83,6 +83,52 @@
 #     stampede at station, train, platform, station, irctc.
 #     Crops keyword list unchanged.
 #
+# 2026-04-14 — Exams: news-driven sync + daily status cron + milestone UI:
+#   • GovernmentExam schema extended additively with shortName, organizingBody,
+#     category, scope (NATIONAL|STATE), notificationDate, sourceUrls (Json),
+#     lastVerifiedAt, needsVerification. Legacy fields (title/department/status
+#     lowercase) preserved; new news-sourced rows use UPPERCASE status enum.
+#   • src/lib/exam-sync.ts:
+#       – extractExamFromNews(article): free-tier AI extraction (no guessing,
+#         null for unmentioned fields). Returns null when the article is not
+#         about a specific exam.
+#       – syncExamFromNews(extraction, article, sourceDistrictId): fuzzy upsert
+#         by shortName / title-prefix. NATIONAL scope fans out to every active
+#         district; STATE scope to that state's districts. Status never
+#         downgrades. null values never overwrite concrete data. sourceUrls
+#         array capped at 10. Logs UpdateLog + busts Redis cache per district.
+#   • news-action-engine exams case rewired to call the new sync pipeline
+#     (replaces the crude direct create).
+#   • /api/cron/update-exams (route.ts, Bearer CRON_SECRET, 30 6 * * *):
+#       pass A — advance status from calendar dates (APPLICATIONS_OPEN when
+#         start<=now<=end, ADMIT_CARD_OUT when admitCardDate<=now, etc.),
+#         never downgrading.
+#       pass B — set needsVerification=true on non-completed exams whose
+#         lastVerifiedAt is older than 30 days.
+#     Added to vercel.json crons list.
+#   • ExamStepper refactored: no padlocks. Date-driven states —
+#       ✅ green + formatted date for past milestones
+#       ● blue + date + "in N days" for upcoming
+#       · grey "TBA" when the date isn't known
+#     Connectors colored by status. Apply button lives under Applications step
+#     only when applications are still open.
+#   • Exams page:
+#       – STATUS_CONFIG now covers both legacy lowercase and new uppercase
+#         enum values.
+#       – examBucket() groups by new statuses into open/upcoming/closed.
+#       – Apply Now button shows whenever applyUrl exists and the exam isn't
+#         in a closed bucket (was: only when status="open").
+#       – Card footer: "Last updated from news: {relative}" + Source link to
+#         the first article in sourceUrls.
+#       – "⚠ Unverified" amber pill when needsVerification=true.
+#   • src/lib/exam-onboard.ts: onboardDistrictExams(districtId) clones every
+#     NATIONAL exam from other active districts + STATE exams matching the
+#     target's state. Dedupes by shortName/title; skips rows that already
+#     exist at the target. Logs a single UpdateLog summary row.
+#   • scripts/backfill-exams-from-news.ts: --limit (default 10, hard-capped at
+#     50) + --dry-run. Keyword + title-prefix dedupe, free-tier AI. One bad
+#     article never aborts the run.
+#
 # 2026-04-14 — Phase 2 cont'd: Mumbai map fallback + overview empty sections:
 #   • /map: DistrictMapArea replaces MapWithFallback. Fetches the GeoJSON
 #     (not HEAD), counts features, compares to DB taluk count. Three states:

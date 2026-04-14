@@ -77,6 +77,11 @@ export async function GET(req: NextRequest) {
 
     // Merge national + state exams for the "stateExams" field (backwards-compatible)
     const allExams = [...nationalExams, ...stateExams];
+    const openStatuses = new Set([
+      "open", "APPLICATIONS_OPEN", "ADMIT_CARD_OUT", "EXAM_SCHEDULED",
+    ]);
+    const upcomingStatuses = new Set(["upcoming", "NOTIFICATION_OUT"]);
+    const combined = [...allExams, ...districtExams];
     const result = {
       stateExams: allExams,
       districtExams,
@@ -84,8 +89,8 @@ export async function GET(req: NextRequest) {
       summary: {
         totalStateExams: allExams.length,
         totalDistrictExams: districtExams.length,
-        openExams: [...allExams, ...districtExams].filter((e) => e.status === "open").length,
-        upcomingExams: [...allExams, ...districtExams].filter((e) => e.status === "upcoming").length,
+        openExams: combined.filter((e) => openStatuses.has(e.status)).length,
+        upcomingExams: combined.filter((e) => upcomingStatuses.has(e.status)).length,
         totalStaffingRecords: staffing.length,
       },
     };
