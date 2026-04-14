@@ -46,6 +46,42 @@
 #     – RTI fee ₹₹10: file-rti UI strips leading ₹/Rs prefix before prepending ₹.
 #     – Services page gained DataSourceBanner; state-config registers sources
 #       for services and update-log.
+#   • Post-deploy: aliases moved to next.config.ts redirects() as true 308s
+#     (server-component permanentRedirect streamed a 200 with target HTML,
+#     which is fine for humans but not for SEO). 5 redirect page.tsx stubs
+#     deleted.
+#
+# 2026-04-14 — Phase 2: Mumbai taluka data + urban-aware UI + classifier tuning:
+#   • scripts/fix-mumbai-taluk-names.ts: Mumbai's 13 DB taluks had Kannada
+#     nameLocal on some rows and 0 population across the board. Script
+#     overwrites nameLocal with Marathi (Devanagari), seeds approximate
+#     BMC-ward-aggregate populations + areas, and writes a UpdateLog entry
+#     (module=map, action=update, recordCount=13). Data source noted in the
+#     script header: BMC ward-wise estimates, exact ward census unavailable.
+#   • scripts/backfill-mumbai-update-log.ts: idempotent backdated seed log
+#     (15 module entries timestamped ~2026-04-01) so the public /update-log
+#     page shows real historical provenance from the moment it ships.
+#   • [taluk]/page.tsx: now state-config aware —
+#       – subDistrictUnit label (Taluk/Mandal/Ward) instead of hardcoded "Taluk"
+#       – removes the hardcoded Kannada "ತಾಲ್ಲೂಕು" suffix after nameLocal
+#       – hides Gram Panchayats + JJM module cards when
+#         gramPanchayatApplicable/jjmApplicable=false
+#       – suppresses the entire "Villages (0)" section for urban districts
+#       – stats grid now shows taluk.population (DB seeded value) and a new
+#         Area km² card when area is set
+#   • /map taluk list now surfaces population + area for urban districts
+#     (the 5-shape GeoJSON covers only zone-level boundaries; card grid
+#     carries the missing 8 zones via DB data).
+#   • alerts/page.tsx: type pills + inline badges now pass through
+#     formatTypeLabel() → "water_supply" renders as "Water Supply".
+#   • scraper/jobs/news.ts: transport MODULE_KEYWORDS promoted above crops +
+#     police in the match order so named-train / commuter / overcrowding
+#     headlines win before falling to incidental "agri"/"crime" matches.
+#     Added: vande bharat, shatabdi, rajdhani, duronto, tejas, jan shatabdi,
+#     local train, mumbai local, suburban, wr local, cr local, best bus,
+#     monorail, metro line, commuter(s), overcrowding/overcrowded,
+#     stampede at station, train, platform, station, irctc.
+#     Crops keyword list unchanged.
 
 ## 1. PROJECT IDENTITY
 

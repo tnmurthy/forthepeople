@@ -478,6 +478,8 @@ export interface Taluk {
   name: string;
   nameLocal?: string | null;
   slug: string;
+  population?: number | null;
+  area?: number | null;
   villages: Array<{ id: string; name: string; nameLocal?: string | null; population?: number | null }>;
   _count: { villages: number };
 }

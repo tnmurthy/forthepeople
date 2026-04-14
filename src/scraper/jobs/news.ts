@@ -40,9 +40,25 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   weather: ["rain", "flood", "drought", "storm", "temperature", "weather"],
 };
 
+// NOTE: precedence matters — first match wins. "transport" sits ABOVE crops,
+// police, and generic categories so that specific train/metro keywords like
+// "vande bharat" or "mumbai local" win over incidental "agri"/"crime" mentions.
 const MODULE_KEYWORDS: Array<[string, string[]]> = [
   ["leaders",        ["mla", "mp", "minister", "collector", "sp police", "deputy commissioner", "dc ", "elected", "appointment", "sworn in", "cabinet", "official"]],
   ["infrastructure", ["road", "bridge", "highway", "nh-", "overbridge", "underpass", "construction", "inaugurate", "flyover", "project"]],
+  ["transport",      [
+    // Core + existing
+    "bus", "transport", "ksrtc", "railway", "metro", "taxi", "auto", "road accident", "traffic",
+    // Rail services — named trains (these were being misclassified as crops)
+    "vande bharat", "shatabdi", "rajdhani", "duronto", "tejas", "jan shatabdi",
+    // Mumbai-specific suburban rail + buses
+    "local train", "mumbai local", "suburban", "suburban rail", "wr local", "cr local",
+    "best bus", "best undertaking", "monorail", "metro line",
+    // Commuter / crowding — previously snagged by "police/crime"
+    "commuter", "commuters", "overcrowding", "overcrowded", "stampede at station",
+    // Generic rail
+    "train", "platform", "station", "irctc",
+  ]],
   ["budget",         ["budget", "fund", "crore", "lakh", "allocation", "grant", "expenditure", "revenue", "deficit", "treasury"]],
   ["water",          ["dam", "reservoir", "water level", "krishnaraja sagar", "krs", "kabini", "irrigation", "cauvery", "drinking water supply"]],
   ["crops",          ["crop", "farmer", "paddy", "sugarcane", "mandi price", "apmc", "harvest", "agri", "ragi", "tomato price", "onion price"]],
@@ -51,7 +67,6 @@ const MODULE_KEYWORDS: Array<[string, string[]]> = [
   ["elections",      ["election", "vote", "polling", "candidate", "bjp", "congress", "jds", "bypoll", "constituency", "electoral"]],
   ["education",      ["school", "college", "university", "exam", "result", "student", "teacher", "sylhet", "sslc", "puc result"]],
   ["health",         ["hospital", "health", "doctor", "disease", "dengue", "malaria", "covid", "vaccination", "primary health centre", "phc"]],
-  ["transport",      ["bus", "transport", "ksrtc", "railway", "metro", "taxi", "auto", "road accident", "traffic"]],
   ["schemes",        ["scheme", "yojana", "pmay", "mgnrega", "welfare", "beneficiary", "pension", "ration card", "anna bhagya"]],
   ["housing",        ["housing", "house", "flat", "apartment", "pmay", "slum", "eviction", "shelter"]],
   ["power",          ["power cut", "electricity", "outage", "load shedding", "substation", "bescom", "mescom", "voltage", "power supply"]],

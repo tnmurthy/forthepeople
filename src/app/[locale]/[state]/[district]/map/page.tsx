@@ -91,6 +91,11 @@ export default function MapPage({ params }: { params: Promise<{ locale: string; 
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A" }}>{t.name}</div>
                     {t.nameLocal && <div style={{ fontSize: 12, color: "#9B9B9B", fontFamily: "var(--font-regional)" }}>{t.nameLocal}</div>}
+                    {hideVillages && t.population != null && (
+                      <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 2 }}>
+                        {t.population.toLocaleString("en-IN")} pop{t.area != null ? ` · ${t.area} km²` : ""}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {!hideVillages && <span style={{ fontSize: 13, color: "#6B6B6B" }}>{t._count.villages} villages</span>}

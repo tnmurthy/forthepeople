@@ -46,6 +46,10 @@ function AlertsPageInner({ params }: { params: Promise<{ locale: string; state: 
     }, {})
   ).sort((a, b) => b[1] - a[1]);
 
+  // "water_supply" → "Water Supply" for display
+  const formatTypeLabel = (raw: string) =>
+    raw.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
   return (
     <div style={{ padding: 24 }}>
       <ModuleHeader icon={Bell} title="Local Alerts" description="Active alerts and advisories for the district" backHref={base} liveTag />
@@ -76,7 +80,7 @@ function AlertsPageInner({ params }: { params: Promise<{ locale: string; state: 
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
                   {byType.map(([type, count]) => (
                     <span key={type} style={{ fontSize: 12, padding: "3px 10px", borderRadius: 12, background: "#F5F5F0", color: "#6B6B6B", border: "1px solid #E8E8E4" }}>
-                      {type} ({count})
+                      {formatTypeLabel(type)} ({count})
                     </span>
                   ))}
                 </div>
@@ -95,7 +99,7 @@ function AlertsPageInner({ params }: { params: Promise<{ locale: string; state: 
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                             <SeverityBadge severity={a.severity} />
-                            <span style={{ fontSize: 11, background: "#00000010", padding: "2px 7px", borderRadius: 10, color: "#6B6B6B" }}>{a.type}</span>
+                            <span style={{ fontSize: 11, background: "#00000010", padding: "2px 7px", borderRadius: 10, color: "#6B6B6B" }}>{formatTypeLabel(a.type)}</span>
                             {dateRange && <span style={{ fontSize: 11, color: "#9B9B9B" }}>📅 {dateRange}</span>}
                           </div>
                           <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>{a.title}</div>
