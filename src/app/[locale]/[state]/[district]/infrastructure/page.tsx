@@ -284,45 +284,51 @@ interface InfraAnalysis {
   sources: number;
   generatedAt: string;
   cached: boolean;
+  unavailable?: boolean;
 }
 
-function LazyAnalysis({ projectId }: { projectId: string }) {
-  const [enabled, setEnabled] = useState(false);
-  const { data, isFetching, error } = useQuery<InfraAnalysis>({
+/**
+ * Pre-computed analysis reader. NEVER triggers AI on render — the
+ * analysis is generated offline by /api/cron/generate-insights and
+ * cached in Redis for 24h. If no cache entry exists, the UI renders a
+ * calm "Analysis will be available soon" placeholder instead of a
+ * click-to-spend button.
+ */
+function PrecomputedAnalysis({ projectId }: { projectId: string }) {
+  const { data, isFetching } = useQuery<InfraAnalysis>({
     queryKey: ["infra-analysis", projectId],
     queryFn: async () => {
       const res = await fetch(`/api/data/infra-analysis?projectId=${projectId}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
-    enabled,
     staleTime: 60 * 60_000,
   });
 
-  if (!enabled) {
+  if (isFetching && !data) {
     return (
-      <button
-        onClick={() => setEnabled(true)}
-        style={{
-          display: "inline-flex", alignItems: "center", gap: 6,
-          padding: "7px 14px", background: "#F5F3FF", color: "#6D28D9",
-          border: "1px solid #DDD6FE", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
-        }}
-      >
-        <Sparkles size={13} /> Generate AI Analysis
-      </button>
+      <div style={{ padding: "10px 14px", background: "#F5F5F0", borderRadius: 10, fontSize: 12, color: "#6B7280" }}>
+        Loading analysis…
+      </div>
     );
   }
-
-  if (isFetching) {
-    return <div style={{ padding: "12px 16px", background: "#F5F5F0", borderRadius: 10, fontSize: 13, color: "#6B7280" }}>
-      Generating neutral project analysis (Gemini 2.5 Pro)…
-    </div>;
-  }
-  if (error || !data) {
-    return <div style={{ padding: "12px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 10, fontSize: 12, color: "#B91C1C" }}>
-      Analysis failed. Try again later.
-    </div>;
+  if (!data || data.unavailable) {
+    return (
+      <div
+        style={{
+          padding: "10px 14px",
+          background: "#FAFAFA",
+          border: "1px dashed #E5E7EB",
+          borderRadius: 10,
+          fontSize: 12,
+          color: "#9CA3AF",
+          fontStyle: "italic",
+        }}
+      >
+        AI analysis will be available soon — generated in the background once
+        this project has news coverage.
+      </div>
+    );
   }
 
   return (
@@ -330,7 +336,7 @@ function LazyAnalysis({ projectId }: { projectId: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
         <Sparkles size={13} style={{ color: "#7C3AED" }} />
         <span style={{ fontSize: 12, fontWeight: 700, color: "#4C1D95", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-          Project Analysis {data.cached ? "· cached" : ""}
+          Project Analysis
         </span>
       </div>
       {data.citizenImpact?.length > 0 && (
@@ -563,7 +569,7 @@ function ProjectCard({ p }: { p: InfraProject }) {
             </div>
           )}
           <div style={{ marginTop: 12 }}>
-            <LazyAnalysis projectId={p.id} />
+            <PrecomputedAnalysis projectId={p.id} />
           </div>
           <div style={{ marginTop: 10, fontSize: 10, color: "#9B9B9B", lineHeight: 1.5 }}>
             Data sourced from news articles. Not independently verified. Contact

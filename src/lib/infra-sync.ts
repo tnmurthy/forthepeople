@@ -678,6 +678,17 @@ export async function extractVerifyAndSyncInfra(
     ? { ...extraction, ...verification.corrections }
     : extraction;
 
+  // Defensive: a verifier "correction" can null out projectName/shortName
+  // (it sometimes treats vague articles as un-anchored). Drop those here so
+  // the downstream split() / fuzzy matcher never blows up.
+  if (typeof merged.projectName !== "string" || merged.projectName.trim().length < 3) {
+    console.log(`[infra-sync] skipped: verifier nulled projectName for "${article.title.slice(0, 80)}"`);
+    return null;
+  }
+  if (typeof merged.shortName !== "string" || merged.shortName.trim().length < 1) {
+    merged.shortName = merged.projectName.split(/\s+/).slice(0, 3).join(" ");
+  }
+
   // Sync only if verifier said ok OR confidence is very high
   if (!verification.verified && merged.confidence < 0.85) {
     console.log(`[infra-sync] skipped unverified: "${article.title.slice(0, 80)}" flags=${verification.flags.join(",")}`);

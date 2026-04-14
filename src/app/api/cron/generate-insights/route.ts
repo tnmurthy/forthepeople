@@ -17,6 +17,9 @@ import { prisma } from "@/lib/db";
 import { MODULE_INSIGHT_CONFIGS } from "@/lib/insight-config";
 import { generateInsight, hasDataChanged } from "@/lib/insight-generator";
 import { alertCronFailed } from "@/lib/admin-alerts";
+import { selectProjectsNeedingAnalysis, generateInfraAnalysis } from "@/lib/infra-analysis";
+
+const INFRA_ANALYSIS_CAP_PER_RUN = 10;
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 min max
@@ -94,11 +97,29 @@ export async function POST(req: NextRequest) {
     const succeeded = results.filter((r) => r.ok).length;
     const failed = results.filter((r) => !r.ok).length;
 
+    // ── Pre-compute infra project analyses (zero user-triggered AI) ──
+    // Pick up to 10 projects that have real (non-SEED) news updates and no
+    // cached analysis; regenerate via Gemini 2.5 Pro and cache for 24h.
+    let infraAnalysed = 0;
+    let infraFailed = 0;
+    try {
+      const pending = await selectProjectsNeedingAnalysis(INFRA_ANALYSIS_CAP_PER_RUN);
+      for (const projectId of pending) {
+        if (Date.now() - startTime > 270_000) break;
+        const out = await generateInfraAnalysis(projectId);
+        if (out) infraAnalysed++; else infraFailed++;
+        await sleep(2000);
+      }
+    } catch (err) {
+      console.error("[generate-insights] infra analysis pass failed:", err);
+    }
+
     return NextResponse.json({
       ok: true,
       processed: results.length,
       succeeded,
       failed,
+      infra: { analysed: infraAnalysed, failed: infraFailed, cap: INFRA_ANALYSIS_CAP_PER_RUN },
       durationMs: Date.now() - startTime,
     });
   } catch (err) {

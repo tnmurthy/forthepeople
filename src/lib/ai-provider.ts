@@ -207,6 +207,43 @@ async function getSettings() {
   }
 }
 
+// ── Optional Anthropic provider — used by scripts that prefer the user's
+//    own Claude key (set FTP_AI_PROVIDER=anthropic). ANTHROPIC_BASE_URL is
+//    honoured automatically by the SDK so Claude Code proxy URLs work.
+async function callAnthropic(
+  request: AIRequest,
+  maxTokens: number,
+  temperature: number
+): Promise<{ text: string; usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number } | undefined }> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set");
+  // Lazy import so non-script code paths don't pay the SDK boot cost.
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({ apiKey, baseURL: process.env.ANTHROPIC_BASE_URL });
+  const model = request.model ?? "claude-haiku-4-5-20251001";
+  const resp = await client.messages.create({
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    system: request.systemPrompt,
+    messages: [{ role: "user", content: request.userPrompt }],
+  });
+  const text = resp.content
+    .map((b) => (b.type === "text" ? (b as { type: "text"; text: string }).text : ""))
+    .join("");
+  const u = resp.usage;
+  return {
+    text,
+    usage: u
+      ? {
+          prompt_tokens: u.input_tokens ?? 0,
+          completion_tokens: u.output_tokens ?? 0,
+          total_tokens: (u.input_tokens ?? 0) + (u.output_tokens ?? 0),
+        }
+      : undefined,
+  };
+}
+
 // ── Main callAI function ────────────────────────────────────
 export async function callAI(request: AIRequest): Promise<AIResponse> {
   const s = await getSettings();
@@ -216,6 +253,20 @@ export async function callAI(request: AIRequest): Promise<AIResponse> {
   const model = request.model ?? getModelForPurpose(purpose);
 
   const startTime = Date.now();
+
+  // ── Override path: route through the user's own Anthropic key when
+  //    requested via env. Used by long-running scripts so OpenRouter
+  //    free-tier 429s don't strangle a backfill run.
+  if (process.env.FTP_AI_PROVIDER === "anthropic" && process.env.ANTHROPIC_API_KEY) {
+    try {
+      const { text, usage } = await callAnthropic(request, maxTokens, temp);
+      logUsage("anthropic", purpose, request.district, usage, Date.now() - startTime, true);
+      return { text, provider: "anthropic", model: request.model ?? "claude-haiku-4-5-20251001", usedFallback: false };
+    } catch (err) {
+      console.error("[AI] Anthropic provider failed; falling back to OpenRouter:", err instanceof Error ? err.message : err);
+      // fall through to OpenRouter path
+    }
+  }
 
   try {
     const { text, usage } = await callOpenRouter(request, model, maxTokens, temp);
