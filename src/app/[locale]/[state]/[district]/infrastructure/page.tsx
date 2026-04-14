@@ -1,7 +1,6 @@
 /**
  * ForThePeople.in — Your District. Your Data. Your Right.
  * © 2026 Jayanth M B. MIT License with Attribution.
- * https://github.com/jayanthmb14/forthepeople
  *
  * Infrastructure Tracker — news-driven timeline model.
  * Every data point links to a news article. The platform presents
@@ -12,7 +11,12 @@
 import ModuleErrorBoundary from "@/components/common/ModuleErrorBoundary";
 import { use, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { HardHat, AlertTriangle, Building2, ExternalLink, ChevronDown, ChevronUp, Info, Sparkles } from "lucide-react";
+import type { ComponentType } from "react";
+import {
+  HardHat, AlertTriangle, ExternalLink, ChevronDown, ChevronUp, Info, Sparkles,
+  Route, Train, TramFront, Landmark, Droplets, Waves, Building2, Zap, Heart,
+  GraduationCap, Trophy, Plane, Anchor, TreePine, TrafficCone, Leaf, Factory,
+} from "lucide-react";
 import { useInfrastructure } from "@/hooks/useRealtimeData";
 import type { InfraProject, InfraUpdate } from "@/hooks/useRealtimeData";
 import {
@@ -24,19 +28,30 @@ import { getModuleSources } from "@/lib/constants/state-config";
 import ModuleNews from "@/components/district/ModuleNews";
 
 // ═══════════════════════════════════════════════════════════
-// Config
+// Status config — case-insensitive via normalizeStatus
 // ═══════════════════════════════════════════════════════════
 
+type LucideCmp = ComponentType<{ size?: number | string; style?: React.CSSProperties; className?: string }>;
+
+function normalizeStatus(s: string | null | undefined): string {
+  if (!s) return "PROPOSED";
+  const cleaned = s.trim().toUpperCase().replace(/[\s-]+/g, "_");
+  // Map legacy variants to the canonical lifecycle enum
+  const MAP: Record<string, string> = {
+    PLANNED: "PROPOSED", PROPOSED: "PROPOSED", ANNOUNCED: "PROPOSED",
+    APPROVED: "APPROVED", SANCTIONED: "APPROVED",
+    TENDERED: "TENDER_ISSUED", TENDER_ISSUED: "TENDER_ISSUED",
+    ONGOING: "UNDER_CONSTRUCTION", IN_PROGRESS: "UNDER_CONSTRUCTION",
+    UNDER_CONSTRUCTION: "UNDER_CONSTRUCTION", ACTIVE: "UNDER_CONSTRUCTION",
+    ON_TRACK: "ON_TRACK",
+    DELAYED: "DELAYED", STALLED: "STALLED",
+    COMPLETED: "COMPLETED", INAUGURATED: "COMPLETED", COMPLETE: "COMPLETED",
+    CANCELLED: "CANCELLED", CANCELED: "CANCELLED", SCRAPPED: "CANCELLED", SHELVED: "CANCELLED",
+  };
+  return MAP[cleaned] ?? cleaned;
+}
+
 const STATUS_STYLE: Record<string, { bg: string; color: string; border: string; label: string }> = {
-  // Legacy lowercase
-  completed:          { bg: "#F0FDF4", color: "#16A34A", border: "#86EFAC", label: "Completed" },
-  ongoing:            { bg: "#FFF7ED", color: "#D97706", border: "#FDBA74", label: "Ongoing" },
-  "in-progress":      { bg: "#FFF7ED", color: "#D97706", border: "#FDBA74", label: "In Progress" },
-  planned:            { bg: "#F3F4F6", color: "#6B7280", border: "#D1D5DB", label: "Planned" },
-  delayed:            { bg: "#FEF2F2", color: "#DC2626", border: "#FCA5A5", label: "Delayed" },
-  tendered:           { bg: "#F5F3FF", color: "#7C3AED", border: "#C4B5FD", label: "Tendered" },
-  cancelled:          { bg: "#F3F4F6", color: "#6B7280", border: "#D1D5DB", label: "Cancelled" },
-  // News-driven uppercase
   PROPOSED:           { bg: "#F3F4F6", color: "#6B7280", border: "#D1D5DB", label: "Proposed" },
   APPROVED:           { bg: "#EFF6FF", color: "#2563EB", border: "#BFDBFE", label: "Approved" },
   TENDER_ISSUED:      { bg: "#F5F3FF", color: "#7C3AED", border: "#C4B5FD", label: "Tender Issued" },
@@ -48,11 +63,68 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; border: string; 
   CANCELLED:          { bg: "#F3F4F6", color: "#6B7280", border: "#D1D5DB", label: "Cancelled" },
 };
 
-const CATEGORY_ICON: Record<string, string> = {
-  ROAD: "🛣️", METRO: "🚇", RAIL: "🚆", BRIDGE: "🌉", FLYOVER: "🌁",
-  WATER: "💧", SEWAGE: "🛁", HOUSING: "🏠", PORT: "⚓", AIRPORT: "✈️",
-  POWER: "⚡", TELECOM: "📡", HOSPITAL: "🏥", SCHOOL: "🏫",
+function statusStyle(raw: string | null | undefined) {
+  const s = normalizeStatus(raw);
+  return STATUS_STYLE[s] ?? STATUS_STYLE.PROPOSED;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Category normalization + icons
+// ═══════════════════════════════════════════════════════════
+
+function normalizeCategory(raw: string | null | undefined): string {
+  if (!raw) return "Other";
+  const s = raw.trim().toLowerCase();
+  // Merge known variants
+  if (/\b(road|roads|national\s*highway|nh|pmgsy)\b/.test(s)) return "Roads";
+  if (/\bmetro\b/.test(s) && !/rail/.test(s)) return "Metro";
+  if (/\b(rail|railway|railways|train)\b/.test(s)) return "Rail";
+  if (/\b(bridge|overbridge|rob|fob)\b/.test(s)) return "Bridge";
+  if (/\bflyover\b/.test(s)) return "Flyover";
+  if (/\b(sewage|sewer|drainage)\b/.test(s)) return "Sewage";
+  if (/\b(water(\s*supply)?|jjm|tap)\b/.test(s)) return "Water";
+  if (/\b(housing|pmay|flat|apartment|homes)\b/.test(s)) return "Housing";
+  if (/\b(power|electricity|grid|substation)\b/.test(s)) return "Power";
+  if (/\b(port|harbour|harbor)\b/.test(s)) return "Port";
+  if (/\b(airport|runway|terminal)\b/.test(s)) return "Airport";
+  if (/\b(hospital|health|medical)\b/.test(s)) return "Hospital";
+  if (/\b(school|college|university|education)\b/.test(s)) return "Education";
+  if (/\b(stadium|sports|sport)\b/.test(s)) return "Sports & Stadium";
+  if (/\b(park|lake|garden|eco[-\s]?park|reservoir)\b/.test(s)) return "Parks & Lakes";
+  if (/\b(traffic|junction|signal)\b/.test(s)) return "Traffic";
+  if (/\b(environment|ghg|emission|pollution)\b/.test(s)) return "Environment";
+  if (/\b(industry|industrial|factory|manufacturing)\b/.test(s)) return "Industry";
+  if (/\b(telecom|fiber|5g|tower|network)\b/.test(s)) return "Telecom";
+  // Title-case fallback
+  return raw.replace(/\s+/g, " ").trim().replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
+}
+
+const CATEGORY_ICON: Record<string, LucideCmp> = {
+  Roads:             Route,
+  Metro:             Train,
+  Rail:              TramFront,
+  Bridge:            Landmark,
+  Flyover:           Landmark,
+  Water:             Droplets,
+  Sewage:            Waves,
+  Housing:           Building2,
+  Power:             Zap,
+  Hospital:          Heart,
+  Education:         GraduationCap,
+  "Sports & Stadium": Trophy,
+  Airport:           Plane,
+  Port:              Anchor,
+  "Parks & Lakes":   TreePine,
+  Traffic:           TrafficCone,
+  Environment:       Leaf,
+  Industry:          Factory,
+  Telecom:           Factory,
+  Other:             HardHat,
 };
+
+function categoryIcon(raw: string | null | undefined): LucideCmp {
+  return CATEGORY_ICON[normalizeCategory(raw)] ?? HardHat;
+}
 
 const UPDATE_TYPE_LABEL: Record<string, string> = {
   ANNOUNCEMENT: "Announcement", APPROVAL: "Approval", TENDER: "Tender",
@@ -61,16 +133,12 @@ const UPDATE_TYPE_LABEL: Record<string, string> = {
   PROGRESS_UPDATE: "Progress Update", CONTROVERSY: "Concern Raised",
   COMPLETION: "Completion", CANCELLATION: "Cancellation",
   PHASE_COMPLETE: "Phase Complete", INAUGURATION: "Inauguration",
-  REVIEW: "Review", SEED: "Initial Record",
+  REVIEW: "Review", SEED: "Initial Record", ADMIN_EDIT: "Admin Edit",
 };
 
 // ═══════════════════════════════════════════════════════════
-// Helpers
+// Format helpers
 // ═══════════════════════════════════════════════════════════
-
-function statusStyle(s: string) {
-  return STATUS_STYLE[s] ?? STATUS_STYLE.PROPOSED;
-}
 
 function formatINR(rupees: number | null | undefined): string {
   if (rupees == null) return "—";
@@ -82,40 +150,44 @@ function formatINR(rupees: number | null | undefined): string {
 
 function formatMonthYear(iso: string | null | undefined): string {
   if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
-  } catch {
-    return "—";
-  }
+  try { return new Date(iso).toLocaleDateString("en-IN", { month: "short", year: "numeric" }); } catch { return "—"; }
 }
 
 function formatFullDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  try {
-    return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  } catch {
-    return "—";
-  }
+  try { return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }); } catch { return "—"; }
 }
 
-function isCancelled(p: InfraProject): boolean {
-  return p.status === "CANCELLED" || p.status === "cancelled";
+function relativeTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const diff = Date.now() - new Date(iso).getTime();
+  if (Number.isNaN(diff)) return "—";
+  const m = Math.floor(diff / 60_000);
+  if (m < 60) return `${Math.max(1, m)}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return formatMonthYear(iso);
 }
 
-function isCompleted(p: InfraProject): boolean {
-  return p.status === "COMPLETED" || p.status === "completed";
+const AWAIT_STYLE: React.CSSProperties = { color: "#9CA3AF", fontStyle: "italic" };
+
+function Awaiting() {
+  return <span style={AWAIT_STYLE}>Awaiting data</span>;
 }
 
+// Normalized status predicates
+function isCancelled(p: InfraProject): boolean { return normalizeStatus(p.status) === "CANCELLED"; }
+function isCompleted(p: InfraProject): boolean { return normalizeStatus(p.status) === "COMPLETED"; }
 function isDelayed(p: InfraProject): boolean {
-  return p.status === "DELAYED" || p.status === "delayed" || p.status === "STALLED" || (p.delayMonths ?? 0) > 0;
+  const s = normalizeStatus(p.status);
+  return s === "DELAYED" || s === "STALLED" || (p.delayMonths ?? 0) > 0;
 }
-
-function isActive(p: InfraProject): boolean {
-  return !isCancelled(p) && !isCompleted(p);
-}
+function isActive(p: InfraProject): boolean { return !isCancelled(p) && !isCompleted(p); }
 
 // ═══════════════════════════════════════════════════════════
-// Disclaimer banner — MANDATORY, at the top
+// Disclaimer banner
 // ═══════════════════════════════════════════════════════════
 
 function DisclaimerBanner() {
@@ -123,15 +195,9 @@ function DisclaimerBanner() {
     <div
       role="note"
       style={{
-        background: "#FFFBEB",
-        border: "1px solid #FDE68A",
-        borderLeft: "4px solid #D97706",
-        borderRadius: 12,
-        padding: "12px 16px",
-        marginBottom: 20,
-        display: "flex",
-        gap: 10,
-        alignItems: "flex-start",
+        background: "#FFFBEB", border: "1px solid #FDE68A", borderLeft: "4px solid #D97706",
+        borderRadius: 12, padding: "12px 16px", marginBottom: 20,
+        display: "flex", gap: 10, alignItems: "flex-start",
       }}
     >
       <Info size={16} style={{ color: "#D97706", flexShrink: 0, marginTop: 2 }} />
@@ -148,7 +214,7 @@ function DisclaimerBanner() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Timeline accordion (lazy)
+// Timeline + lazy analysis
 // ═══════════════════════════════════════════════════════════
 
 function TimelineEntry({ u }: { u: InfraUpdate }) {
@@ -157,98 +223,59 @@ function TimelineEntry({ u }: { u: InfraUpdate }) {
     : u.updateType === "DELAY" || u.updateType === "STALL" || u.updateType === "CANCELLATION" ? "#DC2626"
     : u.updateType === "COMPLETION" || u.updateType === "PHASE_COMPLETE" || u.updateType === "INAUGURATION" ? "#16A34A"
     : u.updateType === "CONTROVERSY" ? "#B45309"
+    : u.updateType === "ADMIN_EDIT" ? "#7C3AED"
     : "#2563EB";
 
   return (
-    <div
-      style={{
-        position: "relative",
-        padding: "12px 0 12px 22px",
-        borderLeft: "2px solid #E8E8E4",
-        marginLeft: 6,
-      }}
-    >
+    <div style={{ position: "relative", padding: "12px 0 12px 22px", borderLeft: "2px solid #E8E8E4", marginLeft: 6 }}>
       <span
         style={{
-          position: "absolute",
-          left: -7,
-          top: 16,
-          width: 12,
-          height: 12,
-          borderRadius: "50%",
-          background: accent,
-          border: "2px solid #FFF",
-          boxShadow: `0 0 0 2px ${accent}40`,
+          position: "absolute", left: -7, top: 16, width: 12, height: 12, borderRadius: "50%",
+          background: accent, border: "2px solid #FFF", boxShadow: `0 0 0 2px ${accent}40`,
         }}
       />
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: "#6B7280", fontFamily: "var(--font-mono)" }}>
-          {formatFullDate(u.date)}
-        </span>
+        <span style={{ fontSize: 11, color: "#6B7280", fontFamily: "var(--font-mono)" }}>{formatFullDate(u.date)}</span>
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 700,
-            padding: "2px 8px",
-            borderRadius: 10,
-            background: `${accent}15`,
-            color: accent,
-            textTransform: "uppercase",
+            fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 10,
+            background: `${accent}15`, color: accent, textTransform: "uppercase",
           }}
         >
           {type}
         </span>
-        {u.verified && (
-          <span
-            title="Verified by the news-extraction AI verifier"
-            style={{ fontSize: 10, color: "#16A34A", fontWeight: 600 }}
-          >
-            ✓ verified
-          </span>
-        )}
+        {u.verified && <span title="Verified by the news-extraction AI verifier" style={{ fontSize: 10, color: "#16A34A", fontWeight: 600 }}>✓ verified</span>}
       </div>
-      <div style={{ fontSize: 13, color: "#1A1A1A", fontWeight: 500, marginBottom: 4, lineHeight: 1.4 }}>
-        {u.headline}
-      </div>
+      <div style={{ fontSize: 13, color: "#1A1A1A", fontWeight: 500, marginBottom: 4, lineHeight: 1.4 }}>{u.headline}</div>
       {u.summary && u.summary !== u.headline && (
         <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 6, lineHeight: 1.5 }}>{u.summary}</div>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, fontSize: 11, color: "#6B7280" }}>
         {u.personName && (
-          <span>
-            👤 {u.personName}
-            {u.personRole ? ` — ${u.personRole}` : ""}
-            {u.personParty ? ` (${u.personParty})` : ""}
-          </span>
+          <span>👤 {u.personName}{u.personRole ? ` — ${u.personRole}` : ""}{u.personParty ? ` (${u.personParty})` : ""}</span>
         )}
         {u.progressPct != null && <span>📊 {u.progressPct}% complete</span>}
         {u.budgetChange != null && <span>💰 {formatINR(u.budgetChange)}</span>}
         {u.statusChange && <span>↪ {statusStyle(u.statusChange).label}</span>}
       </div>
-      <a
-        href={u.newsUrl.startsWith("http") ? u.newsUrl : `https://${u.newsUrl}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-          marginTop: 6,
-          fontSize: 11,
-          color: "#2563EB",
-          textDecoration: "none",
-        }}
-      >
-        {u.newsSource ?? "Source"} {u.newsTitle ? `· ${u.newsTitle.slice(0, 80)}${u.newsTitle.length > 80 ? "…" : ""}` : ""}
-        <ExternalLink size={10} />
-      </a>
+      {u.newsUrl && u.newsUrl !== "admin-panel" && (
+        <a
+          href={u.newsUrl.startsWith("http") ? u.newsUrl : `https://${u.newsUrl}`}
+          target="_blank" rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: 11, color: "#2563EB", textDecoration: "none" }}
+        >
+          {u.newsSource ?? "Source"}{u.newsTitle ? ` · ${u.newsTitle.slice(0, 80)}${u.newsTitle.length > 80 ? "…" : ""}` : ""}
+          <ExternalLink size={10} />
+        </a>
+      )}
+      {u.newsUrl === "admin-panel" && (
+        <div style={{ marginTop: 6, fontSize: 11, color: "#7C3AED", fontStyle: "italic" }}>
+          Source: Admin edit (manual update)
+        </div>
+      )}
     </div>
   );
 }
-
-// ═══════════════════════════════════════════════════════════
-// Lazy AI analysis (Gemini 2.5 Pro, 24h cached by endpoint)
-// ═══════════════════════════════════════════════════════════
 
 interface InfraAnalysis {
   citizenImpact: string[];
@@ -277,49 +304,29 @@ function LazyAnalysis({ projectId }: { projectId: string }) {
       <button
         onClick={() => setEnabled(true)}
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "7px 14px",
-          background: "#F5F3FF",
-          color: "#6D28D9",
-          border: "1px solid #DDD6FE",
-          borderRadius: 8,
-          fontSize: 12,
-          fontWeight: 600,
-          cursor: "pointer",
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "7px 14px", background: "#F5F3FF", color: "#6D28D9",
+          border: "1px solid #DDD6FE", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer",
         }}
       >
-        <Sparkles size={13} /> Generate project analysis
+        <Sparkles size={13} /> Generate AI Analysis
       </button>
     );
   }
 
   if (isFetching) {
-    return (
-      <div style={{ padding: "12px 16px", background: "#F5F5F0", borderRadius: 10, fontSize: 13, color: "#6B7280" }}>
-        Generating neutral project analysis (Gemini 2.5 Pro)…
-      </div>
-    );
+    return <div style={{ padding: "12px 16px", background: "#F5F5F0", borderRadius: 10, fontSize: 13, color: "#6B7280" }}>
+      Generating neutral project analysis (Gemini 2.5 Pro)…
+    </div>;
   }
   if (error || !data) {
-    return (
-      <div style={{ padding: "12px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 10, fontSize: 12, color: "#B91C1C" }}>
-        Analysis failed. Try again later.
-      </div>
-    );
+    return <div style={{ padding: "12px 16px", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 10, fontSize: 12, color: "#B91C1C" }}>
+      Analysis failed. Try again later.
+    </div>;
   }
 
   return (
-    <div
-      style={{
-        padding: "14px 16px",
-        background: "#FAFAFE",
-        border: "1px solid #E0E7FF",
-        borderLeft: "4px solid #7C3AED",
-        borderRadius: 12,
-      }}
-    >
+    <div style={{ padding: "14px 16px", background: "#FAFAFE", border: "1px solid #E0E7FF", borderLeft: "4px solid #7C3AED", borderRadius: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
         <Sparkles size={13} style={{ color: "#7C3AED" }} />
         <span style={{ fontSize: 12, fontWeight: 700, color: "#4C1D95", letterSpacing: "0.04em", textTransform: "uppercase" }}>
@@ -328,9 +335,7 @@ function LazyAnalysis({ projectId }: { projectId: string }) {
       </div>
       {data.citizenImpact?.length > 0 && (
         <>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-            📊 For Citizens
-          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}>📊 For Citizens</div>
           <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: "#374151", lineHeight: 1.6, marginBottom: 10 }}>
             {data.citizenImpact.map((s, i) => <li key={i}>{s}</li>)}
           </ul>
@@ -338,17 +343,13 @@ function LazyAnalysis({ projectId }: { projectId: string }) {
       )}
       {data.accountability?.length > 0 && (
         <>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-            📊 For Accountability
-          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", marginBottom: 4, letterSpacing: "0.04em", textTransform: "uppercase" }}>📊 For Accountability</div>
           <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: "#374151", lineHeight: 1.6, marginBottom: 10 }}>
             {data.accountability.map((s, i) => <li key={i}>{s}</li>)}
           </ul>
         </>
       )}
-      {data.notes && (
-        <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5, fontStyle: "italic" }}>{data.notes}</div>
-      )}
+      {data.notes && <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.5, fontStyle: "italic" }}>{data.notes}</div>}
       <div style={{ marginTop: 8, fontSize: 10, color: "#9B9B9B" }}>
         Source: {data.sources} news articles · Generated by Gemini 2.5 Pro · ForThePeople.in
       </div>
@@ -360,86 +361,94 @@ function LazyAnalysis({ projectId }: { projectId: string }) {
 // Project card
 // ═══════════════════════════════════════════════════════════
 
+function PeopleRow({ p }: { p: InfraProject }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10, fontSize: 12, color: "#4B5563" }}>
+      <div>
+        👤 Announced by:{" "}
+        {p.announcedBy ? (
+          <>
+            <strong style={{ color: "#1A1A1A" }}>{p.announcedBy}</strong>
+            {p.announcedByRole ? ` (${p.announcedByRole})` : ""}
+            {p.party ? ` — ${p.party}` : ""}
+            {p.announcedDate ? ` · ${formatMonthYear(p.announcedDate)}` : ""}
+          </>
+        ) : <Awaiting />}
+      </div>
+      <div>
+        🏗 Executing Agency: {p.executingAgency ? <strong style={{ color: "#1A1A1A" }}>{p.executingAgency}</strong> : <Awaiting />}
+      </div>
+      <div>
+        👥 Key People:{" "}
+        {p.keyPeople && p.keyPeople.length > 0 ? (
+          <>
+            {p.keyPeople.slice(0, 3).map((kp, i) => (
+              <span key={i}>
+                {i > 0 ? ", " : ""}
+                <strong style={{ color: "#1A1A1A" }}>{kp.name}</strong>
+                {kp.role ? ` (${kp.role}${kp.party ? `, ${kp.party}` : ""})` : kp.party ? ` (${kp.party})` : ""}
+              </span>
+            ))}
+            {p.keyPeople.length > 3 && <span> + {p.keyPeople.length - 3} more</span>}
+          </>
+        ) : <Awaiting />}
+      </div>
+    </div>
+  );
+}
+
 function ProjectCard({ p }: { p: InfraProject }) {
   const [open, setOpen] = useState(false);
   const ss = statusStyle(p.status);
-  const icon = CATEGORY_ICON[p.category] ?? "🔧";
+  const Icon = categoryIcon(p.category);
+  const normalCategory = normalizeCategory(p.category);
   const updates = p.updates ?? [];
   const latest = updates[0];
   const progress = p.progressPct ?? 0;
   const hasBudgetOverrun = p.costOverrun != null && p.costOverrun !== 0;
   const verifiedCount = p.verificationCount ?? 0;
+  const lastTs = p.lastNewsAt ?? null;
+  const sourceLabel = lastTs ? "News" : "Seed data";
 
   return (
     <div
       style={{
-        background: "#FFF",
-        border: "1px solid #E8E8E4",
-        borderRadius: 14,
-        padding: "18px 20px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
+        background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 14,
+        padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        display: "flex", flexDirection: "column",
       }}
     >
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
+            <Icon size={18} style={{ color: "#2563EB", flexShrink: 0 }} />
             <span>{p.name}</span>
           </div>
           <div style={{ fontSize: 11, color: "#6B7280", display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span>{p.category}</span>
+            <span>{normalCategory}</span>
             {p.executingAgency && <><span>·</span><span>Executing: {p.executingAgency}</span></>}
             {p.scope && p.scope !== "DISTRICT" && <><span>·</span><span>{p.scope}</span></>}
           </div>
         </div>
         <span
           style={{
-            fontSize: 11, fontWeight: 700,
-            padding: "3px 10px",
-            borderRadius: 20,
-            background: ss.bg, color: ss.color,
-            border: `1px solid ${ss.border}`,
+            fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+            background: ss.bg, color: ss.color, border: `1px solid ${ss.border}`,
             whiteSpace: "nowrap",
           }}
         >
-          {ss.label}
-          {isDelayed(p) && " ⚠"}
+          {ss.label}{isDelayed(p) && normalizeStatus(p.status) !== "COMPLETED" ? " ⚠" : ""}
         </span>
       </div>
 
-      {/* Announcement attribution */}
-      {(p.announcedBy || p.announcedDate) && (
-        <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 6 }}>
-          👤 Announced by:{" "}
-          <strong style={{ color: "#1A1A1A" }}>{p.announcedBy ?? "—"}</strong>
-          {p.announcedByRole ? ` (${p.announcedByRole})` : ""}
-          {p.party ? `, ${p.party}` : ""}
-          {p.announcedDate && <> · {formatMonthYear(p.announcedDate)}</>}
-        </div>
-      )}
-
-      {/* Key people */}
-      {p.keyPeople && p.keyPeople.length > 0 && (
-        <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 10 }}>
-          🏗 Key people: {p.keyPeople.slice(0, 3).map((kp, i) => (
-            <span key={i}>
-              {i > 0 ? ", " : ""}
-              <strong style={{ color: "#1A1A1A" }}>{kp.name}</strong>
-              {kp.role ? ` (${kp.role}${kp.party ? `, ${kp.party}` : ""})` : kp.party ? ` (${kp.party})` : ""}
-            </span>
-          ))}
-          {p.keyPeople.length > 3 && <span> + {p.keyPeople.length - 3} more</span>}
-        </div>
-      )}
+      {/* People block — always renders, with "Awaiting data" placeholders */}
+      <PeopleRow p={p} />
 
       {/* Budget */}
-      {(p.originalBudget != null || p.budget != null) && (
-        <div style={{ background: "#F9FAFB", border: "1px solid #F0F0EC", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-          <div style={{ fontSize: 10, color: "#9B9B9B", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>Budget</div>
+      <div style={{ background: "#F9FAFB", border: "1px solid #F0F0EC", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+        <div style={{ fontSize: 10, color: "#9B9B9B", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>Budget</div>
+        {(p.originalBudget != null || p.budget != null) ? (
           <div style={{ fontSize: 13, color: "#1A1A1A", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
             <span>Original: <strong>{formatINR(p.originalBudget ?? p.budget)}</strong></span>
             {p.revisedBudget != null && p.revisedBudget !== p.originalBudget && (
@@ -455,28 +464,24 @@ function ProjectCard({ p }: { p: InfraProject }) {
               </span>
             )}
           </div>
-        </div>
-      )}
+        ) : <Awaiting />}
+      </div>
 
-      {/* Timeline */}
-      {(p.actualStartDate || p.startDate || p.originalEndDate || p.expectedEnd || p.revisedEndDate) && (
-        <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 10 }}>
-          📅 Started: <strong>{formatMonthYear(p.actualStartDate ?? p.startDate)}</strong>
-          {(p.originalEndDate ?? p.expectedEnd) && (
-            <> · Expected: <strong>{formatMonthYear(p.originalEndDate ?? p.expectedEnd)}</strong></>
-          )}
-          {p.revisedEndDate && (
-            <> · <span style={{ color: "#B45309" }}>Revised: {formatMonthYear(p.revisedEndDate)}
-              {p.delayMonths ? ` (+${p.delayMonths} months)` : ""}
-            </span></>
-          )}
-          {isCancelled(p) && p.cancelledDate && (
-            <> · <span style={{ color: "#B91C1C" }}>Cancelled: {formatMonthYear(p.cancelledDate)}</span></>
-          )}
-        </div>
-      )}
+      {/* Timeline dates */}
+      <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 10 }}>
+        📅 Started: <strong>{p.actualStartDate || p.startDate ? formatMonthYear(p.actualStartDate ?? p.startDate) : "—"}</strong>
+        {(p.originalEndDate ?? p.expectedEnd) && (
+          <> · Expected: <strong>{formatMonthYear(p.originalEndDate ?? p.expectedEnd)}</strong></>
+        )}
+        {p.revisedEndDate && (
+          <> · <span style={{ color: "#B45309" }}>Revised: {formatMonthYear(p.revisedEndDate)}{p.delayMonths ? ` (+${p.delayMonths} months)` : ""}</span></>
+        )}
+        {isCancelled(p) && p.cancelledDate && (
+          <> · <span style={{ color: "#B91C1C" }}>Cancelled: {formatMonthYear(p.cancelledDate)}</span></>
+        )}
+      </div>
 
-      {/* Progress bar */}
+      {/* Progress */}
       {!isCancelled(p) && (
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6B7280", marginBottom: 4 }}>
@@ -486,8 +491,7 @@ function ProjectCard({ p }: { p: InfraProject }) {
           <div style={{ height: 6, background: "#F0F0EC", borderRadius: 4, overflow: "hidden" }}>
             <div
               style={{
-                width: `${Math.min(100, progress)}%`,
-                height: "100%",
+                width: `${Math.min(100, progress)}%`, height: "100%",
                 background: progress >= 75 ? "#16A34A" : progress >= 40 ? "#D97706" : "#2563EB",
                 transition: "width 500ms ease",
               }}
@@ -503,8 +507,8 @@ function ProjectCard({ p }: { p: InfraProject }) {
         </div>
       )}
 
-      {/* Latest news */}
-      {latest && (
+      {/* Latest news strip */}
+      {latest && latest.newsUrl !== "admin-panel" && (
         <div style={{ fontSize: 12, color: "#374151", background: "#FAFAF8", border: "1px solid #F0F0EC", borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
             <span style={{ fontSize: 11, color: "#6B7280" }}>📰 Latest:</span>
@@ -521,42 +525,43 @@ function ProjectCard({ p }: { p: InfraProject }) {
         </div>
       )}
 
-      {/* Verification count + source caveat */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: "#6B7280", marginBottom: 10 }}>
-        <span>
-          {verifiedCount > 0 ? `✅ Verified by ${verifiedCount} news source${verifiedCount !== 1 ? "s" : ""}` : ""}
-          {verifiedCount === 1 && <span style={{ color: "#B45309", marginLeft: 6 }}>⚠ Single source — awaiting additional verification</span>}
-        </span>
-        {p.lastNewsAt && <span>Last news: {formatFullDate(p.lastNewsAt)}</span>}
+      {/* Verification line */}
+      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 10 }}>
+        {verifiedCount > 0
+          ? <>✅ Verified by {verifiedCount} news source{verifiedCount !== 1 ? "s" : ""}{verifiedCount === 1 && <span style={{ color: "#B45309", marginLeft: 6 }}>⚠ Single source — awaiting additional verification</span>}</>
+          : <span style={AWAIT_STYLE}>Not yet cross-verified by news sources</span>
+        }
       </div>
 
-      {/* Timeline toggle */}
-      {updates.length > 0 && (
-        <button
-          onClick={() => setOpen((v) => !v)}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "7px 12px",
-            background: "#EFF6FF",
-            color: "#2563EB",
-            border: "1px solid #BFDBFE",
-            borderRadius: 8,
-            fontSize: 12,
-            fontWeight: 600,
-            cursor: "pointer",
-            alignSelf: "flex-start",
-          }}
-          aria-expanded={open}
-        >
-          {open ? <>Hide Timeline <ChevronUp size={13} /></> : <>View Full Timeline ({updates.length}) <ChevronDown size={13} /></>}
-        </button>
-      )}
+      {/* Timeline toggle — ALWAYS shown */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px",
+          background: updates.length > 0 ? "#EFF6FF" : "#F9FAFB",
+          color: updates.length > 0 ? "#2563EB" : "#6B7280",
+          border: `1px solid ${updates.length > 0 ? "#BFDBFE" : "#E8E8E4"}`,
+          borderRadius: 8, fontSize: 12, fontWeight: 600,
+          cursor: "pointer", alignSelf: "flex-start",
+        }}
+        aria-expanded={open}
+      >
+        {open
+          ? <>Hide Timeline <ChevronUp size={13} /></>
+          : updates.length > 0
+            ? <>View Full Timeline ({updates.length}) <ChevronDown size={13} /></>
+            : <>Timeline (empty) <ChevronDown size={13} /></>}
+      </button>
 
-      {open && updates.length > 0 && (
+      {open && (
         <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 0 }}>
-          {updates.map((u) => <TimelineEntry key={u.id} u={u} />)}
+          {updates.length > 0 ? (
+            updates.map((u) => <TimelineEntry key={u.id} u={u} />)
+          ) : (
+            <div style={{ padding: "14px 16px", background: "#F9FAFB", border: "1px dashed #E8E8E4", borderRadius: 10, ...AWAIT_STYLE, fontSize: 12 }}>
+              Timeline: Updates will appear as news covers this project.
+            </div>
+          )}
           <div style={{ marginTop: 12 }}>
             <LazyAnalysis projectId={p.id} />
           </div>
@@ -566,6 +571,12 @@ function ProjectCard({ p }: { p: InfraProject }) {
           </div>
         </div>
       )}
+
+      {/* Card footer: last updated + source */}
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #F0F0EC", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 10, color: "#9CA3AF" }}>
+        <span>Last updated: {lastTs ? relativeTime(lastTs) : "—"}</span>
+        <span>Source: {sourceLabel}</span>
+      </div>
     </div>
   );
 }
@@ -588,8 +599,15 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("latest");
 
-  const categories = useMemo(() => {
-    return ["all", ...Array.from(new Set(projects.map((p) => p.category)))];
+  // Merge category variants before building the filter list
+  const { categoryOrder, categoryCounts } = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of projects) {
+      const c = normalizeCategory(p.category);
+      counts.set(c, (counts.get(c) ?? 0) + 1);
+    }
+    const ordered = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+    return { categoryOrder: ordered, categoryCounts: counts };
   }, [projects]);
 
   const activeList = projects.filter((p) => !isCancelled(p));
@@ -599,7 +617,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
   const totalSpent = activeList.reduce((s, p) => s + (p.fundsReleased ?? 0), 0);
   const counts = {
     total: projects.length,
-    active: activeList.filter(isActive).length,
+    active: projects.filter(isActive).length,
     completed: projects.filter(isCompleted).length,
     delayed: projects.filter(isDelayed).length,
     cancelled: cancelledList.length,
@@ -607,7 +625,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
 
   const filtered = useMemo(() => {
     const list = activeList.filter((p) => {
-      if (catFilter !== "all" && p.category !== catFilter) return false;
+      if (catFilter !== "all" && normalizeCategory(p.category) !== catFilter) return false;
       if (statusFilter === "active" && !isActive(p)) return false;
       if (statusFilter === "delayed" && !isDelayed(p)) return false;
       if (statusFilter === "completed" && !isCompleted(p)) return false;
@@ -664,7 +682,10 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 }}>
             <FilterRow
               label="Category"
-              options={categories.map((c) => ({ id: c, label: c === "all" ? "All" : c.charAt(0) + c.slice(1).toLowerCase(), count: c === "all" ? projects.length : projects.filter((p) => p.category === c).length }))}
+              options={[
+                { id: "all", label: "All", count: projects.length },
+                ...categoryOrder.map((c) => ({ id: c, label: c, count: categoryCounts.get(c) ?? 0 })),
+              ]}
               value={catFilter}
               onChange={(v) => setCatFilter(v as CategoryFilter)}
             />
@@ -751,10 +772,7 @@ function FilterRow({
               key={o.id}
               onClick={() => onChange(o.id)}
               style={{
-                padding: "4px 10px",
-                fontSize: 11,
-                fontWeight: 600,
-                borderRadius: 20,
+                padding: "4px 10px", fontSize: 11, fontWeight: 600, borderRadius: 20,
                 background: active ? "#2563EB" : "#F5F5F0",
                 color: active ? "#FFF" : "#6B6B6B",
                 border: active ? "1px solid #2563EB" : "1px solid #E8E8E4",
@@ -777,6 +795,3 @@ export default function InfrastructurePage({ params }: { params: Promise<{ local
     </ModuleErrorBoundary>
   );
 }
-
-// Keep Building2 imported to avoid an unused-import lint if removed later
-void Building2;

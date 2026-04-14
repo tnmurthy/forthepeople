@@ -118,6 +118,45 @@ export async function POST(req: NextRequest) {
         description: `Edited ${cfg.label} · ${field}`,
       });
     }
+
+    // Per-module side effect: when an InfraProject is admin-edited, add an
+    // InfraUpdate timeline row so the public page surfaces the provenance
+    // (source="admin-panel", updateType="ADMIN_EDIT").
+    if (cfg.module === "infrastructure" && Object.keys(data).length > 0) {
+      try {
+        const fields = Object.keys(data).join(", ");
+        const statusChange = typeof data["status"] === "string" ? (data["status"] as string) : null;
+        const budgetChange =
+          typeof data["revisedBudget"] === "number" ? (data["revisedBudget"] as number)
+          : typeof data["budget"] === "number" ? (data["budget"] as number)
+          : null;
+        const progressPct =
+          typeof data["progressPct"] === "number" ? (data["progressPct"] as number) : null;
+        await prisma.infraUpdate.create({
+          data: {
+            projectId: u.id,
+            date: new Date(),
+            headline: `Admin updated ${fields}`,
+            summary: `Manual correction via admin panel (fields: ${fields}).`,
+            updateType: "ADMIN_EDIT",
+            statusChange,
+            budgetChange,
+            progressPct,
+            newsUrl: "admin-panel",
+            newsSource: "ForThePeople.in Admin",
+            newsDate: new Date(),
+            verified: true,
+            verifiedAt: new Date(),
+          },
+        });
+        await prisma.infraProject.update({
+          where: { id: u.id },
+          data: { lastVerifiedAt: new Date(), verificationCount: { increment: 1 } },
+        });
+      } catch (err) {
+        console.error("[content/save] InfraUpdate side-effect failed:", err);
+      }
+    }
   }
 
   // Creates
