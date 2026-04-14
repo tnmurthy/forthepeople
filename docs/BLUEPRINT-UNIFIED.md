@@ -82,6 +82,25 @@
 #     monorail, metro line, commuter(s), overcrowding/overcrowded,
 #     stampede at station, train, platform, station, irctc.
 #     Crops keyword list unchanged.
+#
+# 2026-04-14 — Phase 2 cont'd: Mumbai map fallback + overview empty sections:
+#   • /map: DistrictMapArea replaces MapWithFallback. Fetches the GeoJSON
+#     (not HEAD), counts features, compares to DB taluk count. Three states:
+#     full (features ≥ taluks → render TalukMap D3), partial (features <
+#     taluks → render card grid with coverage notice), missing (render card
+#     grid with "boundary data being prepared"). Card grid shows name,
+#     nameLocal, population, area per taluk. No more blank map area for
+#     Mumbai (5 zone shapes + 13 DB taluks).
+#   • Map section label switches to "Urban Zones" for urban districts
+#     (showVillages=false); StatCard grid swaps the Villages card for Zones
+#     count. The secondary rural village list is only rendered when
+#     villages apply.
+#   • OverviewClient: Finance & Budget, Police & Public Safety, and Local
+#     News sections are now wrapped in {(loading || count > 0) && (…)} so
+#     empty modules contribute zero DOM. Inner "No X data available"
+#     fallbacks removed (they were unreachable after the outer guard).
+#     Resolves massive blank whitespace between the Health Score card and
+#     later sections when a module has no rows.
 
 ## 1. PROJECT IDENTITY
 

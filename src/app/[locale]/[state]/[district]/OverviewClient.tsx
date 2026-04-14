@@ -409,7 +409,8 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
           </div>
         )}
 
-        {/* ── Finance & Budget Summary ──────────────────── */}
+        {/* ── Finance & Budget Summary — hidden entirely when no data ── */}
+        {(budgetLoading || budgetEntries.length > 0) && (
         <div style={{ marginBottom: 24 }}>
           <SectionLabel action={<Link href={`${base}/finance`} style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>Full report →</Link>}>
             Finance & Budget
@@ -418,8 +419,6 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               {budgetLoading ? (
                 <LoadingShell rows={3} />
-              ) : budgetEntries.length === 0 ? (
-                <div style={{ fontSize: 13, color: "#9B9B9B", textAlign: "center", padding: "12px 0" }}>No budget data available</div>
               ) : (
                 <>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16, marginBottom: 16 }}>
@@ -456,8 +455,10 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             </div>
           </Link>
         </div>
+        )}
 
-        {/* ── Police & Crime Summary ────────────────────── */}
+        {/* ── Police & Crime Summary — hidden entirely when no data ── */}
+        {(policeLoading || policeStations.length > 0) && (
         <div style={{ marginBottom: 24 }}>
           <SectionLabel action={<Link href={`${base}/police`} style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>Station directory →</Link>}>
             Police & Public Safety
@@ -466,8 +467,6 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               {policeLoading ? (
                 <LoadingShell rows={2} />
-              ) : policeStations.length === 0 ? (
-                <div style={{ fontSize: 13, color: "#9B9B9B", textAlign: "center", padding: "12px 0" }}>No police data available</div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
                   <div>
@@ -494,8 +493,10 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             </div>
           </Link>
         </div>
+        )}
 
-        {/* ── Local News ───────────────────────────────── */}
+        {/* ── Local News — hidden entirely when no items and not loading ── */}
+        {(newsLoading || newsItems.length > 0) && (
         <div style={{ marginBottom: 24 }}>
           <SectionLabel action={<Link href={`${base}/news`} style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>All news →</Link>}>
             Local News
@@ -553,6 +554,7 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             </div>
           )}
         </div>
+        )}
 
         {/* ── Taluks ────────────────────────────────────── */}
         {districtData.taluks.length > 0 && (
