@@ -154,6 +154,40 @@
 #     adds like Micah Alex's ₹50,000), not just Razorpay traffic. Cache key
 #     bumped to v3.
 #
+# 2026-04-15 — Infrastructure: comprehensive legal protection sweep:
+#   • LegalFooter rewritten as 6-paragraph "Legal Notice" — Article 19(1)(a)
+#     + NDSAP, person/party caveats (transparency-not-endorsement), status +
+#     progress + budget caveats, agency-name-change caveat, fair-dealing under
+#     Indian Copyright Act §52(1)(a)(ii), and explicit non-affiliation /
+#     non-endorsement / non-opposition statement.
+#   • DataFreshnessIndicator at the top of each district's /infrastructure
+#     page (above stat tiles, below DataSourceBanner). Computes max(lastNewsAt)
+#     across all projects: green ✅ "<24h/days> ago" when ≤7 days, amber ⚠
+#     "Data last updated from news: …" when >7 days, blue ℹ "Initial data —
+#     will be enriched as news articles appear" when no project has any news.
+#   • Per-card additions (ProjectCard):
+#       – ⚖️ "Subject to court proceedings" amber pill, shown when COURT_RE
+#         matches name/description/cancellationReason or any update text
+#         (supreme court, high court, tribunal, stay order, sub-judice,
+#         court order, halted by court, injunction, writ petition, NCLAT, NGT).
+#       – COMPLETED status now renders a green italic "Completion reported in
+#         news media on <date>" line. STALLED/CANCELLED/DELAYED keep the
+#         existing "Status derived from news reports" line.
+#       – Budget block: italic "As reported in news media" line directly
+#         below the figure (only when a budget is shown).
+#       – Progress block: italic line below the bar — "Progress as of <date>"
+#         when sourced from news, or "Progress approximate · Last verified:
+#         <date>" when sourced from seed/manual data.
+#       – Single-source warning standardised: verificationCount==0 → "Not yet
+#         cross-verified by news sources"; verificationCount==1 → "⚠ Single
+#         source — awaiting additional verification".
+#   • PARTY_TOOLTIP extended with "Shown for transparency, not as political
+#     endorsement." line.
+#   • Fixes are layout-stable: every card still has the same row order
+#     (header / disclaimer / people / budget / timeline / progress / verification
+#     warning / latest-news / footer); placeholders just become italic notes
+#     instead of changing card height.
+#
 # 2026-04-15 — Infrastructure: legal disclaimers + neutrality audit + Kolkata people:
 #   • New per-page LegalFooter on /infrastructure (below ModuleNews, above page
 #     padding): grey bordered box, font-size 12px, max-width matching cards.

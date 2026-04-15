@@ -384,7 +384,21 @@ function truncate(text: string | null | undefined, max: number): string | null {
 const ANNOUNCER_TOOLTIP =
   "This attribution is based on news reports. It indicates who publicly announced this project, not who is responsible for its current status.";
 const PARTY_TOOLTIP =
-  "Party affiliation shown as reported in news media at the time of announcement.";
+  "Party affiliation shown as reported in news media at the time of announcement. Shown for transparency, not as political endorsement.";
+
+// Sub-judice / court-order detection. We only badge a card when the
+// project's own text references a judicial proceeding — never inferred
+// from category or status alone.
+const COURT_RE =
+  /\b(supreme\s*court|high\s*court|tribunal|stay\s*order|sub[-\s]?judice|court\s*order|halted\s*by\s*court|injunction|writ\s*petition|nclat|ngt)\b/i;
+function hasCourtMention(p: InfraProject): boolean {
+  const blob = [p.description, p.cancellationReason, p.name].filter(Boolean).join(" ");
+  if (COURT_RE.test(blob)) return true;
+  for (const u of p.updates ?? []) {
+    if (COURT_RE.test(`${u.headline} ${u.summary ?? ""}`)) return true;
+  }
+  return false;
+}
 
 function PeopleRow({ p }: { p: InfraProject }) {
   const keyPeople = (p.keyPeople ?? []).filter((k): k is NonNullable<typeof k> => !!k && !!k.name);
@@ -626,12 +640,40 @@ function ProjectCard({ p }: { p: InfraProject }) {
         </span>
       </div>
 
+      {/* Sub-judice / court-order badge. Detected from project text or
+          timeline updates mentioning court / tribunal / stay-order /
+          writ-petition. Stays neutral — only flags that the matter is
+          before a court so we don't appear to take sides. */}
+      {hasCourtMention(p) && (
+        <div
+          style={{
+            display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 6,
+            padding: "3px 10px", marginBottom: 8, borderRadius: 20,
+            background: "#FFFBEB", border: "1px solid #FDE68A", color: "#92400E",
+            fontSize: 11, fontWeight: 600,
+          }}
+          title="This project is referenced in court proceedings. ForThePeople.in reports the fact, not a judgment on the matter."
+        >
+          ⚖️ Subject to court proceedings
+        </div>
+      )}
+
       {/* Per-card mini disclaimer for status classifications derived from news.
-          Only shown for STALLED / CANCELLED / DELAYED so the rest of the
-          cards stay clean. The note is italic, low-contrast, and clarifies
-          that the classification is news-derived, not official. */}
+          Shown for STALLED / CANCELLED / DELAYED (with executing-agency
+          contact line) and for COMPLETED (with completion-source date).
+          Other statuses stay clean. */}
       {(() => {
         const s = normalizeStatus(p.status);
+        if (s === "COMPLETED") {
+          const completionUpdate = (p.updates ?? []).find((u) => u.updateType === "COMPLETION" || u.updateType === "INAUGURATION" || u.updateType === "PHASE_COMPLETE");
+          const completionDate = p.completionDate ?? completionUpdate?.date ?? p.lastNewsAt ?? null;
+          if (!completionDate) return null;
+          return (
+            <div style={{ fontSize: 11, color: "#16A34A", fontStyle: "italic", marginBottom: 6, lineHeight: 1.4 }}>
+              Completion reported in news media on {formatFullDate(completionDate)}.
+            </div>
+          );
+        }
         if (!["STALLED", "CANCELLED", "DELAYED"].includes(s)) return null;
         return (
           <div style={{ fontSize: 11, color: "#9B9B9B", fontStyle: "italic", marginBottom: 6, lineHeight: 1.4 }}>
@@ -645,25 +687,32 @@ function ProjectCard({ p }: { p: InfraProject }) {
       <PeopleRow p={p} />
 
       {/* Budget — always rendered so every card has the same rows */}
-      <div style={{ fontSize: 13, color: "#1A1A1A", marginBottom: 6, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-        {(p.originalBudget != null || p.budget != null) ? (
-          <>
-            <span>💰 <strong>{formatINR(p.originalBudget ?? p.budget)}</strong></span>
-            {p.revisedBudget != null && p.revisedBudget !== p.originalBudget && (
-              <>
-                <span style={{ color: "#9B9B9B" }}>→</span>
-                <strong>{formatINR(p.revisedBudget)}</strong>
-              </>
-            )}
-            {hasBudgetOverrun && p.costOverrun != null && (
-              <span style={{ fontSize: 11, color: p.costOverrun > 0 ? "#B45309" : "#16A34A" }}>
-                ({p.costOverrun > 0 ? "+" : ""}{formatINR(Math.abs(p.costOverrun))}
-                {p.costOverrunPct != null ? ` / ${p.costOverrun > 0 ? "+" : ""}${p.costOverrunPct.toFixed(0)}%` : ""})
-              </span>
-            )}
-          </>
-        ) : (
-          <span style={{ color: "#9CA3AF", fontStyle: "italic" }}>💰 Budget not disclosed</span>
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ fontSize: 13, color: "#1A1A1A", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+          {(p.originalBudget != null || p.budget != null) ? (
+            <>
+              <span>💰 <strong>{formatINR(p.originalBudget ?? p.budget)}</strong></span>
+              {p.revisedBudget != null && p.revisedBudget !== p.originalBudget && (
+                <>
+                  <span style={{ color: "#9B9B9B" }}>→</span>
+                  <strong>{formatINR(p.revisedBudget)}</strong>
+                </>
+              )}
+              {hasBudgetOverrun && p.costOverrun != null && (
+                <span style={{ fontSize: 11, color: p.costOverrun > 0 ? "#B45309" : "#16A34A" }}>
+                  ({p.costOverrun > 0 ? "+" : ""}{formatINR(Math.abs(p.costOverrun))}
+                  {p.costOverrunPct != null ? ` / ${p.costOverrun > 0 ? "+" : ""}${p.costOverrunPct.toFixed(0)}%` : ""})
+                </span>
+              )}
+            </>
+          ) : (
+            <span style={{ color: "#9CA3AF", fontStyle: "italic" }}>💰 Budget not disclosed</span>
+          )}
+        </div>
+        {(p.originalBudget != null || p.budget != null) && (
+          <div style={{ fontSize: 10, color: "#9B9B9B", fontStyle: "italic", marginTop: 2 }}>
+            As reported in news media
+          </div>
         )}
       </div>
 
@@ -709,7 +758,10 @@ function ProjectCard({ p }: { p: InfraProject }) {
       </div>
 
       {/* Progress — always shown for non-cancelled projects.
-          0% reads as "Not started" instead of an empty silent bar. */}
+          0% reads as "Not started" instead of an empty silent bar.
+          Freshness line below the bar makes it clear when the
+          percentage was last reflected in news. Without it, a stale
+          seed-data figure could be misread as a current measurement. */}
       {!isCancelled(p) && (
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6B7280", marginBottom: 3 }}>
@@ -731,6 +783,25 @@ function ProjectCard({ p }: { p: InfraProject }) {
               }}
             />
           </div>
+          {progress > 0 && (
+            <div style={{ fontSize: 10, color: "#9B9B9B", fontStyle: "italic", marginTop: 3 }}>
+              {lastTs
+                ? <>Progress as of {formatFullDate(lastTs)}</>
+                : <>Progress approximate · Last verified: {formatFullDate(p.lastVerifiedAt)}</>
+              }
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Single-source / not-yet-verified warning — shown for every
+          card with verificationCount <= 1. Keeps wording consistent
+          regardless of district or whether the row is seed or news. */}
+      {verifiedCount <= 1 && (
+        <div style={{ fontSize: 10, color: verifiedCount === 0 ? "#9B9B9B" : "#B45309", fontStyle: "italic", marginBottom: 8, lineHeight: 1.4 }}>
+          {verifiedCount === 0
+            ? "Not yet cross-verified by news sources"
+            : "⚠ Single source — awaiting additional verification"}
         </div>
       )}
 
@@ -808,15 +879,82 @@ function LegalFooter() {
         fontSize: 12, color: "#4B5563", lineHeight: 1.6,
       }}
     >
-      <strong style={{ color: "#1A1A1A" }}>Disclaimer:</strong>{" "}
-      Infrastructure project data is compiled from publicly available news articles and government press releases under{" "}
-      <span style={{ color: "#1A1A1A" }}>Article 19(1)(a)</span> of the Indian Constitution and India&apos;s{" "}
-      <span style={{ color: "#1A1A1A" }}>Open Data Policy (NDSAP)</span>. Person and party attribution reflects public
-      announcements as reported in news media and does not constitute an assessment of performance or responsibility.
-      Project status classifications (Proposed, Under Construction, Delayed, Stalled, Completed, Cancelled) are derived
-      from news reports and may not reflect official status. For verified project information, contact the relevant
-      executing agency. ForThePeople.in is an independent citizen transparency initiative and is not affiliated with
-      any government body or political party.
+      <strong style={{ color: "#1A1A1A" }}>Legal Notice:</strong>{" "}
+      Infrastructure project data on ForThePeople.in is compiled from publicly available news articles and government
+      press releases under <span style={{ color: "#1A1A1A" }}>Article 19(1)(a)</span> of the Indian Constitution
+      (Right to Freedom of Speech and Expression) and India&apos;s{" "}
+      <span style={{ color: "#1A1A1A" }}>National Data Sharing and Accessibility Policy (NDSAP)</span>.
+      <br /><br />
+      Person and party attribution reflects public announcements as reported in news media at the time of the
+      project&apos;s announcement and does not constitute an assessment of performance, responsibility, or current
+      political affiliation. Political party affiliations shown may not reflect current affiliations due to party
+      changes or restructuring. Display of political affiliations is for citizen transparency and does not constitute
+      endorsement or opposition to any political party.
+      <br /><br />
+      Project status classifications (Proposed, Under Construction, Delayed, Stalled, Completed, Cancelled) and
+      progress percentages are derived from news reports and seed data, and may not reflect official status or current
+      progress. Budget figures are as reported in news media and may differ from official government records.
+      <br /><br />
+      Government agency names shown may have changed due to administrative restructuring since the data was last updated.
+      <br /><br />
+      News headlines are displayed under fair dealing provisions of the{" "}
+      <span style={{ color: "#1A1A1A" }}>Indian Copyright Act, 1957 §52(1)(a)(ii)</span> for reporting current events
+      and public interest.
+      <br /><br />
+      For verified project information, contact the relevant executing agency directly. ForThePeople.in is an
+      independent citizen transparency initiative and is not affiliated with, endorsed by, or opposed to any
+      government body, political party, or executing agency.
+    </div>
+  );
+}
+
+function DataFreshnessIndicator({ projects }: { projects: InfraProject[] }) {
+  if (projects.length === 0) return null;
+  const newsTimestamps = projects
+    .map((p) => p.lastNewsAt ? new Date(p.lastNewsAt).getTime() : null)
+    .filter((t): t is number => t != null);
+  if (newsTimestamps.length === 0) {
+    return (
+      <div
+        role="status"
+        style={{
+          display: "flex", alignItems: "center", gap: 8,
+          padding: "8px 14px", marginBottom: 14, borderRadius: 8,
+          background: "#EFF6FF", border: "1px solid #BFDBFE", color: "#1E40AF",
+          fontSize: 12, lineHeight: 1.4,
+        }}
+      >
+        <span>ℹ</span>
+        <span>Initial data — will be enriched as news articles appear</span>
+      </div>
+    );
+  }
+  const newestMs = Math.max(...newsTimestamps);
+  const ageMs = Date.now() - newestMs;
+  const ageDays = Math.floor(ageMs / 86_400_000);
+  const ageHours = Math.floor(ageMs / 3_600_000);
+  const isStale = ageDays > 7;
+  const label = ageHours < 24
+    ? `${Math.max(1, ageHours)} hour${ageHours === 1 ? "" : "s"} ago`
+    : `${ageDays} day${ageDays === 1 ? "" : "s"} ago`;
+  return (
+    <div
+      role="status"
+      style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "8px 14px", marginBottom: 14, borderRadius: 8,
+        background: isStale ? "#FFFBEB" : "#F0FDF4",
+        border: `1px solid ${isStale ? "#FDE68A" : "#86EFAC"}`,
+        color: isStale ? "#92400E" : "#15803D",
+        fontSize: 12, lineHeight: 1.4,
+      }}
+    >
+      <span>{isStale ? "⚠" : "✅"}</span>
+      <span>
+        {isStale
+          ? <>Data last updated from news: <strong>{label}</strong></>
+          : <>Data updated: <strong>{label}</strong></>}
+      </span>
     </div>
   );
 }
@@ -907,6 +1045,8 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
 
       {!isLoading && projects.length > 0 && (
         <>
+          <DataFreshnessIndicator projects={projects} />
+
           {/* Stats row */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 16 }}>
             <StatTile label="Total Projects" value={counts.total} />
