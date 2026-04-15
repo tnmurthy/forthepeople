@@ -386,11 +386,29 @@ async function findTargetDistricts(extraction: InfraExtraction, sourceDistrictId
   }
   // DISTRICT: if article names specific districts, try to hit them by name;
   // else default to the source district.
-  if (extraction.districtNames.length > 0) {
+  // Normalize extracted names: AI sometimes returns "Mandya District" or "Mandya
+  // dist." — strip these suffixes so equality matching finds the canonical row.
+  const stripSuffix = (n: string) =>
+    n.trim().replace(/\s+(district|dist\.?)$/i, "").trim();
+  const normalizedNames = extraction.districtNames.map(stripSuffix).filter(Boolean);
+
+  // Additionally, scan the project name for an "in <Name> district" pattern —
+  // a strong explicit-location signal that overrides the source-district
+  // fallback when the AI extraction missed populating districtNames.
+  const nameScanMatches: string[] = [];
+  const inDistrictRe = /\bin\s+([A-Z][A-Za-z\- ]{2,30}?)\s+district\b/gi;
+  for (const m of extraction.projectName.matchAll(inDistrictRe)) {
+    nameScanMatches.push(stripSuffix(m[1]));
+  }
+
+  const candidateNames = Array.from(
+    new Set([...normalizedNames, ...nameScanMatches].map((n) => n.toLowerCase()))
+  );
+  if (candidateNames.length > 0) {
     const rows = await prisma.district.findMany({
       where: {
         active: true,
-        OR: extraction.districtNames.map((n) => ({ name: { equals: n, mode: "insensitive" as const } })),
+        OR: candidateNames.map((n) => ({ name: { equals: n, mode: "insensitive" as const } })),
       },
       select: { id: true, slug: true, stateId: true },
     });
