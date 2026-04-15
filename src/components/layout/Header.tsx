@@ -145,6 +145,7 @@ export default function Header({ locale }: HeaderProps) {
   return (
     <>
     <header
+      className="ftp-header"
       style={{
         position: "sticky",
         top: 0,
@@ -374,14 +375,14 @@ export default function Header({ locale }: HeaderProps) {
           </>
         )}
 
-        {/* GitHub link */}
+        {/* GitHub link — hidden on mobile to save space (available in footer) */}
         <a
           href="https://github.com/jayanthmb14/forthepeople"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="View source on GitHub"
+          className="hidden sm:flex"
           style={{
-            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             width: 34,

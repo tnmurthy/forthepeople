@@ -202,6 +202,10 @@ body {
 
 /* ── Mobile responsive (375px+) ─────────────────── */
 @media (max-width: 767px) {
+  /* Header: tighter padding + gap on narrow viewports to prevent overflow
+     when hamburger + logo + right actions are all present (district pages). */
+  .ftp-header { padding: 0 10px !important; gap: 6px !important; }
+
   /* Hero illustration: reduce height */
   .hero-illustration { min-height: 180px !important; }
 

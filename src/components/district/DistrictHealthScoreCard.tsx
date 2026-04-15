@@ -108,14 +108,18 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
         </div>
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
+          aria-label={showBreakdown ? "Hide score breakdown" : "Show how the score is calculated"}
           style={{
             display: "flex", alignItems: "center", gap: 4,
             fontSize: 12, color: "#2563EB", background: "none", border: "none",
-            cursor: "pointer", padding: "6px 8px", minHeight: 44, borderRadius: 8,
+            cursor: "pointer", padding: "6px 8px", minHeight: 44, minWidth: 44,
+            borderRadius: 8, flexShrink: 0,
           }}
         >
           {showBreakdown ? <X size={13} /> : <Info size={13} />}
-          {showBreakdown ? "Hide" : "How is this calculated?"}
+          <span className="hidden sm:inline">
+            {showBreakdown ? "Hide" : "How is this calculated?"}
+          </span>
         </button>
       </div>
 
