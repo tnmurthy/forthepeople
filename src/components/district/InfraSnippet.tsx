@@ -170,7 +170,11 @@ export default function InfraSnippet({
                       {p.name}
                     </span>
                     <span style={{ fontSize: 10, color: "#9B9B9B", flexShrink: 0 }}>
-                      {completedRow ? "✅ Completed" : `${progress}% · ${statusLabel}`}
+                      {completedRow
+                        ? "✅ Completed"
+                        : progress > 0
+                          ? `${progress}% · ${statusLabel}`
+                          : `Not started · ${statusLabel}`}
                     </span>
                   </div>
                   {shortDesc && (
@@ -185,13 +189,16 @@ export default function InfraSnippet({
                       {shortDesc}
                     </div>
                   )}
-                  {!completedRow && progress > 0 && (
+                  {!completedRow && (
                     <div style={{ height: 4, background: "#F0F0EC", borderRadius: 2, overflow: "hidden", marginTop: 4 }}>
                       <div
                         style={{
-                          width: `${Math.min(100, progress)}%`,
+                          width: `${Math.max(0.5, Math.min(100, progress))}%`,
                           height: "100%",
-                          background: progress >= 75 ? "#16A34A" : progress >= 40 ? "#D97706" : "#2563EB",
+                          background: progress >= 75 ? "#16A34A"
+                            : progress >= 40 ? "#D97706"
+                            : progress > 0 ? "#2563EB"
+                            : "#D1D5DB",
                         }}
                       />
                     </div>

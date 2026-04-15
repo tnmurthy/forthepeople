@@ -644,18 +644,25 @@ function ProjectCard({ p }: { p: InfraProject }) {
         </div>
       )}
 
-      {/* Progress — slim, only when > 0 and not cancelled */}
-      {!isCancelled(p) && progress > 0 && (
+      {/* Progress — always shown for non-cancelled projects.
+          0% reads as "Not started" instead of an empty silent bar. */}
+      {!isCancelled(p) && (
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6B7280", marginBottom: 3 }}>
             <span>Progress</span>
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "#1A1A1A" }}>{progress}%</span>
+            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: progress > 0 ? "#1A1A1A" : "#9CA3AF" }}>
+              {progress > 0 ? `${progress}%` : "Not started"}
+            </span>
           </div>
           <div style={{ height: 6, background: "#F0F0EC", borderRadius: 3, overflow: "hidden" }}>
             <div
               style={{
-                width: `${Math.min(100, progress)}%`, height: "100%",
-                background: progress >= 75 ? "#16A34A" : progress >= 40 ? "#D97706" : "#2563EB",
+                width: `${Math.max(0.5, Math.min(100, progress))}%`, height: "100%",
+                // A sliver of colour at 0% so the bar never looks broken.
+                background: progress >= 75 ? "#16A34A"
+                  : progress >= 40 ? "#D97706"
+                  : progress > 0 ? "#2563EB"
+                  : "#D1D5DB",
                 transition: "width 500ms ease",
               }}
             />
