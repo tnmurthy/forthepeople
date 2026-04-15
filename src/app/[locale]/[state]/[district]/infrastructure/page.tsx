@@ -1092,7 +1092,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
           </div>
 
           {/* Active cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 12, marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))", gap: 12, marginBottom: 28 }}>
             {filtered.map((p) => <ProjectCard key={p.id} p={p} />)}
           </div>
 
@@ -1105,7 +1105,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
                   Cancelled / Shelved Projects ({cancelledList.length})
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 12, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))", gap: 12, marginBottom: 28 }}>
                 {cancelledList.map((p) => <ProjectCard key={p.id} p={p} />)}
               </div>
             </div>

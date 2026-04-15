@@ -206,6 +206,10 @@ body {
      when hamburger + logo + right actions are all present (district pages). */
   .ftp-header { padding: 0 10px !important; gap: 6px !important; }
 
+  /* Mobile breadcrumb: allow horizontal scroll without visible scrollbar */
+  .ftp-mobile-breadcrumb { scrollbar-width: none; -ms-overflow-style: none; }
+  .ftp-mobile-breadcrumb::-webkit-scrollbar { display: none; }
+
   /* Hero illustration: reduce height */
   .hero-illustration { min-height: 180px !important; }
 

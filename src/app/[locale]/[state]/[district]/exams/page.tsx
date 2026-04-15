@@ -213,6 +213,8 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
       display: "flex",
       flexDirection: "column",
       gap: 0,
+      minWidth: 0,
+      overflow: "hidden",
     }}>
       {/* Header row */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
@@ -266,7 +268,7 @@ function ExamCard({ exam, isStateLevel }: { exam: GovernmentExam; isStateLevel: 
       </div>
 
       {/* Student perspective grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px 16px", marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "8px 16px", marginBottom: 12 }}>
         {[
           { label: "Vacancies", value: exam.vacancies?.toLocaleString("en-IN") ?? "TBA", mono: true },
           { label: "Age Limit", value: exam.ageLimit ?? "—", mono: false },
@@ -504,7 +506,7 @@ function ExamsPageInner({ params }: { params: Promise<{ locale: string; state: s
           {openExams.length > 0 && (
             <>
               <SectionLabel>🟢 Applications Open ({openExams.length})</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 14, marginBottom: 28 }}>
                 {openExams.map((e) => (
                   <ExamCard key={e.id} exam={e} isStateLevel={e.level === "state"} />
                 ))}
@@ -516,7 +518,7 @@ function ExamsPageInner({ params }: { params: Promise<{ locale: string; state: s
           {upcomingExams.length > 0 && (
             <>
               <SectionLabel>📋 Upcoming Exams ({upcomingExams.length})</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 14, marginBottom: 28 }}>
                 {upcomingExams.map((e) => (
                   <ExamCard key={e.id} exam={e} isStateLevel={e.level === "state"} />
                 ))}
@@ -528,7 +530,7 @@ function ExamsPageInner({ params }: { params: Promise<{ locale: string; state: s
           {closedExams.length > 0 && (
             <>
               <SectionLabel>🔒 Closed / Results ({closedExams.length})</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(340px, 100%), 1fr))", gap: 14, marginBottom: 28 }}>
                 {closedExams.map((e) => (
                   <ExamCard key={e.id} exam={e} isStateLevel={e.level === "state"} />
                 ))}

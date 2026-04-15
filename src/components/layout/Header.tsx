@@ -466,7 +466,7 @@ export default function Header({ locale }: HeaderProps) {
     {/* Mobile breadcrumb strip — sticky below header, visible on mobile only */}
     {stateSlug && (
       <nav
-        className="flex md:hidden"
+        className="flex md:hidden ftp-mobile-breadcrumb"
         aria-label="Location breadcrumb"
         style={{
           position: "sticky",
@@ -478,7 +478,9 @@ export default function Header({ locale }: HeaderProps) {
           gap: 4,
           padding: "0 12px",
           height: 36,
-          overflow: "visible",
+          overflowX: "auto",
+          overflowY: "hidden",
+          whiteSpace: "nowrap",
         }}
       >
         <Link href={`/${locale}`} style={{ fontSize: 12, color: "#6B6B6B", whiteSpace: "nowrap", flexShrink: 0, padding: "0 2px" }}>

@@ -107,6 +107,8 @@ export default function ExamStepper(props: ExamStepperProps) {
         gap: 0,
         overflowX: "auto",
         paddingBottom: 4,
+        maxWidth: "100%",
+        minWidth: 0,
       }}
     >
       {STEPS.map((step, idx) => {
