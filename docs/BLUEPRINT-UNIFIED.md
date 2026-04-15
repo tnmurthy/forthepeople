@@ -154,6 +154,50 @@
 #     adds like Micah Alex's ₹50,000), not just Razorpay traffic. Cache key
 #     bumped to v3.
 #
+# 2026-04-15 — Elections: live ECI dates + leadership election section + AI staleness fix:
+#   • Schema (additive, prisma db push): NEW model ElectionEvent
+#     (id, type [LOK_SABHA|STATE_ASSEMBLY|MUNICIPAL|PANCHAYAT], label,
+#      state, district, lastHeld, pollingDate, pollingPhases JSON,
+#      resultDate, nextExpected, termYears, totalSeats, body, note,
+#      source, isActive, updatedAt, createdAt). Indexed by (state,isActive)
+#     and (type,isActive).
+#   • scripts/seed-election-events.ts (idempotent) — seeds 8 rows:
+#     Lok Sabha (2024 → ~2029), TN Vidhan Sabha 2026 LIVE (poll 23 Apr,
+#     result 4 May, single phase), WB Vidhan Sabha 2026 LIVE (poll 23 Apr +
+#     29 Apr two-phase, result 4 May), Karnataka 2023→2028, Maharashtra
+#     2024→2029, Telangana 2023→2028, Delhi 2025→2030, UP 2022→2027.
+#     Source: ECI announcements, ECI 2024 LS results notification.
+#   • /api/data/elections?state=<slug> — returns national rows
+#     (state IS NULL) + state-level rows for the slug, sorted live →
+#     upcoming → past. 5-min Redis cache.
+#   • src/components/district/ElectionSection.tsx (rendered at the bottom
+#     of /leadership): cards colour-coded by urgency —
+#       PAST → grey ✅ Completed
+#       ≤14d → red 🔴 LIVE / VOTING IN N DAYS (with CSS pulse animation)
+#       ≤6mo → amber 🟠 APPROACHING
+#       ≤2yr → yellow 🟡 UPCOMING
+#       >2yr → grey ⚪ SCHEDULED
+#     Footer disclaimer covers ECI source + non-affiliation.
+#     Helper findActiveElection(events) used by the page to detect a
+#     <30-day window for the top "ELECTION PERIOD" banner + per-card
+#     "⚠ Election period" amber pill on political cards.
+#   • src/components/district/LiveElectionBanner.tsx (rendered on the
+#     overview page above AIInsightCard): only renders when state has a
+#     polling date within 30 days; otherwise nothing. Links to /leadership.
+#   • news-action-engine `elections` case enhanced: when an article title
+#     looks like an ECI schedule announcement ("ECI announces", "polling
+#     on…", "result date"), surfaces it to UpdateLog with recordId=
+#     "pending-review" — auto-write of dates is intentionally gated
+#     behind human review (wrong schedule data is worse than missing
+#     schedule data when voting is days away).
+#   • generate-insights cron: leaders module no longer hidden behind
+#     hasDataChanged — gets a hard 7-day TTL refresh window. During an
+#     active election period (any ElectionEvent with polling within ±30d
+#     for the district's state), refreshes daily.
+#   • AIInsightCard timing copy: stale insights (>14 days) now show
+#     "Last analysis: <date>. Will refresh when data changes." instead
+#     of the misleading "Refreshing soon" placeholder.
+#
 # 2026-04-15 — Leadership: role descriptions + auto-party fallback + all-districts re-tier:
 #   • Schema (additive, prisma db push): Leader gains roleDescription String?
 #   • src/lib/constants/role-descriptions.ts — single config of one-line role

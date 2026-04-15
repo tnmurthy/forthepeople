@@ -64,7 +64,32 @@ export async function POST(req: NextRequest) {
         // April 13, 2026 — skip regeneration if underlying data hasn't changed
         // since the last insight. Static modules (leaders, budget, schools)
         // rarely change and were burning Gemini Pro calls on every run.
-        if (!(await hasDataChanged(district.id, config.module))) {
+        // Exception (Apr 15 2026): the leaders module gets a hard 7-day TTL
+        // even without data change so the page never shows >2-week-old
+        // analysis. During an active election period (any ElectionEvent
+        // with polling within 30 days for this district's state), the
+        // leaders module refreshes daily.
+        if (config.module === "leaders") {
+          const electionLive = await prisma.electionEvent.findFirst({
+            where: {
+              isActive: true,
+              state: district.state.slug,
+              pollingDate: {
+                gte: new Date(Date.now() - 1 * 86_400_000),
+                lte: new Date(Date.now() + 30 * 86_400_000),
+              },
+            },
+            select: { id: true },
+          });
+          const refreshAfterMs = electionLive ? 1 * 86_400_000 : 7 * 86_400_000;
+          const generatedAt = existing ? new Date(existing.expiresAt.getTime() - 24 * 3600_000) : null;
+          const ageMs = generatedAt ? Date.now() - generatedAt.getTime() : Infinity;
+          if (ageMs < refreshAfterMs) {
+            console.log(`[generate-insights] Skip leaders/${district.slug} — within TTL window (${electionLive ? "election-live 1d" : "default 7d"})`);
+            continue;
+          }
+          // Fall through to regenerate, ignoring hasDataChanged for leaders.
+        } else if (!(await hasDataChanged(district.id, config.module))) {
           console.log(
             `[generate-insights] Skip ${config.module}/${district.slug} — no data change`
           );

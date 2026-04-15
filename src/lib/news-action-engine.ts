@@ -177,6 +177,28 @@ export async function executeNewsAction(
           },
         });
         console.log(`[NewsAction] ✅ Created LocalAlert: ${alertType} for ${targetModule}`);
+
+        // For elections: surface ECI-schedule-style headlines into UpdateLog
+        // so a human can confirm before we mutate ElectionEvent. We
+        // intentionally do NOT auto-write polling/result dates from a
+        // single article — wrong schedule data is worse than missing
+        // schedule data when voting is days away.
+        if (targetModule === "elections") {
+          const looksScheduleAnnouncement = /\b(eci|election commission)\b.*\b(announce|schedule|notif)/i.test(articleTitle)
+            || /\b(polling|voting)\s+(on|date|schedule)\b/i.test(articleTitle)
+            || /\b(result|counting)\s+(on|date)\b/i.test(articleTitle);
+          if (looksScheduleAnnouncement) {
+            const dn = (await prisma.district.findUnique({ where: { id: districtId }, select: { name: true } }))?.name ?? "";
+            await logUpdate({
+              source: "scraper", actorLabel: "news-action-engine",
+              tableName: "ElectionEvent", recordId: "pending-review",
+              action: "update",
+              districtId, districtName: dn, moduleName: "elections",
+              description: `Election schedule headline flagged for review: ${articleTitle}`,
+              recordCount: 1, details: { articleUrl, reason: "auto-update of polling/result dates is gated behind manual review" },
+            });
+          }
+        }
         break;
       }
 

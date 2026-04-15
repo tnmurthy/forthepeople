@@ -35,10 +35,16 @@ function formatInsightTiming(generatedAt: string, expiresAt?: string | null) {
   else lastUpdated = `${Math.floor(hoursAgo / 24)} days ago`;
 
   let nextRefresh: string;
+  // Stale insights (>14 days old) shouldn't promise an imminent refresh —
+  // the cron only re-runs when underlying data changes, so the previous
+  // "Refreshing soon" copy was lying. Be honest instead.
+  const isStale = hoursAgo > 14 * 24;
   if (expiresAt) {
     const msUntil = new Date(expiresAt).getTime() - now;
     if (msUntil <= 0) {
-      nextRefresh = "Refreshing soon";
+      nextRefresh = isStale
+        ? `Last analysis: ${lastUpdated}. Will refresh when data changes.`
+        : "Refreshing soon";
     } else {
       const hUntil = Math.floor(msUntil / 3600000);
       const mUntil = Math.floor((msUntil % 3600000) / 60000);
@@ -47,10 +53,12 @@ function formatInsightTiming(generatedAt: string, expiresAt?: string | null) {
       else nextRefresh = `Next refresh in ${Math.floor(hUntil / 24)}d`;
     }
   } else {
-    nextRefresh = "Updated periodically";
+    nextRefresh = isStale
+      ? `Last analysis: ${lastUpdated}. Will refresh when data changes.`
+      : "Updated periodically";
   }
 
-  return { lastUpdated, nextRefresh };
+  return { lastUpdated, nextRefresh, isStale };
 }
 
 interface AIInsightCardProps {

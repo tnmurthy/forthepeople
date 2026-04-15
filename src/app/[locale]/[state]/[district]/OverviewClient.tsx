@@ -29,6 +29,7 @@ import { getStateConfig } from "@/lib/constants/state-config";
 import DistrictHeroIllustration from "@/components/district/DistrictHeroIllustration";
 import InfraSnippet from "@/components/district/InfraSnippet";
 import LeadersSnippet from "@/components/district/LeadersSnippet";
+import LiveElectionBanner from "@/components/district/LiveElectionBanner";
 import type { DistrictBadge } from "@/lib/constants/districts";
 
 interface Props {
@@ -168,6 +169,8 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
       <div style={{ padding: "20px 24px 24px" }}>
         {/* Combined supporters + sponsor CTA card (cool gray, distinct from AI Analysis) */}
         <DistrictSponsorBanner district={districtSlug} state={stateSlug} districtName={districtData.name} stateName={stateName} locale={locale} />
+
+        <LiveElectionBanner stateSlug={stateSlug} leadershipHref={`${base}/leadership`} />
 
         <AIInsightCard module="overview" district={districtSlug} />
         <DistrictHealthScoreCard districtSlug={districtSlug} />

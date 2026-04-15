@@ -29,6 +29,8 @@ import DataSourceBanner from "@/components/common/DataSourceBanner";
 import { getModuleSources } from "@/lib/constants/state-config";
 import { getPartyColor } from "@/lib/constants/party-colors";
 import { getRoleDescription } from "@/lib/constants/role-descriptions";
+import ElectionSection, { findActiveElection, type ElectionEvent } from "@/components/district/ElectionSection";
+import { useQuery } from "@tanstack/react-query";
 
 type LucideCmp = ComponentType<{ size?: number | string; style?: React.CSSProperties; className?: string }>;
 
@@ -107,7 +109,7 @@ function LeaderAvatar({
   );
 }
 
-function LeaderCard({ l, tierAccent }: { l: Leader; tierAccent: string }) {
+function LeaderCard({ l, tierAccent, inElectionPeriod }: { l: Leader; tierAccent: string; inElectionPeriod?: boolean }) {
   // Party-coloured border for political tiers; tier-coloured for bureaucratic.
   const tone = getPartyColor(l.party);
   const isPolitical = !!l.party;
@@ -159,15 +161,29 @@ function LeaderCard({ l, tierAccent }: { l: Leader; tierAccent: string }) {
             <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>📍 {l.constituency}</div>
           )}
           {l.party && (
-            <div
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
-                fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-                color: tone.text, background: tone.bg, border: `1px solid ${tone.border}`,
-              }}
-            >
-              {l.party}
-              <span title={ATTRIBUTION_TOOLTIP} aria-hidden style={{ cursor: "help", opacity: 0.6 }}>ⓘ</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                  color: tone.text, background: tone.bg, border: `1px solid ${tone.border}`,
+                }}
+              >
+                {l.party}
+                <span title={ATTRIBUTION_TOOLTIP} aria-hidden style={{ cursor: "help", opacity: 0.6 }}>ⓘ</span>
+              </div>
+              {inElectionPeriod && (
+                <div
+                  title="Active election period — affiliations may change after results"
+                  style={{
+                    display: "inline-flex", alignItems: "center",
+                    fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                    color: "#92400E", background: "#FFFBEB", border: "1px solid #FDE68A",
+                  }}
+                >
+                  ⚠ Election period
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -195,7 +211,7 @@ function LeaderCard({ l, tierAccent }: { l: Leader; tierAccent: string }) {
   );
 }
 
-function TierSection({ tier, leaders, isLast }: { tier: number; leaders: Leader[]; isLast: boolean }) {
+function TierSection({ tier, leaders, isLast, inElectionPeriod }: { tier: number; leaders: Leader[]; isLast: boolean; inElectionPeriod?: boolean }) {
   const meta = tierMeta(tier);
   const TierIcon = meta.Icon;
   return (
@@ -221,7 +237,7 @@ function TierSection({ tier, leaders, isLast }: { tier: number; leaders: Leader[
           gap: 12,
         }}
       >
-        {leaders.map((l) => <LeaderCard key={l.id} l={l} tierAccent={meta.accent} />)}
+        {leaders.map((l) => <LeaderCard key={l.id} l={l} tierAccent={meta.accent} inElectionPeriod={inElectionPeriod} />)}
       </div>
 
       {/* Vertical connector to next tier (skipped on last tier) */}
@@ -248,6 +264,15 @@ function LeadershipPageInner({
   const { data, isLoading, error } = useLeaders(district, state);
   const { data: aiInsight } = useAIInsight(district, "leadership");
   const leaders: Leader[] = data?.data ?? [];
+
+  // Used for the election-period top banner + per-card "Election period" badge.
+  const { data: electionsData } = useQuery<{ data: ElectionEvent[] }>({
+    queryKey: ["elections", state],
+    queryFn: () => fetch(`/api/data/elections?state=${state}`).then((r) => r.json()),
+    staleTime: 5 * 60_000,
+  });
+  const liveElection = findActiveElection(electionsData?.data);
+  const inElectionPeriod = liveElection != null;
 
   // Group by tier; sort cards within a tier by importance heuristics
   // (President before PM, Governor before CM, MP before MLAs).
@@ -314,6 +339,27 @@ function LeadershipPageInner({
         </span>
       </div>
 
+      {inElectionPeriod && liveElection && (
+        <div
+          role="alert"
+          style={{
+            display: "flex", alignItems: "flex-start", gap: 10,
+            background: "#FEF2F2", border: "1px solid #FCA5A5", color: "#991B1B",
+            borderRadius: 8, padding: "10px 14px", marginBottom: 14,
+            fontSize: 12, lineHeight: 1.55, fontWeight: 500,
+          }}
+        >
+          <span style={{ fontSize: 16, lineHeight: 1 }}>⚠</span>
+          <span>
+            <strong>ELECTION PERIOD:</strong>{" "}
+            This district is currently in an active election period ({liveElection.label}).
+            Leadership positions and party affiliations may change following the election results
+            {liveElection.resultDate ? ` on ${new Date(liveElection.resultDate).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}` : ""}.
+            ForThePeople.in is not affiliated with any political party and does not endorse any candidate.
+          </span>
+        </div>
+      )}
+
       <AIInsightCard module="leaders" district={district} />
       {isLoading && <LoadingShell rows={4} />}
       {error && <ErrorBlock />}
@@ -328,8 +374,10 @@ function LeadershipPageInner({
       )}
 
       {tiers.map((t) => (
-        <TierSection key={t} tier={t} leaders={byTier[t]} isLast={t === lastTier} />
+        <TierSection key={t} tier={t} leaders={byTier[t]} isLast={t === lastTier} inElectionPeriod={inElectionPeriod} />
       ))}
+
+      <ElectionSection stateSlug={state} />
 
       {leaders.length > 0 && (
         <div

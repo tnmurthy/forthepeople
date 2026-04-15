@@ -157,6 +157,32 @@ model Leader {
   @@index([districtId, active])
 }
 
+// ═══ ELECTION EVENTS ══════════════════════════════════════
+
+model ElectionEvent {
+  id            String    @id @default(cuid())
+  type          String    // LOK_SABHA | STATE_ASSEMBLY | MUNICIPAL | PANCHAYAT
+  label         String
+  state         String?   // state slug, null = national
+  district      String?   // district slug, null = statewide
+  lastHeld      DateTime?
+  pollingDate   DateTime? // EXACT date if announced by ECI
+  pollingPhases String?   // JSON: [{"phase":1,"date":"2026-04-23"}, ...]
+  resultDate    DateTime?
+  nextExpected  DateTime? // approximate when exact unknown
+  termYears     Int       @default(5)
+  totalSeats    Int?
+  body          String    @default("Election Commission of India")
+  note          String?
+  source        String?   // URL: eci.gov.in notification
+  isActive      Boolean   @default(true)
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+
+  @@index([state, isActive])
+  @@index([type, isActive])
+}
+
 // ═══ INFRASTRUCTURE ═══════════════════════════════════════
 
 model InfraProject {
