@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useInfrastructure } from "@/hooks/useRealtimeData";
 import type { InfraProject, InfraUpdate } from "@/hooks/useRealtimeData";
+import MobileHint from "@/components/common/MobileHint";
 import {
   ModuleHeader, LoadingShell, ErrorBlock, EmptyBlock, LastUpdatedBadge,
 } from "@/components/district/ui";
@@ -419,25 +420,20 @@ function PeopleRow({ p }: { p: InfraProject }) {
         👤{" "}
         {p.announcedBy ? (
           <>
-            <span title={ANNOUNCER_TOOLTIP} style={{ cursor: "help" }}>
-              Announced by:{" "}
-              <strong style={{ color: "#1A1A1A" }}>{p.announcedBy}</strong>
-            </span>
-            {p.party ? (
-              <span title={PARTY_TOOLTIP} style={{ cursor: "help" }}>
-                {" "}({p.party})
+            <MobileHint hint={ANNOUNCER_TOOLTIP}>
+              <span>
+                Announced by:{" "}
+                <strong style={{ color: "#1A1A1A" }}>{p.announcedBy}</strong>
               </span>
+            </MobileHint>
+            {p.party ? (
+              <>
+                {" "}
+                <MobileHint hint={PARTY_TOOLTIP}>
+                  <span>({p.party})</span>
+                </MobileHint>
+              </>
             ) : ""}
-            <span
-              aria-hidden
-              title={ANNOUNCER_TOOLTIP}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                marginLeft: 4, width: 12, height: 12, borderRadius: "50%",
-                background: "#E5E7EB", color: "#6B7280", fontSize: 9, fontWeight: 700,
-                cursor: "help", verticalAlign: "middle",
-              }}
-            >i</span>
           </>
         ) : (
           <span style={{ color: "#9CA3AF", fontStyle: "italic" }}>Announcer pending</span>

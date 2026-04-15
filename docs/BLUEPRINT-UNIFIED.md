@@ -154,6 +154,36 @@
 #     adds like Micah Alex's ₹50,000), not just Razorpay traffic. Cache key
 #     bumped to v3.
 #
+# 2026-04-15 — Final pre-push polish (8 fixes):
+#   • src/components/common/MobileHint.tsx — responsive hint widget. On
+#     desktop (>=768px) renders a hover-tooltip with ⓘ marker; on mobile
+#     renders inline expandable text under the trigger so touch users
+#     aren't shut out. Replaces title="" calls on:
+#       – leadership page party badge,
+#       – infrastructure page "Announced by:" + party label.
+#   • Leadership card role description: now an expandable button —
+#     1-line truncated by default, ▸/▾ indicator, tap toggles full text;
+#     desktop also gets the title-attr hover for accessibility.
+#   • Leadership page additions:
+#       – LiveElectionBanner now also rendered above the AI Insight card
+#         (was overview-only). Surfaces the same red "VOTING IN N DAYS"
+#         banner on TN/WB leadership pages right now.
+#       – ModuleNews(module="leaders") rendered after ElectionSection so
+#         related news articles appear at the bottom of the page when
+#         classified as leadership news. Component renders nothing if
+#         no articles exist for the module — quiet states stay calm.
+#   • Mandya infrastructure: filled the last missing description
+#     ("Mandya Industrial Hub with ARAI Centre") + executingAgency
+#     (KIADB / ARAI). Mandya now 100% description coverage.
+#   • Existing protections (verified, not re-introduced):
+#       – Leader cards already render lastVerifiedAt provenance via
+#         leaderProvenance() ("Manually researched · Last verified: …"
+#         / "Added from seed data" / "Updated from news: …").
+#       – Leadership page already wrapped in ModuleErrorBoundary so a
+#         single component crash doesn't blank the page on scroll.
+#       – ElectionSection already carries the ECI legal footer
+#         disclaiming affiliation with the Election Commission.
+#
 # 2026-04-15 — Elections: live ECI dates + leadership election section + AI staleness fix:
 #   • Schema (additive, prisma db push): NEW model ElectionEvent
 #     (id, type [LOK_SABHA|STATE_ASSEMBLY|MUNICIPAL|PANCHAYAT], label,

@@ -30,6 +30,9 @@ import { getModuleSources } from "@/lib/constants/state-config";
 import { getPartyColor } from "@/lib/constants/party-colors";
 import { getRoleDescription } from "@/lib/constants/role-descriptions";
 import ElectionSection, { findActiveElection, type ElectionEvent } from "@/components/district/ElectionSection";
+import LiveElectionBanner from "@/components/district/LiveElectionBanner";
+import ModuleNews from "@/components/district/ModuleNews";
+import MobileHint from "@/components/common/MobileHint";
 import { useQuery } from "@tanstack/react-query";
 
 type LucideCmp = ComponentType<{ size?: number | string; style?: React.CSSProperties; className?: string }>;
@@ -69,6 +72,36 @@ function leaderProvenance(l: { source?: string | null; lastVerifiedAt?: string |
 }
 
 const ATTRIBUTION_TOOLTIP = "As last reported in news media. Political positions and party affiliations change frequently — verify on the official district website.";
+
+function RoleDescription({ text }: { text: string }) {
+  // Tap to toggle full text on mobile; desktop also gets clickable expand
+  // for accessibility (the title attribute is kept as a hover affordance).
+  const [open, setOpen] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen((o) => !o)}
+      title={text}
+      style={{
+        background: "transparent", border: "none", padding: 0, margin: "3px 0 0",
+        textAlign: "left", cursor: "pointer", color: "#9CA3AF", font: "inherit",
+        fontSize: 11, lineHeight: 1.4, width: "100%",
+        display: "flex", alignItems: "flex-start", gap: 4,
+      }}
+      aria-expanded={open}
+    >
+      <span aria-hidden style={{ flexShrink: 0, fontSize: 9, color: "#9CA3AF", marginTop: 2 }}>{open ? "▾" : "▸"}</span>
+      <span
+        style={open ? undefined : {
+          display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 1,
+          overflow: "hidden", textOverflow: "ellipsis",
+        }}
+      >
+        {text}
+      </span>
+    </button>
+  );
+}
 
 function LeaderAvatar({
   name, photoUrl, accent,
@@ -144,18 +177,7 @@ function LeaderCard({ l, tierAccent, inElectionPeriod }: { l: Leader; tierAccent
           {(() => {
             const desc = l.roleDescription ?? getRoleDescription(l.role);
             if (!desc) return null;
-            return (
-              <div
-                title={desc}
-                style={{
-                  fontSize: 11, color: "#9CA3AF", marginTop: 3, lineHeight: 1.4,
-                  display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 1,
-                  overflow: "hidden", textOverflow: "ellipsis", cursor: "help",
-                }}
-              >
-                {desc}
-              </div>
-            );
+            return <RoleDescription text={desc} />;
           })()}
           {l.constituency && (
             <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>📍 {l.constituency}</div>
@@ -164,13 +186,14 @@ function LeaderCard({ l, tierAccent, inElectionPeriod }: { l: Leader; tierAccent
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
               <div
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 4,
+                  display: "inline-flex", alignItems: "center",
                   fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
                   color: tone.text, background: tone.bg, border: `1px solid ${tone.border}`,
                 }}
               >
-                {l.party}
-                <span title={ATTRIBUTION_TOOLTIP} aria-hidden style={{ cursor: "help", opacity: 0.6 }}>ⓘ</span>
+                <MobileHint hint={ATTRIBUTION_TOOLTIP}>
+                  <span>{l.party}</span>
+                </MobileHint>
               </div>
               {inElectionPeriod && (
                 <div
@@ -339,6 +362,8 @@ function LeadershipPageInner({
         </span>
       </div>
 
+      <LiveElectionBanner stateSlug={state} leadershipHref={base + "/leadership"} />
+
       {inElectionPeriod && liveElection && (
         <div
           role="alert"
@@ -378,6 +403,8 @@ function LeadershipPageInner({
       ))}
 
       <ElectionSection stateSlug={state} />
+
+      <ModuleNews district={district} state={state} locale={locale} module="leaders" />
 
       {leaders.length > 0 && (
         <div
