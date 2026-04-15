@@ -280,7 +280,14 @@ placeholders and fill in as soon as the hourly `scrape-news` cron runs:
 ```
 For EACH new district, seed ALL of these:
 □ State (if not exists) + District + Taluks + Villages
-□ Leaders (all 10 tiers — MP, MLAs, DC, SP, judges, tahsildars, etc.)
+□ Leaders — uses the 5-tier hierarchy (T1 NATIONAL · T2 STATE · T3 DISTRICT
+  ADMIN · T4 ELECTED REPS · T5 MUNICIPAL & DEPT). T1 (Modi/Murmu) and the
+  state CM/Governor at T2 auto-populate via scripts/fix-all-districts-
+  leadership.ts. T3 bureaucrats (Collector, SP, ZP CEO) need MANUAL
+  verification per district — use "[Verify at <official portal>]" as the
+  name when unsure rather than fabricating a name. T4 (MP + MLAs) and T5
+  (Mayor / dept heads) seed from the state assembly + ECI source-of-truth,
+  then the news pipeline auto-updates as transfers/elections happen.
 □ Famous Personalities (15-25 real people with Wikipedia photos)
 □ Infrastructure Projects — SKIP manual seeding; populated automatically
   by the news-driven pipeline (see "News-Driven Modules" section above).

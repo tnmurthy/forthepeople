@@ -154,6 +154,50 @@
 #     adds like Micah Alex's ₹50,000), not just Razorpay traffic. Cache key
 #     bumped to v3.
 #
+# 2026-04-15 — Leadership: role descriptions + auto-party fallback + all-districts re-tier:
+#   • Schema (additive, prisma db push): Leader gains roleDescription String?
+#   • src/lib/constants/role-descriptions.ts — single config of one-line role
+#     descriptions (President, PM, Governor, CM, MP, MLA, Collector, SP, CP,
+#     ZP CEO, Municipal Commissioner, Mayor, Chief Justice, Tahsildar, etc.).
+#     getRoleDescription(role) does exact match → split-on-,;( head match →
+#     contains match → "MP/MLA" pattern fallback → calm generic fallback.
+#     Used by the leadership page (one-line italic grey under role title,
+#     full text in title-attr tooltip) and the all-districts script.
+#   • src/lib/constants/party-colors.ts now has YSRCP, RJD, CPI(M), CPI,
+#     AIADMK, JMM, SAD, BJD, Independent (capitalised) entries. Improved
+#     getPartyColor: exact match → case-insensitive match → grey UNKNOWN
+#     fallback with one-time console.warn so unknown parties never crash
+#     the page and surface as scannable log lines for the maintainer.
+#   • news-action-engine `leaders` case logs the same warning when a news
+#     article delivers a party not in PARTY_COLORS — easy to spot when
+#     elections create a new party.
+#   • /api/data/leaders now returns roleDescription so the page can render
+#     it without re-deriving on every render.
+#   • scripts/fix-all-districts-leadership.ts (one-shot data sweep across
+#     all 9 active districts):
+#       Stage 1a — DELETES known placeholder rows ("Bengaluru leaders",
+#         "Karnataka CM", "Bengaluru Urban District Collector").
+#       Stage 1b — ADDS Modi/Murmu at T1 for every district + per-state
+#         CM/Governor at T2 where the user has explicitly confirmed
+#         (Karnataka Gehlot/Siddaramaiah, Maharashtra Fadnavis, TN Stalin,
+#         Telangana Revanth, UP Yogi+Anandiben, WB Mamata). Delhi CM left
+#         untouched per spec (post-Feb-2025 election uncertainty).
+#       Stage 2 — RE-TIERS every active leader by role-pattern alone:
+#         T1 President/PM, T2 Governor/CM/Dy CM/CS/LG/Cabinet ministers,
+#         T3 Collector/DC/DM/SP/CP/DCP/CEO ZP, T4 MP/MLA/Union Minister,
+#         T5 Mayor/Municipal Commissioner/CJ/MD/Chairman/dept heads.
+#         Legacy "Member of Legislative Assembly" rows normalised to
+#         "MLA, <constituency>" using the row's own constituency value.
+#       Stage 3 — Populates roleDescription = ROLE_DESCRIPTIONS[role] for
+#         every active row whose roleDescription is null.
+#   • Result (active rows by tier across the 9 districts):
+#       Bengaluru 60 | Mysuru 40 | Mandya 15 | Mumbai 53 | Chennai 39 |
+#       Hyderabad 23 | Lucknow 16 | Kolkata 45 | New Delhi 32
+#       0 deleted · 0 added (all already present from prior runs) ·
+#       225 re-tiered · 323 descriptions populated.
+#   • DISTRICT-EXPANSION-SKILL.md updated with the new tier model and the
+#     "[Verify at <portal>]" placeholder convention for unknown bureaucrats.
+#
 # 2026-04-15 — Leadership: 5-tier hierarchy redesign + party colours + Mandya re-tier:
 #   • New tier semantics (replaces flat tier-by-role list):
 #       T1 NATIONAL          — President, Prime Minister

@@ -108,12 +108,12 @@ async function fetchModule(
         id: string; districtId: string; name: string; role: string; tier: number;
         party: string | null; constituency: string | null; since: string | null;
         photoUrl: string | null; source: string | null; lastVerifiedAt: Date | null;
-        active: boolean;
+        active: boolean; roleDescription: string | null;
       }[]>`
         SELECT DISTINCT ON (LOWER("name"), LOWER("role"))
           id, "districtId", name, role, tier,
           party, constituency, since, "photoUrl",
-          source, "lastVerifiedAt", active
+          source, "lastVerifiedAt", active, "roleDescription"
         FROM "Leader"
         WHERE "districtId" = ${did} AND active = true
         ORDER BY LOWER("name"), LOWER("role"), id DESC

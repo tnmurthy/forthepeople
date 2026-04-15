@@ -31,6 +31,7 @@ export interface Leader {
   active?: boolean;
   source?: string | null;
   lastVerifiedAt?: string | null;
+  roleDescription?: string | null;
 }
 
 export interface BudgetEntry {

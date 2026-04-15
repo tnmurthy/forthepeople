@@ -148,9 +148,10 @@ model Leader {
   since          String?
   photoUrl       String?
   photoLicense   String?
-  source         String?
-  active         Boolean   @default(true)
-  lastVerifiedAt DateTime?
+  source           String?
+  active           Boolean   @default(true)
+  lastVerifiedAt   DateTime?
+  roleDescription  String?
 
   @@index([districtId, tier])
   @@index([districtId, active])

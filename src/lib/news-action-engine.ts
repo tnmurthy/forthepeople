@@ -14,6 +14,7 @@ import { callAI } from "./ai-provider";
 import { extractExamFromNews, syncExamFromNews } from "./exam-sync";
 import { extractVerifyAndSyncInfra } from "./infra-sync";
 import { logUpdate } from "./update-log";
+import { PARTY_COLORS } from "./constants/party-colors";
 
 // ── Per-cron extraction cap ─────────────────────────────────
 // Each news cron invocation calls resetExtractionCounters() once at start.
@@ -271,6 +272,9 @@ export async function executeNewsAction(
           const tier = (data.tier as number) ?? 3;
           const party = (data.party as string) ?? null;
           const districtName = (await prisma.district.findUnique({ where: { id: districtId }, select: { name: true } }))?.name ?? "";
+          if (party && !PARTY_COLORS[party] && !Object.keys(PARTY_COLORS).some((k) => k.toUpperCase() === party.toUpperCase())) {
+            console.warn(`[leadership] Unknown party detected: '${party}'. Using default colors. Add to party-colors.ts for branded colors.`);
+          }
 
           // Skip duplicates: check if this name+role combo already exists for this district.
           const existing = await prisma.leader.findFirst({

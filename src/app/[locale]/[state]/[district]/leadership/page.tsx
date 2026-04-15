@@ -28,6 +28,7 @@ import AIInsightCard from "@/components/common/AIInsightCard";
 import DataSourceBanner from "@/components/common/DataSourceBanner";
 import { getModuleSources } from "@/lib/constants/state-config";
 import { getPartyColor } from "@/lib/constants/party-colors";
+import { getRoleDescription } from "@/lib/constants/role-descriptions";
 
 type LucideCmp = ComponentType<{ size?: number | string; style?: React.CSSProperties; className?: string }>;
 
@@ -138,6 +139,22 @@ function LeaderCard({ l, tierAccent }: { l: Leader; tierAccent: string }) {
             </div>
           )}
           <div style={{ fontSize: 12, color: "#4B5563", marginTop: 3, lineHeight: 1.35 }}>{l.role}</div>
+          {(() => {
+            const desc = l.roleDescription ?? getRoleDescription(l.role);
+            if (!desc) return null;
+            return (
+              <div
+                title={desc}
+                style={{
+                  fontSize: 11, color: "#9CA3AF", marginTop: 3, lineHeight: 1.4,
+                  display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 1,
+                  overflow: "hidden", textOverflow: "ellipsis", cursor: "help",
+                }}
+              >
+                {desc}
+              </div>
+            );
+          })()}
           {l.constituency && (
             <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>📍 {l.constituency}</div>
           )}
