@@ -1772,3 +1772,19 @@ model Expense {
   @@index([date])
   @@index([category])
 }
+
+// ═════════════════════════════════════════════════════════════════════════
+// SupportPageConfig — singleton editable content for /support page.
+// Admin can tweak bio copy, cost breakdown, and help-link list without a
+// code deploy. Fallback defaults live in src/lib/support-defaults.ts.
+// ═════════════════════════════════════════════════════════════════════════
+model SupportPageConfig {
+  id            String   @id @default("support-page-config")
+  bioName       String   @default("Jayanth M B")
+  bioSubtitle   String   @default("26 yr old · Entrepreneur from Mandya, Karnataka · Founder - ForThePeople.in")
+  bioText       String   // markdown-ish; paragraphs separated by \n\n
+  photoUrl      String   @default("/jayanth-profile.jpg")
+  costBreakdown Json     @default("[]") // [{label, pct, color}]
+  helpItems     Json     @default("[]") // [{label, desc, url, icon, external}]
+  updatedAt     DateTime @updatedAt
+}

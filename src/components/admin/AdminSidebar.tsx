@@ -29,6 +29,7 @@ import {
   KeyRound,
   Pencil,
   History,
+  Heart,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -48,6 +49,7 @@ type ItemId =
   | "vault"
   | "content-editor"
   | "update-log"
+  | "support-page"
   | "feedback";
 
 interface NavItem {
@@ -118,6 +120,14 @@ const GROUPS: Group[] = [
         buildHref: (locale) => `/${locale}/admin?tab=update-log`,
         inPageTab: true,
         help: "Every data change with before/after values — filterable by source/module",
+      },
+      {
+        id: "support-page",
+        label: "Support Page",
+        icon: Heart,
+        buildHref: (locale) => `/${locale}/admin?tab=support-page`,
+        inPageTab: true,
+        help: "Edit the /support page bio, photo, cost breakdown, and help links",
       },
     ],
   },

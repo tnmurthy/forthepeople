@@ -4,7 +4,7 @@
  * https://github.com/jayanthmb14/forthepeople
  */
 
-import { Suspense } from "react";
+import { Suspense, Fragment } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import SupportCheckout from "@/components/support/SupportCheckout";
@@ -14,6 +14,48 @@ import FeedbackModal from "@/components/common/FeedbackModal";
 import { TIER_CONFIG, TIER_ORDER } from "@/lib/constants/razorpay-plans";
 import { getTotalActiveDistrictCount, getActiveStateCount } from "@/lib/constants/districts";
 import SupporterQuotes from "@/components/support/SupporterQuotes";
+import { prisma } from "@/lib/db";
+import { SUPPORT_DEFAULTS, type CostBreakdownItem, type HelpItem, type SupportPageContent } from "@/lib/support-defaults";
+
+export const revalidate = 60; // content rarely changes; 60s cache is enough
+
+/** Render markdown-lite: **bold** → <strong>, blank lines → new paragraph. */
+function renderBioText(text: string): React.ReactNode {
+  const paragraphs = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  return paragraphs.map((para, i) => {
+    const parts = para.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <p key={i} style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: i === 0 ? 0 : "12px 0 0" }}>
+        {parts.map((seg, j) => {
+          if (seg.startsWith("**") && seg.endsWith("**")) {
+            return <strong key={j}>{seg.slice(2, -2)}</strong>;
+          }
+          return <Fragment key={j}>{seg}</Fragment>;
+        })}
+      </p>
+    );
+  });
+}
+
+async function loadSupportContent(): Promise<SupportPageContent> {
+  try {
+    const row = await prisma.supportPageConfig.findUnique({ where: { id: "support-page-config" } });
+    if (!row) return SUPPORT_DEFAULTS;
+    const cost = Array.isArray(row.costBreakdown) ? (row.costBreakdown as unknown as CostBreakdownItem[]) : SUPPORT_DEFAULTS.costBreakdown;
+    const help = Array.isArray(row.helpItems) ? (row.helpItems as unknown as HelpItem[]) : SUPPORT_DEFAULTS.helpItems;
+    return {
+      bioName: row.bioName || SUPPORT_DEFAULTS.bioName,
+      bioSubtitle: row.bioSubtitle || SUPPORT_DEFAULTS.bioSubtitle,
+      bioText: row.bioText || SUPPORT_DEFAULTS.bioText,
+      photoUrl: row.photoUrl || SUPPORT_DEFAULTS.photoUrl,
+      costBreakdown: cost.length ? cost : SUPPORT_DEFAULTS.costBreakdown,
+      helpItems: help.length ? help : SUPPORT_DEFAULTS.helpItems,
+    };
+  } catch (err) {
+    console.warn("[support] loadSupportContent fell back to defaults:", err);
+    return SUPPORT_DEFAULTS;
+  }
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -29,18 +71,10 @@ const SCALE_COSTS = [
   { label: "All India (780 districts)", monthly: "₹96,000/month", yearly: "₹11.5 lakh/year", usd: "~$1,175/month" },
 ];
 
-const COST_BREAKDOWN = [
-  { label: "Servers & Hosting (Vercel + Railway)", pct: 40, color: "#2563EB" },
-  { label: "AI Analysis & Intelligence (OpenRouter)", pct: 20, color: "#7C3AED" },
-  { label: "Data Collection & APIs", pct: 15, color: "#16A34A" },
-  { label: "Analytics & Monitoring (Plausible + Sentry)", pct: 10, color: "#F59E0B" },
-  { label: "Development & Expansion", pct: 10, color: "#EC4899" },
-  { label: "Domain & Security", pct: 5, color: "#6B7280" },
-];
-
-export default function SupportPage() {
+export default async function SupportPage() {
   const activeDistricts = getTotalActiveDistrictCount();
   const activeStates = getActiveStateCount();
+  const content = await loadSupportContent();
   return (
     <main style={{ background: "#FAFAF8", minHeight: "calc(100vh - 56px)", paddingBottom: 80 }}>
 
@@ -206,9 +240,10 @@ export default function SupportPage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "flex-start", gap: 18 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/jayanth-profile.jpg"
-              alt="Jayanth M B — Founder, ForThePeople.in"
+              src={content.photoUrl}
+              alt={`${content.bioName} — Founder, ForThePeople.in`}
               width={72}
               height={72}
               className="profile-ring"
@@ -220,40 +255,13 @@ export default function SupportPage() {
             />
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                Jayanth M B
+                {content.bioName}
                 <span aria-hidden="true" style={{ fontSize: 13 }}>🇮🇳</span>
               </div>
               <div style={{ fontSize: 12, color: "#9B9B9B", marginBottom: 16 }}>
-                26 yr old · Entrepreneur from Mandya, Karnataka · Founder - ForThePeople.in
+                {content.bioSubtitle}
               </div>
-              <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>
-                When I was preparing for civil services during engineering, I spent hours
-                trying to find basic government data about my own district — budgets,
-                infrastructure projects, scheme eligibility, crop prices. The information
-                existed, but it was scattered across dozens of portals, buried in PDFs, and
-                nearly impossible for an ordinary citizen to navigate.
-                <br /><br />
-                That frustration stayed with me. Years later, running Pinnakle Media (PKJMB
-                Media PVT Limited), I finally built what should have existed all along —
-                ForThePeople.in. A platform that brings all of a district&apos;s government data
-                into one clean, accessible dashboard.
-                <br /><br />
-                A single Instagram reel explaining the platform reached lakhs of people.
-                Citizens from across India started asking for their districts, sharing it with
-                families, telling me this was exactly what they needed.
-                <br /><br />
-                Today — <strong>9 districts across 7 states</strong>, 29 live dashboards each.
-                Infrastructure projects, elected representatives, crop prices, dam levels,
-                school data, budgets, government exams, and more. The goal: all 780 districts
-                in India.
-                <br /><br />
-                This is <strong>not a startup</strong>. Not for profit. A citizen initiative
-                under India&apos;s Open Data Policy (NDSAP). Running this costs
-                <strong> more than ₹12 lakh a year</strong> — and I fund it independently.
-                <br /><br />
-                Every rupee contributed keeps the data live, expands to more districts, and
-                builds new modules.
-              </p>
+              {renderBioText(content.bioText)}
             </div>
           </div>
         </div>
@@ -318,7 +326,7 @@ export default function SupportPage() {
           🔍 Where Your Money Goes
         </h2>
         <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 14, padding: "20px 24px", marginBottom: 40 }}>
-          {COST_BREAKDOWN.map((item) => (
+          {content.costBreakdown.map((item) => (
             <div key={item.label} style={{ marginBottom: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                 <span style={{ fontSize: 13, color: "#1A1A1A" }}>{item.label}</span>
@@ -337,15 +345,10 @@ export default function SupportPage() {
         </h2>
         <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 14, padding: "20px 24px", marginBottom: 40 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {[
-              { emoji: "⭐", label: "Star on GitHub", desc: "Help us get visibility — star the repository", href: "https://github.com/jayanthmb14/forthepeople", external: true },
-              { emoji: "🐦", label: "Share on social media", desc: "Share ForThePeople.in with #OpenDataIndia", href: "https://twitter.com/intent/tweet?text=Check%20out%20ForThePeople.in%20%E2%80%94%20free%20government%20data%20dashboards%20for%20Indian%20districts%20%23OpenDataIndia%20%23ForThePeople&url=https://forthepeople.in", external: true },
-              { emoji: "💻", label: "Contribute code", desc: "We're open source — PRs welcome on GitHub", href: "https://github.com/jayanthmb14/forthepeople/issues", external: true },
-              { emoji: "📊", label: "Send district data", desc: "Know RTI documents or official reports? Share them", href: "/en/feedback", external: false },
-            ].map((item) => (
-              <a key={item.label} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}
+            {content.helpItems.map((item) => (
+              <a key={item.label} href={item.url} target={item.external ? "_blank" : undefined} rel={item.external ? "noopener noreferrer" : undefined}
                 className="support-help-item" style={{ display: "flex", alignItems: "flex-start", gap: 12, textDecoration: "none", padding: "10px 12px", borderRadius: 8, borderLeft: "3px solid transparent", cursor: "pointer" }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>{item.emoji}</span>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{item.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A" }}>{item.label}</div>
                   <div style={{ fontSize: 12, color: "#6B6B6B" }}>{item.desc}</div>
