@@ -150,17 +150,20 @@ export default function InfraSnippet({
         </div>
 
         {/* Top 3 projects */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {top.map((p) => {
             const Icon = CATEGORY_ICON[normalizeCategory(p.category)] ?? HardHat;
             const status = normalizeStatus(p.status);
             const statusLabel = STATUS_LABEL[status] ?? status;
             const completedRow = isCompleted(p);
             const progress = p.progressPct ?? (completedRow ? 100 : 0);
+            const shortDesc = p.description && p.description.length > 60
+              ? p.description.trim().slice(0, 60).replace(/\s+\S*$/, "") + "…"
+              : (p.description ?? "");
 
             return (
-              <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <Icon size={14} style={{ color: "#2563EB", flexShrink: 0 }} />
+              <div key={p.id} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <Icon size={14} style={{ color: "#2563EB", flexShrink: 0, marginTop: 2 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                     <span style={{ fontSize: 12, color: "#1A1A1A", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -170,7 +173,19 @@ export default function InfraSnippet({
                       {completedRow ? "✅ Completed" : `${progress}% · ${statusLabel}`}
                     </span>
                   </div>
-                  {!completedRow && (
+                  {shortDesc && (
+                    <div
+                      style={{
+                        fontSize: 11, color: "#9B9B9B",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        marginTop: 2,
+                      }}
+                      title={p.description ?? undefined}
+                    >
+                      {shortDesc}
+                    </div>
+                  )}
+                  {!completedRow && progress > 0 && (
                     <div style={{ height: 4, background: "#F0F0EC", borderRadius: 2, overflow: "hidden", marginTop: 4 }}>
                       <div
                         style={{

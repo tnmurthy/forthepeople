@@ -367,38 +367,66 @@ function PrecomputedAnalysis({ projectId }: { projectId: string }) {
 // Project card
 // ═══════════════════════════════════════════════════════════
 
+/**
+ * Truncate at a word boundary so the card never ends in mid-word.
+ * Preserves the full value in the DB; only the visual surface is clipped.
+ */
+function truncate(text: string | null | undefined, max: number): string | null {
+  if (!text) return null;
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const sliced = t.slice(0, max);
+  const lastSpace = sliced.lastIndexOf(" ");
+  const base = lastSpace > max * 0.6 ? sliced.slice(0, lastSpace) : sliced;
+  return base + "…";
+}
+
 function PeopleRow({ p }: { p: InfraProject }) {
+  const keyPeople = (p.keyPeople ?? []).filter((k): k is NonNullable<typeof k> => !!k && !!k.name);
+  const hasAnything = !!p.announcedBy || !!p.executingAgency || keyPeople.length > 0;
+
+  if (!hasAnything) {
+    return (
+      <div style={{ fontSize: 12, color: "#9CA3AF", fontStyle: "italic", marginBottom: 8 }}>
+        👤 People &amp; agency data pending
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10, fontSize: 12, color: "#4B5563" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 8, fontSize: 12, color: "#4B5563" }}>
+      {/* Primary line: announced-by + party + executing agency — all in one */}
       <div>
-        👤 Announced by:{" "}
+        👤{" "}
         {p.announcedBy ? (
           <>
             <strong style={{ color: "#1A1A1A" }}>{p.announcedBy}</strong>
-            {p.announcedByRole ? ` (${p.announcedByRole})` : ""}
-            {p.party ? ` — ${p.party}` : ""}
-            {p.announcedDate ? ` · ${formatMonthYear(p.announcedDate)}` : ""}
+            {p.party ? ` (${p.party})` : ""}
           </>
-        ) : <Awaiting />}
-      </div>
-      <div>
-        🏗 Executing Agency: {p.executingAgency ? <strong style={{ color: "#1A1A1A" }}>{p.executingAgency}</strong> : <Awaiting />}
-      </div>
-      <div>
-        👥 Key People:{" "}
-        {p.keyPeople && p.keyPeople.length > 0 ? (
+        ) : (
+          <span style={{ color: "#9CA3AF", fontStyle: "italic" }}>Announcer pending</span>
+        )}
+        {p.executingAgency && (
           <>
-            {p.keyPeople.slice(0, 3).map((kp, i) => (
-              <span key={i}>
-                {i > 0 ? ", " : ""}
-                <strong style={{ color: "#1A1A1A" }}>{kp.name}</strong>
-                {kp.role ? ` (${kp.role}${kp.party ? `, ${kp.party}` : ""})` : kp.party ? ` (${kp.party})` : ""}
-              </span>
-            ))}
-            {p.keyPeople.length > 3 && <span> + {p.keyPeople.length - 3} more</span>}
+            {" · "}
+            <span style={{ color: "#374151" }}>{p.executingAgency}</span>
           </>
-        ) : <Awaiting />}
+        )}
       </div>
+      {/* Secondary line: key people — inline, comma-separated */}
+      {keyPeople.length > 0 && (
+        <div style={{ fontSize: 11, color: "#6B7280" }}>
+          Also:{" "}
+          {keyPeople.slice(0, 3).map((kp, i) => (
+            <span key={i}>
+              {i > 0 ? ", " : ""}
+              <strong style={{ color: "#374151" }}>{kp.name}</strong>
+              {kp.role || kp.party ? ` (${[kp.role, kp.party].filter(Boolean).join(", ")})` : ""}
+            </span>
+          ))}
+          {keyPeople.length > 3 && <span> + {keyPeople.length - 3} more</span>}
+        </div>
+      )}
     </div>
   );
 }
@@ -478,15 +506,15 @@ function TimelineModal({ p, onClose }: { p: InfraProject; onClose: () => void })
         {/* Scrollable body */}
         <div style={{ overflowY: "auto", padding: "14px 18px" }}>
           {p.description && (
-            <div
-              style={{
-                fontSize: 13, color: "#374151", lineHeight: 1.55,
-                background: "#FAFAF8", border: "1px solid #F0F0EC", borderRadius: 10,
-                padding: "10px 12px", marginBottom: 14,
-              }}
-            >
-              {p.description}
-            </div>
+            <section style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#6B7280", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
+                About this project
+              </div>
+              <div style={{ fontSize: 14, color: "#4A4A4A", lineHeight: 1.55, marginBottom: 12 }}>
+                {p.description}
+              </div>
+              <hr style={{ border: "none", borderTop: "1px solid #F0F0EC", margin: 0 }} />
+            </section>
           )}
 
           {updates.length > 0 ? (
@@ -536,33 +564,33 @@ function ProjectCard({ p }: { p: InfraProject }) {
     <div
       style={{
         background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 14,
-        padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-        display: "flex", flexDirection: "column",
+        padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
+        display: "flex", flexDirection: "column", gap: 0,
       }}
     >
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+      {/* Header: name + short description + category·agency line + status badge */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-            <Icon size={18} style={{ color: "#2563EB", flexShrink: 0 }} />
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3, marginBottom: 4, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <Icon size={17} style={{ color: "#2563EB", flexShrink: 0 }} />
             <span>{p.name}</span>
           </div>
           {p.description && (
             <div
               style={{
-                fontSize: 12, color: "#6B6B6B", lineHeight: 1.45, marginBottom: 6,
+                fontSize: 13, color: "#6B6B6B", lineHeight: 1.45, marginBottom: 6,
                 display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: 2,
                 overflow: "hidden", textOverflow: "ellipsis",
               }}
               title={p.description}
             >
-              {p.description}
+              {truncate(p.description, 100)}
             </div>
           )}
-          <div style={{ fontSize: 11, color: "#6B7280", display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span>{normalCategory}</span>
-            {p.executingAgency && <><span>·</span><span>Executing: {p.executingAgency}</span></>}
-            {p.scope && p.scope !== "DISTRICT" && <><span>·</span><span>{p.scope}</span></>}
+          <div style={{ fontSize: 11, color: "#9B9B9B", letterSpacing: "0.04em", textTransform: "uppercase", fontWeight: 600 }}>
+            {normalCategory}
+            {p.executingAgency && <> · {p.executingAgency}</>}
+            {p.scope && p.scope !== "DISTRICT" && <> · {p.scope}</>}
           </div>
         </div>
         <span
@@ -576,53 +604,54 @@ function ProjectCard({ p }: { p: InfraProject }) {
         </span>
       </div>
 
-      {/* People block — always renders, with "Awaiting data" placeholders */}
+      {/* People — compact, no Awaiting placeholders per field */}
       <PeopleRow p={p} />
 
-      {/* Budget */}
-      <div style={{ background: "#F9FAFB", border: "1px solid #F0F0EC", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
-        <div style={{ fontSize: 10, color: "#9B9B9B", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>Budget</div>
-        {(p.originalBudget != null || p.budget != null) ? (
-          <div style={{ fontSize: 13, color: "#1A1A1A", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
-            <span>Original: <strong>{formatINR(p.originalBudget ?? p.budget)}</strong></span>
-            {p.revisedBudget != null && p.revisedBudget !== p.originalBudget && (
-              <>
-                <span style={{ color: "#9B9B9B" }}>→</span>
-                <span>Revised: <strong>{formatINR(p.revisedBudget)}</strong></span>
-              </>
-            )}
-            {hasBudgetOverrun && p.costOverrun != null && (
-              <span style={{ fontSize: 11, color: p.costOverrun > 0 ? "#B45309" : "#16A34A" }}>
-                ({p.costOverrun > 0 ? "+" : ""}{formatINR(Math.abs(p.costOverrun))}
-                {p.costOverrunPct != null ? ` / ${p.costOverrun > 0 ? "+" : ""}${p.costOverrunPct.toFixed(0)}%` : ""})
-              </span>
-            )}
-          </div>
-        ) : <Awaiting />}
-      </div>
+      {/* Budget — inline, one line, hidden when null */}
+      {(p.originalBudget != null || p.budget != null) && (
+        <div style={{ fontSize: 13, color: "#1A1A1A", marginBottom: 6, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+          <span>💰 <strong>{formatINR(p.originalBudget ?? p.budget)}</strong></span>
+          {p.revisedBudget != null && p.revisedBudget !== p.originalBudget && (
+            <>
+              <span style={{ color: "#9B9B9B" }}>→</span>
+              <strong>{formatINR(p.revisedBudget)}</strong>
+            </>
+          )}
+          {hasBudgetOverrun && p.costOverrun != null && (
+            <span style={{ fontSize: 11, color: p.costOverrun > 0 ? "#B45309" : "#16A34A" }}>
+              ({p.costOverrun > 0 ? "+" : ""}{formatINR(Math.abs(p.costOverrun))}
+              {p.costOverrunPct != null ? ` / ${p.costOverrun > 0 ? "+" : ""}${p.costOverrunPct.toFixed(0)}%` : ""})
+            </span>
+          )}
+        </div>
+      )}
 
-      {/* Timeline dates */}
-      <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 10 }}>
-        📅 Started: <strong>{p.actualStartDate || p.startDate ? formatMonthYear(p.actualStartDate ?? p.startDate) : "—"}</strong>
-        {(p.originalEndDate ?? p.expectedEnd) && (
-          <> · Expected: <strong>{formatMonthYear(p.originalEndDate ?? p.expectedEnd)}</strong></>
-        )}
-        {p.revisedEndDate && (
-          <> · <span style={{ color: "#B45309" }}>Revised: {formatMonthYear(p.revisedEndDate)}{p.delayMonths ? ` (+${p.delayMonths} months)` : ""}</span></>
-        )}
-        {isCancelled(p) && p.cancelledDate && (
-          <> · <span style={{ color: "#B91C1C" }}>Cancelled: {formatMonthYear(p.cancelledDate)}</span></>
-        )}
-      </div>
+      {/* Timeline dates — unchanged, already compact */}
+      {(p.actualStartDate || p.startDate || p.originalEndDate || p.expectedEnd || p.revisedEndDate || (isCancelled(p) && p.cancelledDate)) && (
+        <div style={{ fontSize: 12, color: "#4B5563", marginBottom: 6 }}>
+          {(p.actualStartDate || p.startDate) && (
+            <>📅 Started: <strong>{formatMonthYear(p.actualStartDate ?? p.startDate)}</strong></>
+          )}
+          {(p.originalEndDate ?? p.expectedEnd) && (
+            <> · Expected: <strong>{formatMonthYear(p.originalEndDate ?? p.expectedEnd)}</strong></>
+          )}
+          {p.revisedEndDate && (
+            <> · <span style={{ color: "#B45309" }}>Revised: {formatMonthYear(p.revisedEndDate)}{p.delayMonths ? ` (+${p.delayMonths}mo)` : ""}</span></>
+          )}
+          {isCancelled(p) && p.cancelledDate && (
+            <> · <span style={{ color: "#B91C1C" }}>Cancelled: {formatMonthYear(p.cancelledDate)}</span></>
+          )}
+        </div>
+      )}
 
-      {/* Progress */}
-      {!isCancelled(p) && (
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6B7280", marginBottom: 4 }}>
+      {/* Progress — slim, only when > 0 and not cancelled */}
+      {!isCancelled(p) && progress > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6B7280", marginBottom: 3 }}>
             <span>Progress</span>
             <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "#1A1A1A" }}>{progress}%</span>
           </div>
-          <div style={{ height: 6, background: "#F0F0EC", borderRadius: 4, overflow: "hidden" }}>
+          <div style={{ height: 6, background: "#F0F0EC", borderRadius: 3, overflow: "hidden" }}>
             <div
               style={{
                 width: `${Math.min(100, progress)}%`, height: "100%",
@@ -636,54 +665,50 @@ function ProjectCard({ p }: { p: InfraProject }) {
 
       {/* Cancellation reason */}
       {isCancelled(p) && p.cancellationReason && (
-        <div style={{ fontSize: 12, color: "#B91C1C", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, color: "#B91C1C", background: "#FEF2F2", border: "1px solid #FCA5A5", borderRadius: 8, padding: "6px 10px", marginBottom: 6 }}>
           <strong>Cancellation reason:</strong> {p.cancellationReason}
         </div>
       )}
 
-      {/* Latest news strip */}
-      {latest && latest.newsUrl !== "admin-panel" && (
-        <div style={{ fontSize: 12, color: "#374151", background: "#FAFAF8", border: "1px solid #F0F0EC", borderRadius: 8, padding: "8px 12px", marginBottom: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: 11, color: "#6B7280" }}>📰 Latest:</span>
-            <span style={{ fontSize: 10, color: "#9B9B9B" }}>{formatFullDate(latest.date)}</span>
-          </div>
+      {/* Latest news — compact single line */}
+      {latest && latest.newsUrl !== "admin-panel" && latest.newsUrl !== "seed-data" && latest.newsUrl !== "manual-research" && (
+        <div style={{ fontSize: 12, color: "#374151", marginBottom: 8, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           <a
             href={latest.newsUrl.startsWith("http") ? latest.newsUrl : `https://${latest.newsUrl}`}
             target="_blank" rel="noopener noreferrer"
-            style={{ color: "#1A1A1A", textDecoration: "none", fontWeight: 500 }}
+            style={{ color: "#374151", textDecoration: "none" }}
+            title={latest.headline}
           >
-            {latest.headline}
-            {latest.newsSource && <span style={{ color: "#9B9B9B", fontWeight: 400 }}> — {latest.newsSource}</span>}
+            📰 {truncate(latest.headline, 60)}
+            {latest.newsSource && <span style={{ color: "#9B9B9B" }}> — {latest.newsSource}, {formatFullDate(latest.date)}</span>}
           </a>
         </div>
       )}
 
-      {/* Verification line */}
-      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 10 }}>
-        {verifiedCount > 0
-          ? <>✅ Verified by {verifiedCount} news source{verifiedCount !== 1 ? "s" : ""}{verifiedCount === 1 && <span style={{ color: "#B45309", marginLeft: 6 }}>⚠ Single source — awaiting additional verification</span>}</>
-          : <span style={AWAIT_STYLE}>Not yet cross-verified by news sources</span>
-        }
-      </div>
-
-      {/* Timeline modal trigger — ALWAYS shown */}
-      <button
-        onClick={() => setOpen(true)}
+      {/* Footer: Last updated · Source · View Timeline (N) → */}
+      <div
         style={{
-          display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px",
-          background: updates.length > 0 ? "#EFF6FF" : "#F9FAFB",
-          color: updates.length > 0 ? "#2563EB" : "#6B7280",
-          border: `1px solid ${updates.length > 0 ? "#BFDBFE" : "#E8E8E4"}`,
-          borderRadius: 8, fontSize: 12, fontWeight: 600,
-          cursor: "pointer", alignSelf: "flex-start",
+          marginTop: "auto", paddingTop: 8, borderTop: "1px solid #F0F0EC",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 8, flexWrap: "wrap", fontSize: 11, color: "#9CA3AF",
         }}
-        aria-haspopup="dialog"
       >
-        {updates.length > 0
-          ? <>View Timeline ({updates.length}) →</>
-          : <>Timeline (empty) →</>}
-      </button>
+        <span>
+          Last updated: {lastTs ? relativeTime(lastTs) : "—"} · Source: {sourceLabel}
+          {verifiedCount > 0 && <> · ✅ {verifiedCount}</>}
+        </span>
+        <button
+          onClick={() => setOpen(true)}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 0",
+            background: "none", border: "none", color: "#2563EB",
+            fontSize: 11, fontWeight: 600, cursor: "pointer",
+          }}
+          aria-haspopup="dialog"
+        >
+          View Timeline{updates.length > 0 ? ` (${updates.length})` : ""} →
+        </button>
+      </div>
 
       {open && <TimelineModal p={p} onClose={() => setOpen(false)} />}
 
@@ -831,7 +856,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
           </div>
 
           {/* Active cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14, marginBottom: 28 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 12, marginBottom: 28 }}>
             {filtered.map((p) => <ProjectCard key={p.id} p={p} />)}
           </div>
 
@@ -844,7 +869,7 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
                   Cancelled / Shelved Projects ({cancelledList.length})
                 </span>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14, marginBottom: 28 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 12, marginBottom: 28 }}>
                 {cancelledList.map((p) => <ProjectCard key={p.id} p={p} />)}
               </div>
             </div>
