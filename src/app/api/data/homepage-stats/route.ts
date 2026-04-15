@@ -65,15 +65,27 @@ export async function GET() {
     });
   } catch (err) {
     console.error("[homepage-stats]", err);
-    // Return sensible defaults on DB error
-    return NextResponse.json({
-      activeDistricts: 9,
-      modulesPerDistrict: 29,
-      totalDataPoints: 12847,
-      mostRecentAt: new Date().toISOString(),
-      plannedDistricts: 780,
-      fromCache: false,
-      error: true,
-    });
+    try {
+      const fallbackCount = await prisma.district.count({ where: { active: true } });
+      return NextResponse.json({
+        activeDistricts: fallbackCount,
+        modulesPerDistrict: 29,
+        totalDataPoints: 0,
+        mostRecentAt: null,
+        plannedDistricts: 780,
+        fromCache: false,
+        error: true,
+      });
+    } catch {
+      return NextResponse.json({
+        activeDistricts: 0,
+        modulesPerDistrict: 29,
+        totalDataPoints: 0,
+        mostRecentAt: null,
+        plannedDistricts: 780,
+        fromCache: false,
+        error: true,
+      });
+    }
   }
 }

@@ -86,9 +86,9 @@ export default function HomepageStats() {
     staleTime: 300_000,
   });
 
-  const districts = useCountUp(data?.activeDistricts ?? 10);
+  const districts = useCountUp(data?.activeDistricts ?? 0);
   const modules = useCountUp(data?.modulesPerDistrict ?? 29);
-  const dataPoints = useCountUp(data?.totalDataPoints ?? 50000);
+  const dataPoints = useCountUp(data?.totalDataPoints ?? 0);
 
   return (
     <div>
