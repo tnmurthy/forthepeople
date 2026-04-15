@@ -15,7 +15,7 @@ import { SIDEBAR_MODULES } from "@/lib/constants/sidebar-modules";
 // 4 fixed bottom tabs (5th slot = "More" button)
 const FIXED_TABS = ["overview", "crops", "weather", "news"] as const;
 
-// All 28 modules grouped for the drawer
+// All 29 modules grouped for the drawer
 const DRAWER_CATEGORIES = [
   {
     label: "Core Data",

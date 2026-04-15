@@ -166,7 +166,7 @@ const faqLd = {
       "name": "Which districts are covered on ForThePeople.in?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "ForThePeople.in currently covers districts across Karnataka (Mandya, Bengaluru Urban, Mysuru), Delhi, Maharashtra (Mumbai), West Bengal (Kolkata), Tamil Nadu (Chennai), and Telangana (Hyderabad). The platform plans to expand to all 780+ Indian districts. Each district has live data on weather, crops, water, budget, schools, elections, leadership, and 25+ other civic categories.",
+        "text": "ForThePeople.in currently covers 9 districts across 7 states: Karnataka (Mandya, Bengaluru Urban, Mysuru), Delhi (New Delhi), Maharashtra (Mumbai), West Bengal (Kolkata), Tamil Nadu (Chennai), Telangana (Hyderabad), and Uttar Pradesh (Lucknow). The platform plans to expand to all 780+ Indian districts. Each district has live data on weather, crops, water, budget, schools, elections, leadership, and 25+ other civic categories.",
       },
     },
     {

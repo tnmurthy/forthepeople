@@ -12,7 +12,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 export const metadata: Metadata = {
   title: "About ForThePeople.in — India's Citizen Transparency Platform",
   description:
-    "ForThePeople.in is India's free citizen transparency platform. Built by Jayanth M B in 2024, it aggregates district-level government data under NDSAP across 780+ districts.",
+    "ForThePeople.in is India's free citizen transparency platform. Built by Jayanth M B in 2026, it aggregates district-level government data under NDSAP across 780+ districts.",
   alternates: { canonical: `${BASE_URL}/en/about` },
   openGraph: {
     url: `${BASE_URL}/en/about`,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 const PILLARS = [
   { icon: "📊", title: "Real Data, Not Opinions", desc: "Every number comes from a government portal, official API, or publicly available document. We never fabricate or estimate data." },
-  { icon: "🌐", title: "Every District, Every State", desc: "Building coverage for all 780+ districts across India. Mandya (Karnataka) is our pilot — more districts launch monthly." },
+  { icon: "🌐", title: "Every District, Every State", desc: "Currently live across Karnataka, Delhi, Maharashtra, West Bengal, Tamil Nadu, Telangana, and Uttar Pradesh — expanding to all 780+ districts across India." },
   { icon: "🌍", title: "Local Languages First", desc: "Data is presented in English and the regional language of each state — Kannada, Tamil, Telugu, Hindi, and more." },
   { icon: "⚡", title: "Live + Historical", desc: "Crop prices refresh every 15 minutes. Weather updates hourly. Budget data goes back years. Both matter." },
   { icon: "🔓", title: "Free Forever", desc: "No paywalls, no subscriptions. Government data belongs to citizens. We just make it accessible." },
@@ -52,10 +52,10 @@ export default function AboutPage() {
           Your District.<br />Your Data.<br /><span style={{ color: "#2563EB" }}>Your Right.</span>
         </h1>
         <p style={{ fontSize: 17, color: "#4B4B4B", lineHeight: 1.7, maxWidth: 560 }}>
-          ForThePeople.in is India&apos;s citizen transparency platform, launched in 2024. We aggregate
+          ForThePeople.in is India&apos;s citizen transparency platform, launched in 2026. We aggregate
           district-level government data — budgets, crop prices, water levels, scheme coverage,
           infrastructure, and more — and present it in a clear, accessible interface for every Indian.
-          The platform covers 20+ Karnataka districts and plans to expand to all 780+ Indian districts.
+          The platform covers 9 districts across 7 states and plans to expand to all 780+ Indian districts.
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export default function AboutPage() {
         <div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>Jayanth M B</div>
           <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.65 }}>
-            Software engineer and civic-tech advocate based in India. Built ForThePeople.in in 2024 as an independent
+            Entrepreneur and civic-tech advocate based in India. Built ForThePeople.in in 2026 as an independent
             public-interest project to help citizens, journalists, researchers, and elected representatives
             access India&apos;s government data in one place. Not affiliated with any government body or political organisation.
           </div>
@@ -86,12 +86,12 @@ export default function AboutPage() {
       <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A", marginBottom: 16 }}>Platform at a glance</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 40 }}>
         {[
-          { value: "2024", label: "Year launched" },
+          { value: "2026", label: "Year launched" },
           { value: "780+", label: "Districts planned" },
-          { value: "28", label: "Data modules / district" },
+          { value: "29", label: "Data modules / district" },
           { value: "Free", label: "Cost to access" },
           { value: "NDSAP", label: "Legal data basis" },
-          { value: "Karnataka", label: "Live pilot state" },
+          { value: "9", label: "Live districts" },
         ].map((s) => (
           <div key={s.label} style={{ background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 12, padding: "16px 18px" }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: "#2563EB", letterSpacing: "-0.5px" }}>{s.value}</div>

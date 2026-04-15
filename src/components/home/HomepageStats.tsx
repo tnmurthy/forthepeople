@@ -86,17 +86,21 @@ export default function HomepageStats() {
     staleTime: 300_000,
   });
 
+  // Drive the count-up animation from real values only. While the API is in
+  // flight we render an em-dash so users never see "0 Districts LIVE" during
+  // a cold function start.
   const districts = useCountUp(data?.activeDistricts ?? 0);
   const modules = useCountUp(data?.modulesPerDistrict ?? 29);
   const dataPoints = useCountUp(data?.totalDataPoints ?? 0);
+  const ready = !!data;
 
   return (
     <div>
       <div className="grid grid-cols-2 md:flex" style={{ gap: 8, padding: "12px 16px 0" }}>
-        <StatCard value={`${districts}`} label="Districts LIVE" />
-        <StatCard value={`${modules}`} label="Dashboards / District" />
+        <StatCard value={ready ? `${districts}` : "—"} label="Districts LIVE" />
+        <StatCard value={ready ? `${modules}` : "—"} label="Dashboards / District" />
         <StatCard
-          value={dataPoints.toLocaleString("en-IN")}
+          value={ready ? dataPoints.toLocaleString("en-IN") : "—"}
           label="Data Points Tracked"
         />
         <StatCard value={`${(data?.plannedDistricts ?? 780).toLocaleString("en-IN")}+`} label="Districts Coming" />

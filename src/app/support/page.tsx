@@ -221,7 +221,7 @@ export default function SupportPage() {
                 Developer from Mandya, Karnataka · Creator, ForThePeople.in
               </div>
               <p style={{ fontSize: 14, color: "#1A1A1A", lineHeight: 1.8, margin: 0 }}>
-                &ldquo;I&apos;m a solo developer from Karnataka who believes government data should be free
+                &ldquo;I&apos;m a developer from Karnataka who believes government data should be free
                 and accessible to every citizen — not buried in PDF reports and broken portals.
                 I built ForThePeople.in entirely by myself: every data pipeline, every API, every dashboard,
                 every line of code.

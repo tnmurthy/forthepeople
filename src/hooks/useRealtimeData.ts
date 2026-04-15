@@ -5,7 +5,7 @@
  */
 
 // ═══════════════════════════════════════════════════════════
-// ForThePeople.in — All 30 module-specific data hooks
+// ForThePeople.in — All 29 module-specific data hooks
 // Usage: const { data, isLoading, error } = useCropPrices("mandya", "karnataka")
 // ═══════════════════════════════════════════════════════════
 "use client";
