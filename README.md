@@ -10,7 +10,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Districts](https://img.shields.io/badge/districts_live-9-green.svg)
-![Modules](https://img.shields.io/badge/dashboards-36_per_district-orange.svg)
+![Modules](https://img.shields.io/badge/dashboards-29_per_district-orange.svg)
 
 </div>
 
@@ -24,7 +24,7 @@ ForThePeople.in aggregates publicly available Indian government data into clean,
 Delhi (New Delhi) | Maharashtra (Mumbai) | West Bengal (Kolkata) | Tamil Nadu (Chennai) | Telangana (Hyderabad) | Uttar Pradesh (Lucknow)
 **Goal:** All 780+ districts across 28 states and 8 UTs.
 
-## 36 Dashboard Modules
+## 29 Dashboard Modules
 
 | Category | Modules |
 |----------|---------|
@@ -118,7 +118,7 @@ We welcome contributions from developers of all skill levels! Whether you want t
 
 ## Creator
 
-**Jayanth M B** — Solo entrepreneur from Karnataka, India.
+**Jayanth M B** — Entrepreneur from Karnataka, India.
 
 Built with the belief that every Indian citizen deserves free, transparent access to their district's government data.
 
