@@ -1,19 +1,53 @@
 /**
- * ForThePeople.in — Your District. Your Data. Your Right.
- * © 2026 Jayanth M B. MIT License with Attribution.
- * https://github.com/jayanthmb14/forthepeople
+ * ForThePeople.in — District Leadership page (5-tier hierarchy).
+ *
+ *   T1 NATIONAL          — President, Prime Minister
+ *   T2 STATE             — Governor, Chief Minister, key state ministers
+ *   T3 DISTRICT ADMIN    — Collector, SP, ZP CEO  (IAS / IPS — no party)
+ *   T4 ELECTED REPS      — MP + MLAs (party + constituency)
+ *   T5 MUNICIPAL & DEPT  — Mayor, Municipal Commissioner, dept heads
+ *
+ * Data is grouped in the page from the existing Leader.tier column. No
+ * tier-to-people mapping is hardcoded in the UI — anything tagged tier=N
+ * lands in the corresponding section. Adding a district just means seeding
+ * leaders with the right tier numbers.
  */
 
 "use client";
 import ModuleErrorBoundary from "@/components/common/ModuleErrorBoundary";
 import { use, useState } from "react";
 import Image from "next/image";
-import { Users, Phone, Mail, Info } from "lucide-react";
+import {
+  Users, Phone, Mail, Info, Flag, Landmark, Building2, Vote, Briefcase,
+} from "lucide-react";
+import type { ComponentType } from "react";
 import { useLeaders, useAIInsight } from "@/hooks/useRealtimeData";
-import { ModuleHeader, SectionLabel, LoadingShell, ErrorBlock, AIInsightBanner } from "@/components/district/ui";
+import type { Leader } from "@/hooks/useRealtimeData";
+import { ModuleHeader, LoadingShell, ErrorBlock, AIInsightBanner } from "@/components/district/ui";
 import AIInsightCard from "@/components/common/AIInsightCard";
 import DataSourceBanner from "@/components/common/DataSourceBanner";
 import { getModuleSources } from "@/lib/constants/state-config";
+import { getPartyColor } from "@/lib/constants/party-colors";
+
+type LucideCmp = ComponentType<{ size?: number | string; style?: React.CSSProperties; className?: string }>;
+
+interface TierMeta {
+  label: string;
+  emoji: string;
+  Icon: LucideCmp;
+  accent: string;
+  hint: string;
+}
+const TIER_META: Record<number, TierMeta> = {
+  1: { label: "National Leadership", emoji: "🇮🇳", Icon: Flag,     accent: "#1E3A8A", hint: "Heads of state and government" },
+  2: { label: "State Leadership",    emoji: "🏳",  Icon: Landmark, accent: "#7C3AED", hint: "Governor, Chief Minister and key state ministers" },
+  3: { label: "District Administration", emoji: "🏢", Icon: Building2, accent: "#0EA5E9", hint: "IAS / IPS officers running the district day-to-day" },
+  4: { label: "Elected Representatives", emoji: "🗳", Icon: Vote, accent: "#16A34A", hint: "MP and MLAs elected by citizens of this district" },
+  5: { label: "Municipal & Department Heads", emoji: "🏛", Icon: Briefcase, accent: "#D97706", hint: "Mayor, municipal commissioner and department officers" },
+};
+function tierMeta(t: number): TierMeta {
+  return TIER_META[t] ?? { label: `Tier ${t}`, emoji: "•", Icon: Users, accent: "#6B7280", hint: "" };
+}
 
 function formatVerifiedDate(iso: string | null | undefined): string | null {
   if (!iso) return null;
@@ -31,75 +65,28 @@ function leaderProvenance(l: { source?: string | null; lastVerifiedAt?: string |
   return verified ? `Last verified: ${verified}` : "Verification pending";
 }
 
-const TIER_LABELS: Record<number, string> = {
-  1: "Parliament (MP)",
-  2: "State Assembly (MLAs)",
-  3: "Elected Local Body",
-  4: "District Administration (IAS/KAS)",
-  5: "Police (IPS/KPS)",
-  6: "Judiciary",
-  7: "Revenue Administration",
-  8: "Development & Panchayat",
-  9: "Department Heads",
-  10: "Taluk Level",
-};
+const ATTRIBUTION_TOOLTIP = "As last reported in news media. Political positions and party affiliations change frequently — verify on the official district website.";
 
-// CC-licensed party colors (saffron, blue, green)
-const PARTY_COLORS: Record<string, string> = {
-  BJP:       "#FF9933",
-  INC:       "#19AAED",
-  Congress:  "#19AAED",
-  "JD(S)":   "#228B22",
-  JDS:       "#228B22",
-  JDU:       "#008000",
-  AAP:       "#00AEEF",
-  SP:        "#CC0000",
-  BSP:       "#003366",
-  TDP:       "#E6B800",
-  TMC:       "#1C7430",
-  DMK:       "#FF0000",
-  AIADMK:    "#000080",
-  NCP:       "#005DAA",
-  SHS:       "#FF6600",
-  Independent: "#6B7280",
-  SKP:         "#E07B00",
-};
-
-function getPartyColor(party: string | null | undefined): string {
-  if (!party) return "#6B7280";
-  return PARTY_COLORS[party] ?? "#6B7280";
-}
-
-// Avatar component: shows photo if available, falls back to colored initials
 function LeaderAvatar({
-  name, photoUrl, partyColor,
+  name, photoUrl, accent,
 }: {
   name: string;
   photoUrl?: string | null;
-  partyColor: string;
+  accent: string;
 }) {
   const [imgError, setImgError] = useState(false);
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const isPlaceholder = name.startsWith("[");
+  const initials = isPlaceholder
+    ? "?"
+    : name.split(/\s+/).map((w) => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
 
   if (photoUrl && !imgError) {
     return (
-      <div
-        style={{
-          width: 56, height: 56, borderRadius: "50%", flexShrink: 0,
-          overflow: "hidden",
-          border: `2px solid ${partyColor}40`,
-        }}
-      >
-        <Image
-          src={photoUrl}
-          alt={name}
-          width={56}
-          height={56}
+      <div style={{
+        width: 56, height: 56, borderRadius: "50%", flexShrink: 0,
+        overflow: "hidden", border: `2px solid ${accent}40`,
+      }}>
+        <Image src={photoUrl} alt={name} width={56} height={56}
           onError={() => setImgError(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           unoptimized
@@ -107,19 +94,130 @@ function LeaderAvatar({
       </div>
     );
   }
+  return (
+    <div style={{
+      width: 56, height: 56, borderRadius: "50%", flexShrink: 0,
+      background: `${accent}18`, border: `2px solid ${accent}40`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: isPlaceholder ? 22 : 18, fontWeight: 700, color: accent,
+    }}>
+      {initials}
+    </div>
+  );
+}
+
+function LeaderCard({ l, tierAccent }: { l: Leader; tierAccent: string }) {
+  // Party-coloured border for political tiers; tier-coloured for bureaucratic.
+  const tone = getPartyColor(l.party);
+  const isPolitical = !!l.party;
+  const accent = isPolitical ? tone.border : tierAccent;
+  const isPlaceholderName = l.name.startsWith("[");
 
   return (
     <div
       style={{
-        width: 56, height: 56, borderRadius: "50%", flexShrink: 0,
-        background: `${partyColor}18`,
-        border: `2px solid ${partyColor}40`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 18, fontWeight: 700, color: partyColor,
+        background: "#FFF",
+        border: `1px solid ${isPolitical ? tone.border : "#E8E8E4"}`,
+        borderTop: `3px solid ${accent}`,
+        borderRadius: 12,
+        padding: "16px 16px 12px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        display: "flex", flexDirection: "column", gap: 8,
+        minHeight: 0,
       }}
     >
-      {initials}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <LeaderAvatar name={l.name} photoUrl={l.photoUrl} accent={accent} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: isPlaceholderName ? "#9B9B9B" : "#1A1A1A", lineHeight: 1.25, fontStyle: isPlaceholderName ? "italic" : "normal" }}>
+            {l.name}
+          </div>
+          {l.nameLocal && !isPlaceholderName && (
+            <div style={{ fontSize: 12, color: "#9B9B9B", fontFamily: "var(--font-regional)", marginTop: 1 }}>
+              {l.nameLocal}
+            </div>
+          )}
+          <div style={{ fontSize: 12, color: "#4B5563", marginTop: 3, lineHeight: 1.35 }}>{l.role}</div>
+          {l.constituency && (
+            <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>📍 {l.constituency}</div>
+          )}
+          {l.party && (
+            <div
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
+                fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                color: tone.text, background: tone.bg, border: `1px solid ${tone.border}`,
+              }}
+            >
+              {l.party}
+              <span title={ATTRIBUTION_TOOLTIP} aria-hidden style={{ cursor: "help", opacity: 0.6 }}>ⓘ</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {(l.phone || l.email) && (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", paddingTop: 8, borderTop: "1px solid #F5F5F0" }}>
+          {l.phone && (
+            <a href={`tel:${l.phone}`} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#2563EB", textDecoration: "none" }}>
+              <Phone size={11} /> {l.phone}
+            </a>
+          )}
+          {l.email && (
+            <a href={`mailto:${l.email}`} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#2563EB", textDecoration: "none" }}>
+              <Mail size={11} /> Email
+            </a>
+          )}
+        </div>
+      )}
+
+      <div style={{ marginTop: "auto", paddingTop: 6, fontSize: 10, color: "#9B9B9B", fontStyle: "italic" }}>
+        {leaderProvenance(l)}
+      </div>
     </div>
+  );
+}
+
+function TierSection({ tier, leaders, isLast }: { tier: number; leaders: Leader[]; isLast: boolean }) {
+  const meta = tierMeta(tier);
+  const TierIcon = meta.Icon;
+  return (
+    <section style={{ position: "relative", marginBottom: isLast ? 0 : 28 }}>
+      {/* Tier header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <span style={{ fontSize: 18 }}>{meta.emoji}</span>
+        <TierIcon size={16} style={{ color: meta.accent }} />
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: meta.accent, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            {meta.label}
+          </div>
+          {meta.hint && <div style={{ fontSize: 11, color: "#9B9B9B" }}>{meta.hint}</div>}
+        </div>
+        <div style={{ flex: 1, height: 1, background: `${meta.accent}30`, marginLeft: 8 }} />
+      </div>
+
+      {/* Card grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+          gap: 12,
+        }}
+      >
+        {leaders.map((l) => <LeaderCard key={l.id} l={l} tierAccent={meta.accent} />)}
+      </div>
+
+      {/* Vertical connector to next tier (skipped on last tier) */}
+      {!isLast && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute", left: 18, bottom: -22, width: 2, height: 22,
+            background: `${meta.accent}40`,
+          }}
+        />
+      )}
+    </section>
   );
 }
 
@@ -132,19 +230,44 @@ function LeadershipPageInner({
   const base = `/${locale}/${state}/${district}`;
   const { data, isLoading, error } = useLeaders(district, state);
   const { data: aiInsight } = useAIInsight(district, "leadership");
-  const leaders = data?.data ?? [];
+  const leaders: Leader[] = data?.data ?? [];
 
-  const byTier = leaders.reduce((acc: Record<number, typeof leaders>, l) => {
+  // Group by tier; sort cards within a tier by importance heuristics
+  // (President before PM, Governor before CM, MP before MLAs).
+  const ROLE_ORDER: Array<RegExp> = [
+    /^president\b/i,
+    /^prime minister/i,
+    /^governor/i,
+    /^chief minister/i,
+    /^deputy chief minister/i,
+    /\bunion minister\b|\bmp\b|member of parliament/i,
+    /^district collector|deputy commissioner/i,
+    /^superintendent of police|commissioner of police/i,
+    /^ceo/i,
+    /^mla\b|member of legislative/i,
+    /^mayor/i,
+    /^municipal commissioner/i,
+  ];
+  function rank(role: string): number {
+    for (let i = 0; i < ROLE_ORDER.length; i++) if (ROLE_ORDER[i].test(role)) return i;
+    return ROLE_ORDER.length + 1;
+  }
+
+  const byTier = leaders.reduce((acc: Record<number, Leader[]>, l) => {
     (acc[l.tier] ??= []).push(l);
     return acc;
   }, {});
+  const tiers = Object.keys(byTier).map(Number).sort((a, b) => a - b);
+  for (const t of tiers) byTier[t].sort((a, b) => rank(a.role) - rank(b.role) || a.name.localeCompare(b.name));
+
+  const lastTier = tiers[tiers.length - 1];
 
   return (
     <div style={{ padding: 24 }}>
       <ModuleHeader
         icon={Users}
-        title="Leadership & Hierarchy"
-        description="MP, MLAs, District Collector, SP, and other officials"
+        title="District Leadership"
+        description="Who governs this district — from the President down to your MLA"
         backHref={base}
       />
       {aiInsight && (
@@ -182,104 +305,21 @@ function LeadershipPageInner({
           <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "#6B6B6B", marginBottom: 6 }}>No leadership data yet</div>
           <div style={{ fontSize: 13, color: "#9B9B9B", lineHeight: 1.6, maxWidth: 320, margin: "0 auto" }}>
-            Data on elected representatives and officials for this district will be updated soon. Our team monitors official gazette notifications.
+            Data on elected representatives and officials for this district will be updated soon.
           </div>
         </div>
       )}
 
-      {Object.entries(byTier)
-        .sort(([a], [b]) => Number(a) - Number(b))
-        .map(([tier, tierLeaders]) => (
-          <div key={tier} style={{ marginBottom: 28 }}>
-            <SectionLabel>{TIER_LABELS[Number(tier)] ?? `Tier ${tier}`}</SectionLabel>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
-              {tierLeaders.map((l) => {
-                const partyColor = getPartyColor(l.party);
-                return (
-                  <div
-                    key={l.id}
-                    style={{
-                      background: "#FFF", border: "1px solid #E8E8E4",
-                      borderRadius: 14, padding: "18px 18px 14px",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                      <LeaderAvatar name={l.name} photoUrl={l.photoUrl} partyColor={partyColor} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.2 }}>
-                          {l.name}
-                        </div>
-                        {l.nameLocal && (
-                          <div style={{ fontSize: 12, color: "#9B9B9B", fontFamily: "var(--font-regional)", marginTop: 1 }}>
-                            {l.nameLocal}
-                          </div>
-                        )}
-                        <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 4 }}>{l.role}</div>
-                        {l.party && (
-                          <div
-                            style={{
-                              display: "inline-flex", alignItems: "center", gap: 5, marginTop: 6,
-                              fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
-                              color: partyColor, background: `${partyColor}18`,
-                              border: `1px solid ${partyColor}30`,
-                            }}
-                          >
-                            {l.party}
-                          </div>
-                        )}
-                        {l.constituency && (
-                          <div style={{ fontSize: 12, color: "#9B9B9B", marginTop: 4 }}>
-                            📍 {l.constituency}
-                          </div>
-                        )}
-                        {l.since && (
-                          <div style={{ fontSize: 12, color: "#9B9B9B" }}>Since {l.since}</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {(l.phone || l.email) && (
-                      <div
-                        style={{
-                          borderTop: "1px solid #F5F5F0", marginTop: 12, paddingTop: 10,
-                          display: "flex", gap: 12, flexWrap: "wrap",
-                        }}
-                      >
-                        {l.phone && (
-                          <a
-                            href={`tel:${l.phone}`}
-                            style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#2563EB", textDecoration: "none" }}
-                          >
-                            <Phone size={12} /> {l.phone}
-                          </a>
-                        )}
-                        {l.email && (
-                          <a
-                            href={`mailto:${l.email}`}
-                            style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#2563EB", textDecoration: "none" }}
-                          >
-                            <Mail size={12} /> Email
-                          </a>
-                        )}
-                      </div>
-                    )}
-                    <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px dashed #F0F0EC", fontSize: 10, color: "#9B9B9B", fontStyle: "italic" }}>
-                      {leaderProvenance(l)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {tiers.map((t) => (
+        <TierSection key={t} tier={t} leaders={byTier[t]} isLast={t === lastTier} />
+      ))}
 
       {leaders.length > 0 && (
         <div
           role="note"
           style={{
             background: "#F9F9F7", border: "1px solid #E8E8E4", borderRadius: 8,
-            padding: 16, marginTop: 24,
+            padding: 16, marginTop: 28,
             fontSize: 12, color: "#4B5563", lineHeight: 1.6,
           }}
         >
@@ -287,6 +327,10 @@ function LeadershipPageInner({
           Political party affiliations shown are as last reported and may not reflect current affiliations due to party
           changes, cabinet reshuffles, or elections. Government officers (IAS, IPS) carry no party. ForThePeople.in does
           not endorse or oppose any political party or individual.
+          <br /><br />
+          <strong style={{ color: "#1A1A1A" }}>On bureaucrat names:</strong>{" "}
+          IAS/IPS officer names change with transfers and may not reflect the most recent postings. Verify current
+          district officers at the official district website.
         </div>
       )}
     </div>

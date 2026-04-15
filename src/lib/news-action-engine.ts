@@ -13,6 +13,7 @@ import { Prisma } from "@/generated/prisma";
 import { callAI } from "./ai-provider";
 import { extractExamFromNews, syncExamFromNews } from "./exam-sync";
 import { extractVerifyAndSyncInfra } from "./infra-sync";
+import { logUpdate } from "./update-log";
 
 // ── Per-cron extraction cap ─────────────────────────────────
 // Each news cron invocation calls resetExtractionCounters() once at start.
@@ -269,6 +270,7 @@ export async function executeNewsAction(
           const role = (data.role as string).trim();
           const tier = (data.tier as number) ?? 3;
           const party = (data.party as string) ?? null;
+          const districtName = (await prisma.district.findUnique({ where: { id: districtId }, select: { name: true } }))?.name ?? "";
 
           // Skip duplicates: check if this name+role combo already exists for this district.
           const existing = await prisma.leader.findFirst({
@@ -288,16 +290,27 @@ export async function executeNewsAction(
           // Commissioner, Mayor, etc.), mark the previous holder of the
           // SAME role inactive — never delete, so we preserve history.
           const UNIQUE_ROLE_RE = /^(chief minister|governor|lieutenant governor|deputy chief minister|chief secretary|district collector|deputy commissioner|district magistrate|mayor|commissioner of police|managing director|chairman|vice chairman|chief justice|principal sessions judge)/i;
+          let supersededName: string | null = null;
           if (UNIQUE_ROLE_RE.test(role)) {
             const supersedeWhere = { districtId, role, active: true, NOT: { name } };
             const superseded = await prisma.leader.findMany({ where: supersedeWhere, select: { id: true, name: true } });
             if (superseded.length > 0) {
               await prisma.leader.updateMany({ where: { id: { in: superseded.map((s) => s.id) } }, data: { active: false } });
-              console.log(`[NewsAction] 📜 Marked ${superseded.length} previous "${role}" holder(s) inactive: ${superseded.map((s) => s.name).join(", ")}`);
+              supersededName = superseded.map((s) => s.name).join(", ");
+              console.log(`[NewsAction] 📜 Marked ${superseded.length} previous "${role}" holder(s) inactive: ${supersededName}`);
+              for (const s of superseded) {
+                await logUpdate({
+                  source: "scraper", actorLabel: "news-action-engine",
+                  tableName: "Leader", recordId: s.id, action: "update",
+                  districtId, districtName, moduleName: "leadership",
+                  description: `Leader marked inactive: ${s.name} (${role}) — replaced by ${name} per news report.`,
+                  recordCount: 1, details: { reason: "superseded", newHolder: name, articleUrl },
+                });
+              }
             }
           }
 
-          await prisma.leader.create({
+          const created = await prisma.leader.create({
             data: {
               districtId, name, role, tier, party,
               since: new Date().getFullYear().toString(),
@@ -307,6 +320,15 @@ export async function executeNewsAction(
             },
           });
           console.log(`[NewsAction] ✅ Added Leader: ${name} as ${role}`);
+          await logUpdate({
+            source: "scraper", actorLabel: "news-action-engine",
+            tableName: "Leader", recordId: created.id, action: "create",
+            districtId, districtName, moduleName: "leadership",
+            description: supersededName
+              ? `New ${role}: ${name}${party ? ` (${party})` : ""} replacing ${supersededName}.`
+              : `New leader appointed: ${name}${party ? ` (${party})` : ""} as ${role}.`,
+            recordCount: 1, details: { tier, articleUrl },
+          });
         }
         break;
       }

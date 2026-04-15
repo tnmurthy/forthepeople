@@ -154,6 +154,50 @@
 #     adds like Micah Alex's ₹50,000), not just Razorpay traffic. Cache key
 #     bumped to v3.
 #
+# 2026-04-15 — Leadership: 5-tier hierarchy redesign + party colours + Mandya re-tier:
+#   • New tier semantics (replaces flat tier-by-role list):
+#       T1 NATIONAL          — President, Prime Minister
+#       T2 STATE             — Governor, Chief Minister, key state ministers
+#       T3 DISTRICT ADMIN    — Collector, SP, ZP CEO  (IAS / IPS — no party)
+#       T4 ELECTED REPS      — MP + MLAs (party + constituency)
+#       T5 MUNICIPAL & DEPT  — Mayor, Municipal Commissioner, dept heads
+#     Tier number is the only structural input — anything tagged tier=N
+#     lands in the corresponding section. No tier-to-people mapping in UI.
+#   • src/lib/constants/party-colors.ts — single source of truth for party
+#     colour tokens (bg/border/text). Used by leadership page (party-coloured
+#     card border) and infrastructure page (party label on Announced by).
+#   • Leadership page rewritten as 5 vertical tier sections with:
+#       – tier header (emoji + icon + accent + hint),
+#       – party-coloured card border for political tiers, tier-coloured
+#         border for bureaucratic tiers,
+#       – per-card name/role/constituency/party-pill + ⓘ "as last reported"
+#         tooltip + provenance footer ("Updated from news / Manually
+#         researched / Added from seed data · Last verified: <date>"),
+#       – placeholder name "[Verify at <portal>]" rendered italic-grey so
+#         users see the verification action item, not a fake person,
+#       – vertical connector line between tiers,
+#       – bottom grey disclaimer covers political affiliations + bureaucrat-
+#         names-change-on-transfer.
+#   • src/components/district/LeadersSnippet.tsx — overview snippet placed
+#     BEFORE InfraSnippet. Shows Collector / SP / MP / MLA-tally line with
+#     party pills, links to /leadership. Replaces the old horizontal
+#     "Leadership Strip" carousel in OverviewClient.
+#   • scripts/fix-mandya-leadership.ts — re-tiers Mandya:
+#       – T1: Modi + Murmu kept,
+#       – T2: Siddaramaiah + Gehlot moved up from T1,
+#       – T3: Collector / SP / ZP CEO added with [Verify at <portal>] names,
+#       – T4: HDK MP + 7 MLAs moved from T1/T2; role normalised to
+#         "MLA, <constituency>" using DB constituency (authoritative ECI
+#         value, never overwritten by hand-coded constituency).
+#       – Result: 14 updated · 1 added · Mandya now has 15 active leaders
+#         spread cleanly across T1-T4.
+#   • news-action-engine `leaders` case now writes UpdateLog rows for
+#     creates and supersession events:
+#       "New <role>: <name> (<party>) replacing <oldName>"
+#       "Leader marked inactive: <oldName> (<role>) — replaced by <newName>".
+#     Source = scraper (per UpdateSource enum). Surfaces in district Update
+#     Log automatically.
+#
 # 2026-04-15 — Leadership: data corrections + disclaimers + news pipeline + last verified:
 #   • Schema (additive, prisma db push): Leader gains active Boolean(default true)
 #     and lastVerifiedAt DateTime?. New @@index([districtId, active]).

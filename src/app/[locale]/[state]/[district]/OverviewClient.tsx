@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import {
   useOverview, useCropPrices, useWeather, useWater,
-  useAlerts, useLeaders, useInfrastructure, useBudget, usePolice, useNews,
+  useAlerts, useInfrastructure, useBudget, usePolice, useNews,
 } from "@/hooks/useRealtimeData";
 import { SIDEBAR_MODULES } from "@/lib/constants/sidebar-modules";
 import { StatCard, SectionLabel, CardGrid, LoadingShell, LiveBadge, SeverityBadge } from "@/components/district/ui";
@@ -28,6 +28,7 @@ import DistrictSponsorBanner from "@/components/common/DistrictSponsorBanner";
 import { getStateConfig } from "@/lib/constants/state-config";
 import DistrictHeroIllustration from "@/components/district/DistrictHeroIllustration";
 import InfraSnippet from "@/components/district/InfraSnippet";
+import LeadersSnippet from "@/components/district/LeadersSnippet";
 import type { DistrictBadge } from "@/lib/constants/districts";
 
 interface Props {
@@ -94,22 +95,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   economy: "#16A34A",
 };
 
-function getPartyColor(party: string): { bg: string; text: string } {
-  const map: Record<string, { bg: string; text: string }> = {
-    "BJP":   { bg: "#FFF7ED", text: "#EA580C" },
-    "INC":   { bg: "#EFF6FF", text: "#2563EB" },
-    "JD(S)": { bg: "#F0FDF4", text: "#16A34A" },
-    "JDS":   { bg: "#F0FDF4", text: "#16A34A" },
-    "AAP":   { bg: "#EFF6FF", text: "#1D4ED8" },
-    "SP":    { bg: "#FFF1F2", text: "#BE123C" },
-    "BSP":   { bg: "#FAF5FF", text: "#7C3AED" },
-    "TMC":   { bg: "#EFF6FF", text: "#0369A1" },
-    "DMK":   { bg: "#FFF7ED", text: "#B45309" },
-    "ADMK":  { bg: "#FFF7ED", text: "#B45309" },
-  };
-  return map[party.trim().toUpperCase()] ?? map[party.trim()] ?? { bg: "#F5F5F0", text: "#6B6B6B" };
-}
-
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -129,7 +114,6 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
   const { data: weather, isLoading: weatherLoading } = useWeather(districtSlug, stateSlug);
   const { data: water, isLoading: waterLoading } = useWater(districtSlug, stateSlug);
   const { data: alerts } = useAlerts(districtSlug, stateSlug);
-  const { data: leaders, isLoading: leadersLoading } = useLeaders(districtSlug, stateSlug);
   const { data: infraData } = useInfrastructure(districtSlug, stateSlug);
   const { data: budgetData, isLoading: budgetLoading } = useBudget(districtSlug, stateSlug);
   const { data: policeData, isLoading: policeLoading } = usePolice(districtSlug, stateSlug);
@@ -139,7 +123,6 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
   const latestWeather = weather?.data?.[0];
   const latestDam = water?.data?.dams?.[0];
   const activeAlerts = alerts?.data ?? [];
-  const topLeaders = leaders?.data?.slice(0, 4) ?? [];
   const ongoingProjects = (infraData?.data ?? [])
     .filter((p) => p.status === "ongoing" || p.status === "active" || p.status === "under_construction")
     .slice(0, 4);
@@ -335,31 +318,11 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
           </div>
         </div>
 
+        {/* ── District Leadership snippet — auto-hides if 0 leaders ── */}
+        <LeadersSnippet district={districtSlug} state={stateSlug} base={base} />
+
         {/* ── Infrastructure At a Glance — auto-hides if 0 projects ── */}
         <InfraSnippet district={districtSlug} state={stateSlug} base={base} />
-
-        {/* ── Leadership Strip ─────────────────────────── */}
-        {!leadersLoading && topLeaders.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <SectionLabel action={<Link href={`${base}/leadership`} style={{ fontSize: 12, color: "#2563EB", textDecoration: "none", fontWeight: 500 }}>View all →</Link>}>
-              Leadership
-            </SectionLabel>
-            <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, WebkitOverflowScrolling: "touch" }}>
-              {topLeaders.map((l) => (
-                <Link key={l.id} href={`${base}/leadership`} style={{ textDecoration: "none", flexShrink: 0 }}>
-                  <div style={{ background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 12, padding: "14px 16px", minWidth: 160, boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, marginBottom: 10 }}>
-                      {l.name.charAt(0)}
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.3 }}>{l.name}</div>
-                    <div style={{ fontSize: 11, color: "#6B6B6B", marginTop: 2 }}>{l.role}</div>
-                    {l.party && (() => { const pc = getPartyColor(l.party!); return <div style={{ fontSize: 10, color: pc.text, marginTop: 5, fontWeight: 600, padding: "2px 6px", background: pc.bg, borderRadius: 10, display: "inline-block" }}>{l.party}</div>; })()}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ── Ongoing Projects ─────────────────────────── */}
         {ongoingProjects.length > 0 && (
