@@ -4,4 +4,4 @@
  * https://github.com/jayanthmb14/forthepeople
  */
 
-export { default, metadata } from "../../contribute/page";
+export { default } from "../../contribute/page";

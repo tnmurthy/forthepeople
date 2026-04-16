@@ -60,6 +60,7 @@ export const TIER_CONFIG: Record<string, TierConfigItem> = {
     emoji: "🏛️",
     badgeType: "champion",
     requiresDistrict: true,
+    requiresState: true,
     color: "#EFF6FF",
     border: "#BFDBFE",
     accent: "#2563EB",

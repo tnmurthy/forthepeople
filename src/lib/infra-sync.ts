@@ -371,18 +371,34 @@ async function findTargetDistricts(extraction: InfraExtraction, sourceDistrictId
     });
     return rows.map((r) => ({ id: r.id, slug: r.slug, stateId: r.stateId }));
   }
-  if (extraction.scope === "STATE" && extraction.districtNames.length > 0) {
-    // Match by district name within the source state (via the source article's district)
+  if (extraction.scope === "STATE") {
     const src = await prisma.district.findUnique({
       where: { id: sourceDistrictId },
-      select: { stateId: true },
-    });
-    if (!src) return [];
-    const rows = await prisma.district.findMany({
-      where: { stateId: src.stateId, active: true },
       select: { id: true, slug: true, stateId: true },
     });
-    return rows.map((r) => ({ id: r.id, slug: r.slug, stateId: r.stateId }));
+    if (!src) return [];
+    // If the AI extracted specific district names, only target those districts
+    // within the source state — don't fan out to ALL state districts.
+    const stripSuffixState = (n: string) =>
+      n.trim().replace(/\s+(district|dist\.?)$/i, "").trim();
+    const stateNames = extraction.districtNames
+      .map(stripSuffixState)
+      .filter(Boolean)
+      .map((n) => n.toLowerCase());
+    if (stateNames.length > 0) {
+      const matched = await prisma.district.findMany({
+        where: {
+          stateId: src.stateId,
+          active: true,
+          OR: stateNames.map((n) => ({ name: { equals: n, mode: "insensitive" as const } })),
+        },
+        select: { id: true, slug: true, stateId: true },
+      });
+      if (matched.length > 0) return matched;
+    }
+    // No specific districts named — fall back to source district only
+    // (safer than applying to ALL districts in the state).
+    return [{ id: src.id, slug: src.slug, stateId: src.stateId }];
   }
   // DISTRICT: if article names specific districts, try to hit them by name;
   // else default to the source district.
@@ -404,6 +420,14 @@ async function findTargetDistricts(extraction: InfraExtraction, sourceDistrictId
   const candidateNames = Array.from(
     new Set([...normalizedNames, ...nameScanMatches].map((n) => n.toLowerCase()))
   );
+
+  // Always fetch the source district so we can validate state membership.
+  const src = await prisma.district.findUnique({
+    where: { id: sourceDistrictId },
+    select: { id: true, slug: true, stateId: true },
+  });
+  if (!src) return [];
+
   if (candidateNames.length > 0) {
     const rows = await prisma.district.findMany({
       where: {
@@ -412,13 +436,21 @@ async function findTargetDistricts(extraction: InfraExtraction, sourceDistrictId
       },
       select: { id: true, slug: true, stateId: true },
     });
-    if (rows.length > 0) return rows;
+    // CRITICAL: Only accept districts in the SAME STATE as the source article's
+    // district. This prevents a Mandya scraper from accidentally assigning a
+    // project to Mumbai just because the article mentions Mumbai.
+    const sameState = rows.filter((r) => r.stateId === src.stateId);
+    if (sameState.length > 0) return sameState;
+    // If all matched districts are in other states, fall back to source district
+    // rather than polluting other states' data.
+    if (rows.length > 0) {
+      console.warn(
+        `[infra-sync] Cross-state district match suppressed: article from ${src.slug} ` +
+        `matched ${rows.map((r) => r.slug).join(", ")} in different state(s). Falling back to source district.`
+      );
+    }
   }
-  const src = await prisma.district.findUnique({
-    where: { id: sourceDistrictId },
-    select: { id: true, slug: true, stateId: true },
-  });
-  return src ? [src] : [];
+  return [src];
 }
 
 function mergeSourceUrls(existing: unknown, next: string): string[] {
@@ -552,6 +584,18 @@ export async function syncInfraFromNews(
   const targets = await findTargetDistricts(extraction, sourceDistrictId);
   if (targets.length === 0) {
     return { projectsTouched: 0, created: 0, updatedProjects: 0, timelineCreated: 0, duplicatesSkipped: 0 };
+  }
+
+  // Log when a project is being assigned to a different district than the
+  // source article's origin — this is expected for scope overrides but helps
+  // audit potential contamination.
+  const crossDistrict = targets.filter((t) => t.id !== sourceDistrictId);
+  if (crossDistrict.length > 0) {
+    console.warn(
+      `[infra-sync] Cross-district assignment: article from source district ${sourceDistrictId} ` +
+      `→ targeting ${crossDistrict.map((t) => t.slug).join(", ")} (scope=${extraction.scope}). ` +
+      `Project: "${extraction.projectName.slice(0, 60)}"`
+    );
   }
 
   const now = new Date();

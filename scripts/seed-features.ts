@@ -22,10 +22,10 @@ const FEATURES = [
   { title: "School Mid-Day Meal Monitor", description: "Is your child's school serving mid-day meals? Quality reports from parents. Budget vs actual spending.", category: "Community", icon: "🍱", priority: 6 },
 
   // ── Data & Transparency ──────────────────────────────────
-  { title: "Compare Districts Side-by-Side", description: "Compare any 2-3 districts on literacy, budget, infrastructure, health. See who is doing better and why.", category: "Data", icon: "📊", priority: 9 },
-  { title: "MP/MLA Report Card", description: "Track every elected representative: projects delivered, budget spent, attendance, promises vs reality.", category: "Data", icon: "📋", priority: 9 },
-  { title: "Corruption & Fund Leakage Tracker", description: "Track where public money goes and where it disappears. Flag projects with suspicious spending patterns.", category: "Transparency", icon: "🔍", priority: 10 },
-  { title: "Public Service Delivery Timer", description: "How long does it ACTUALLY take to get a caste certificate, ration card, or building permit? Track real timelines.", category: "Transparency", icon: "⏱️", priority: 9 },
+  { title: "Compare Districts Side-by-Side", description: "Compare any 2-3 districts on literacy, budget, infrastructure, and health metrics. Understand governance patterns across regions based on official government data.", category: "Data", icon: "📊", priority: 9 },
+  { title: "Elected Representative Dashboard", description: "Track every elected representative: projects delivered, budget utilized, attendance in Parliament/Assembly, and progress on announced initiatives — all sourced from official records.", category: "Data", icon: "📋", priority: 9 },
+  { title: "Budget Utilization Tracker", description: "See how public money is allocated vs actually spent across government projects. Track budget utilization rates and identify under-utilized funds — all from official government budget documents.", category: "Transparency", icon: "💰", priority: 10 },
+  { title: "Public Service Delivery Times", description: "Track real-world timelines for common citizen services — caste certificates, ration cards, building permits, licence renewals — based on citizen-reported data.", category: "Transparency", icon: "⏱️", priority: 9 },
   { title: "Land Record Simplifier", description: "Understand your land records (khata, pahani, RTC) in simple language. Check for encroachments. Track mutation status.", category: "Data", icon: "📜", priority: 7 },
   { title: "Government Job & Exam Tracker", description: "All government recruitment notifications for your district. Exam dates, results, vacancy status. Never miss a sarkari naukri update.", category: "Data", icon: "💼", priority: 8 },
   { title: "Hospital Wait Time & Bed Availability", description: "Real-time bed availability in government hospitals. Average wait times at PHCs and district hospitals.", category: "Data", icon: "🏥", priority: 7 },

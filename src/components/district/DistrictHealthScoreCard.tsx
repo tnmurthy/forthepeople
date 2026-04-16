@@ -123,6 +123,11 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
         </button>
       </div>
 
+      {/* Data coverage disclaimer — always visible */}
+      <div style={{ fontSize: 10, color: "#9B9B9B", marginBottom: 10, lineHeight: 1.5, fontStyle: "italic" }}>
+        Indicative score based on currently available data. Will update as more modules are populated for this district.
+      </div>
+
       {/* Category bars grid */}
       <div
         style={{
@@ -166,6 +171,14 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
             The District Health Score combines 10 governance categories with different weights (total 100%).
             Scores are computed from live database records. Updated weekly.
           </div>
+          <div
+            style={{
+              background: "#FFF9F0", border: "1px solid #FED7AA", borderRadius: 8,
+              padding: "10px 14px", marginBottom: 12, fontSize: 11, color: "#92400E", lineHeight: 1.55,
+            }}
+          >
+            <strong>Important:</strong> This score is indicative and continuously evolving. As more data modules are populated and verified for this district, the score will change. Categories with insufficient data use baseline estimates and are not fully representative. Do not use this score for official comparisons or policy decisions.
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {CATEGORY_CONFIG.map((cat) => {
               const bd = (data.breakdown as Record<string, typeof data.breakdown[string]>)[cat.key];
@@ -201,8 +214,8 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
               );
             })}
           </div>
-          <div style={{ fontSize: 10, color: "#9B9B9B", marginTop: 10 }}>
-            Last computed: {new Date(data.generatedAt).toLocaleDateString("en-IN")}
+          <div style={{ fontSize: 10, color: "#9B9B9B", marginTop: 10, lineHeight: 1.5 }}>
+            Last computed: {new Date(data.generatedAt).toLocaleDateString("en-IN")} · Score will update as more data becomes available across all modules.
           </div>
         </div>
       )}

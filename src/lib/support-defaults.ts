@@ -35,7 +35,7 @@ export const SUPPORT_DEFAULTS: SupportPageContent = {
   bioSubtitle: "26 yr old · Entrepreneur from Mandya, Karnataka · Founder - ForThePeople.in",
   bioText: [
     "When I was preparing for civil services during engineering, I spent hours trying to find basic government data about my own district — budgets, infrastructure projects, scheme eligibility, crop prices. The information existed, but it was scattered across dozens of portals, buried in PDFs, and nearly impossible for an ordinary citizen to navigate.",
-    "That frustration stayed with me. Years later, running Pinnakle Media (PKJMB Media PVT Limited), I finally built what should have existed all along — ForThePeople.in. A platform that brings all of a district's government data into one clean, accessible dashboard.",
+    "That frustration stayed with me. Years later, I finally built what should have existed all along — ForThePeople.in. A platform that brings all of a district's government data into one clean, accessible dashboard.",
     "A single Instagram reel explaining the platform reached lakhs of people. Citizens from across India started asking for their districts, sharing it with families, telling me this was exactly what they needed.",
     "Today — **9 districts across 7 states**, 29 live dashboards each. Infrastructure projects, elected representatives, crop prices, dam levels, school data, budgets, government exams, and more. The goal: all 780 districts in India.",
     "This is **not a startup**. Not for profit. A citizen initiative under India's Open Data Policy (NDSAP). Running this costs **more than ₹12 lakh a year** — and I fund it independently.",

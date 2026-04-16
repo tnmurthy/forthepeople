@@ -428,6 +428,13 @@ export default function SupportCheckout({ tier }: Props) {
                   : "Your link will be displayed next to your name. Works with Instagram, LinkedIn, GitHub, Twitter, or any website."}
           </div>
 
+          {/* Helper text explaining required fields for this tier */}
+          {districtRequired && (
+            <div style={{ fontSize: 11, color: "#2563EB", background: "#EFF6FF", border: "1px solid #BFDBFE", padding: "8px 12px", borderRadius: 8, lineHeight: 1.5 }}>
+              Please pick the state and district you want to sponsor — your name will be featured on that district&apos;s page.
+            </div>
+          )}
+
           {/* State selector (for district/state tiers, optional for others) */}
           {showStateSelector && (
             <select
@@ -442,15 +449,28 @@ export default function SupportCheckout({ tier }: Props) {
             </select>
           )}
 
-          {/* District selector */}
-          {showDistrictSelector && selectedState && (
+          {/* District selector — always shown when required, disabled until state picked */}
+          {showDistrictSelector && (
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              style={{ padding: "9px 12px", border: "1px solid #E8E8E4", borderRadius: 8, fontSize: 13, outline: "none", background: "#FAFAF8", color: selectedDistrict ? "#1A1A1A" : "#9B9B9B" }}
+              disabled={!selectedState}
+              style={{
+                padding: "9px 12px", border: "1px solid #E8E8E4", borderRadius: 8,
+                fontSize: 13, outline: "none",
+                background: !selectedState ? "#F0F0EC" : "#FAFAF8",
+                color: selectedDistrict ? "#1A1A1A" : "#9B9B9B",
+                cursor: !selectedState ? "not-allowed" : "pointer",
+              }}
             >
-              <option value="">{districtRequired ? "Select District *" : "Select District (optional)"}</option>
-              {districtOptions.map((d) => (
+              <option value="">
+                {!selectedState
+                  ? "Select a state first to choose your district"
+                  : districtRequired
+                    ? "Select District *"
+                    : "Select District (optional)"}
+              </option>
+              {selectedState && districtOptions.map((d) => (
                 <option key={d.slug} value={d.slug}>
                   {d.active ? "● " : "🔒 "}{d.name}{!d.active ? " (coming soon)" : ""}
                 </option>

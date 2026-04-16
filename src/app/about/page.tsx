@@ -64,7 +64,7 @@ export default function AboutPage() {
         <div style={{ fontSize: 12, fontWeight: 700, color: "#2563EB", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Our Mission</div>
         <p style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.6, margin: 0 }}>
           To make government data as easy to access as checking the weather — so that every citizen,
-          journalist, activist, and elected representative can hold power accountable with facts.
+          journalist, researcher, and elected representative can engage with governance based on facts.
         </p>
       </div>
 

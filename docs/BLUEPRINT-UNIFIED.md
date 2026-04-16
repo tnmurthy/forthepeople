@@ -3,8 +3,75 @@
 # SINGLE SOURCE OF TRUTH — Combines original + all addendums
 # Claude Code: Read this file at the start of EVERY session.
 # Generic for ANY Indian district. Pilots: Mandya, Mysuru, Bengaluru Urban (Karnataka).
-# Last updated: April 14, 2026
+# Last updated: April 17, 2026
 # ═══════════════════════════════════════════════════════════
+#
+# 2026-04-17 — Payment UX + Duplicate Cleanup + Score Disclaimer:    COMPLETE
+#   • District tier subscription fix: added requiresState: true to prevent
+#     broken submit flow. District selector now always visible with disabled
+#     state + helpful "Select a state first" hint before state is chosen.
+#   • Added informative banner for district tier explaining state+district
+#     selection is needed for sponsorship.
+#   • LocalAlert dedup: added case-insensitive title check in news-action-engine
+#     to prevent duplicates from multi-source news coverage.
+#   • Cleanup script: scripts/cleanup-alert-news-dupes.ts
+#     - Deactivated 42 duplicate LocalAlerts (kolkata:39, new-delhi:1, mumbai:1, hyderabad:1)
+#     - Deleted 23 duplicate NewsItems across 7 districts
+#   • Contribute page overhaul: all broken GitHub/fake-email links replaced
+#     with feedback modal → admin panel routing. Supports report issue,
+#     district request, translation, data source types.
+#   • District Health Score: 3-layer disclaimers added (always-visible note,
+#     warning box in breakdown, footer note) stating the score is indicative
+#     and will evolve as more module data is populated.
+#   • Leader dedup (smart): 81 entries marked inactive across all 9 districts
+#     (79 duplicates + 2 junk entries like "Prime Minister" as name).
+#   • Cross-district infra contamination fix: findTargetDistricts() now
+#     validates extracted districts are in same state as source district.
+#   • Update Log: "Scraper" → "Auto-Update" in public-facing labels.
+#
+# 2026-04-16 — Legal Pages Overhaul (Disclaimer + Privacy Policy):    COMPLETE
+#   • Disclaimer rewritten: 14 sections (Political Neutrality, Government
+#     Emblems, References to Public Officials, News Aggregation, etc.)
+#   • Privacy Policy rewritten: DPDP Act 2023 fully compliant
+#   • "Jayanth Malathi Basavaraju" → "Jayanth M B" everywhere
+#   • PKJMB Media Private Limited + CIN removed from all pages
+#   • Disclaimer Section 14 renamed "Contact" (was "Contact for Legal Notices")
+#   • New: LegalPageHeader, ModuleDisclaimer, LEGAL-COMPLIANCE.md
+#   • About page: "hold power accountable" → "engage with governance based on facts"
+#   • 4 features renamed with votes preserved (638+444+180+157)
+#
+# 2026-04-16 — Political Risk Fixes + Feature Wording Update:    COMPLETE
+#   • Renamed feature: "Corruption & Fund Leakage Tracker" → "Budget Utilization Tracker"
+#     (votes preserved via scripts/update-feature-wording.ts)
+#   • Renamed feature: "MP/MLA Report Card" → "Elected Representative Dashboard"
+#   • Renamed feature: "Public Service Delivery Timer" → "Public Service Delivery Times"
+#   • Updated feature description: "Compare Districts Side-by-Side" (neutral wording)
+#   • About page mission: "hold power accountable" → "engage with governance based on facts"
+#   • About page: "activist" → "researcher" in citizen listing
+#   • Sidebar data-sources description: "scraping status" → "data refresh status"
+#   • Disclaimer Section 5: email now clickable mailto link
+#   • New component: src/components/common/ModuleDisclaimer.tsx
+#   • Leadership module now shows source + verification disclaimer
+#   • Infrastructure tracker shows timeline + news attribution disclaimer
+#   • Data sources page badges: already clean ("Collected" / "Aggregated")
+#   • All user-facing text: zero instances of "scrape/scraper/scraping/scraped",
+#     "corruption" (except official govt helpline names), "suspicious",
+#     "promises vs reality", "ACTUALLY"
+#   • New doc: docs/LEGAL-COMPLIANCE.md (permanent language rules)
+#
+# 2026-04-16 — Legal Pages Overhaul (Disclaimer + Privacy Policy):    COMPLETE
+#   • Disclaimer rewritten: 14 sections, including Political Neutrality,
+#     Government Emblems & Trademarks, References to Public Officials,
+#     News Aggregation, Not Legal/Financial/Medical Advice, User-Submitted
+#     Content, Governing Law & Jurisdiction, Contact for Legal Notices
+#   • Privacy Policy rewritten: DPDP Act 2023 fully compliant with
+#     Grievance Officer, Cross-Border Data Transfers disclosure,
+#     Data Breach Notification commitment (72-hour), Automated Processing
+#     disclosure, Right to Withdraw Consent
+#   • New component: src/components/common/LegalPageHeader.tsx
+#   • Last updated: 16 April 2026 (both pages)
+#   • Cross-links added between Disclaimer ↔ Privacy ↔ About
+#   • Footer verified to include both pages
 #
 # 2026-04-14 — Security/perf hardening (responsible disclosure):
 #   • /api/payment/contributors anonymized (DPDP): displayName (first + last initial),

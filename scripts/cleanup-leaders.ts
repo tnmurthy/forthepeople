@@ -8,7 +8,8 @@
  * Note: This script MUST be run with the same DATABASE_URL that Vercel uses.
  * Check Vercel dashboard → Project → Environment Variables → DATABASE_URL
  */
-import { prisma } from "@/lib/db";
+import "dotenv/config";
+import { prisma } from "../src/lib/db";
 
 async function main() {
   console.log("Starting leader deduplication...\n");

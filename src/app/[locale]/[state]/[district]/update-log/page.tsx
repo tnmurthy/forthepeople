@@ -53,7 +53,7 @@ const MODULE_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const SOURCE_LABELS: Record<string, { label: string; bg: string; text: string }> = {
-  scraper:    { label: "Scraper",    bg: "#EFF6FF", text: "#2563EB" },
+  scraper:    { label: "Auto-Update", bg: "#EFF6FF", text: "#2563EB" },
   cron:       { label: "Cron",       bg: "#EFF6FF", text: "#1D4ED8" },
   admin_edit: { label: "Admin",      bg: "#FFF7ED", text: "#EA580C" },
   api:        { label: "API / Seed", bg: "#F0FDF4", text: "#16A34A" },
@@ -109,7 +109,7 @@ function UpdateLogInner({ params }: { params: Promise<{ locale: string; state: s
 
   const tabs: Array<{ id: FilterTab; label: string }> = [
     { id: "all", label: "All" },
-    { id: "scrapers", label: "Scrapers" },
+    { id: "scrapers", label: "Auto-Updates" },
     { id: "admin", label: "Admin" },
     { id: "seeds", label: "Seeds" },
   ];
@@ -139,7 +139,7 @@ function UpdateLogInner({ params }: { params: Promise<{ locale: string; state: s
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 20 }}>
         <StatCard label="Total Updates" value={total.toLocaleString("en-IN")} icon={Clock} />
         <StatCard label="Shown" value={rows.length.toLocaleString("en-IN")} />
-        <StatCard label="Scrapers" value={scraperCount} accent="#2563EB" />
+        <StatCard label="Auto-Updates" value={scraperCount} accent="#2563EB" />
         <StatCard label="Admin" value={adminCount} accent="#EA580C" />
       </div>
 

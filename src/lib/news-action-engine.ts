@@ -161,11 +161,32 @@ export async function executeNewsAction(
         const alertType = targetModule === "health" ? "health_advisory"
           : targetModule === "elections" ? "election"
           : (data.alertType ?? "general");
+        const alertTitle = data.alertTitle ?? articleTitle;
+
+        // Dedup check: is there already an active alert with the same title
+        // in this district? Same incident often gets reported by multiple
+        // outlets — don't create one LocalAlert per outlet.
+        const existingAlert = await prisma.localAlert.findFirst({
+          where: {
+            districtId,
+            title: { equals: alertTitle, mode: "insensitive" },
+            active: true,
+          },
+        });
+        if (existingAlert) {
+          await prisma.localAlert.update({
+            where: { id: existingAlert.id },
+            data: { sourceUrl: articleUrl, updatedAt: new Date() },
+          });
+          console.log(`[NewsAction] ⏭️  Skipped duplicate LocalAlert (refreshed source): "${alertTitle.slice(0, 60)}"`);
+          break;
+        }
+
         await prisma.localAlert.create({
           data: {
             districtId,
             type: alertType,
-            title: data.alertTitle ?? articleTitle,
+            title: alertTitle,
             description: data.alertDescription ?? data.description ?? `Based on news: ${articleTitle}`,
             location: data.location ?? null,
             severity: (data.severity ?? "info") as string,
@@ -298,17 +319,54 @@ export async function executeNewsAction(
             console.warn(`[leadership] Unknown party detected: '${party}'. Using default colors. Add to party-colors.ts for branded colors.`);
           }
 
-          // Skip duplicates: check if this name+role combo already exists for this district.
-          const existing = await prisma.leader.findFirst({
-            where: { districtId, name, role },
+          // Skip if the name is clearly just a title/role echoed as a name
+          // (e.g. AI extracts personName="Prime Minister", role="Prime Minister").
+          const nameWords = name.toLowerCase().replace(/[^a-z\s]/g, "").trim();
+          const roleWords = role.toLowerCase().replace(/[^a-z\s]/g, "").trim();
+          if (nameWords === roleWords || nameWords.length < 3) {
+            console.log(`[NewsAction] ⏭️  Skipped: name "${name}" looks like a role echo, not a person name`);
+            break;
+          }
+
+          // Skip duplicates: check if this person already exists for this district.
+          // 1. Exact name+role match (case-insensitive)
+          // 2. Same name at same tier (catches "Prime Minister" vs "Prime Minister of India")
+          // 3. Name contained in existing name or vice versa (catches "Modi" vs "Narendra Modi")
+          const existingByNameRole = await prisma.leader.findFirst({
+            where: {
+              districtId,
+              name: { equals: name, mode: "insensitive" },
+              role: { equals: role, mode: "insensitive" },
+            },
           });
-          if (existing) {
-            // Bump verification timestamp so the page shows a fresh date.
+          if (existingByNameRole) {
             await prisma.leader.update({
-              where: { id: existing.id },
+              where: { id: existingByNameRole.id },
               data: { lastVerifiedAt: new Date(), active: true },
             });
-            console.log(`[NewsAction] ⏭️  Skipped duplicate Leader (refreshed lastVerifiedAt): ${name} as ${role}`);
+            console.log(`[NewsAction] ⏭️  Skipped duplicate Leader (exact match, refreshed): ${name} as ${role}`);
+            break;
+          }
+
+          // Fuzzy match: same person name already exists at this tier in this district?
+          // This catches "Narendra Modi / Prime Minister / BJP" vs
+          // "Narendra Modi / Prime Minister of India / Bharatiya Janata Party"
+          const existingByName = await prisma.leader.findFirst({
+            where: {
+              districtId,
+              name: { equals: name, mode: "insensitive" },
+              tier,
+              active: true,
+            },
+          });
+          if (existingByName) {
+            // Same person, different role text — update the existing record's
+            // verification date but don't create a new entry.
+            await prisma.leader.update({
+              where: { id: existingByName.id },
+              data: { lastVerifiedAt: new Date() },
+            });
+            console.log(`[NewsAction] ⏭️  Skipped duplicate Leader (same name+tier, role variant "${role}" vs "${existingByName.role}"): ${name}`);
             break;
           }
 
@@ -318,7 +376,12 @@ export async function executeNewsAction(
           const UNIQUE_ROLE_RE = /^(chief minister|governor|lieutenant governor|deputy chief minister|chief secretary|district collector|deputy commissioner|district magistrate|mayor|commissioner of police|managing director|chairman|vice chairman|chief justice|principal sessions judge)/i;
           let supersededName: string | null = null;
           if (UNIQUE_ROLE_RE.test(role)) {
-            const supersedeWhere = { districtId, role, active: true, NOT: { name } };
+            const supersedeWhere = {
+              districtId,
+              role: { equals: role, mode: "insensitive" as const },
+              active: true,
+              NOT: { name: { equals: name, mode: "insensitive" as const } },
+            };
             const superseded = await prisma.leader.findMany({ where: supersedeWhere, select: { id: true, name: true } });
             if (superseded.length > 0) {
               await prisma.leader.updateMany({ where: { id: { in: superseded.map((s) => s.id) } }, data: { active: false } });

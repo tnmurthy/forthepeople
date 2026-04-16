@@ -95,6 +95,8 @@ export default function Footer() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <Link href="/about"       style={{ color: "#9B9B9B", textDecoration: "none" }}>About</Link>
           <span style={{ color: "#C0C0C0" }}>·</span>
+          <Link href="/disclaimer"  style={{ color: "#9B9B9B", textDecoration: "none" }}>Disclaimer</Link>
+          <span style={{ color: "#C0C0C0" }}>·</span>
           <Link href="/privacy"     style={{ color: "#9B9B9B", textDecoration: "none" }}>Privacy</Link>
           <span style={{ color: "#C0C0C0" }}>·</span>
           <Link href="/en/features" style={{ color: "#7C3AED", textDecoration: "none" }}>Features</Link>

@@ -20,6 +20,7 @@ import {
 import { useInfrastructure } from "@/hooks/useRealtimeData";
 import type { InfraProject, InfraUpdate } from "@/hooks/useRealtimeData";
 import MobileHint from "@/components/common/MobileHint";
+import ModuleDisclaimer from "@/components/common/ModuleDisclaimer";
 import {
   ModuleHeader, LoadingShell, ErrorBlock, EmptyBlock, LastUpdatedBadge,
 } from "@/components/district/ui";
@@ -1029,6 +1030,10 @@ function InfrastructurePageInner({ params }: { params: Promise<{ locale: string;
       </ModuleHeader>
 
       <DisclaimerBanner />
+
+      <ModuleDisclaimer
+        text="Project timelines and delay information are aggregated from official government announcements and publicly reported news sources. This is not an official government statement. For authoritative information, please consult the concerned government department."
+      />
 
       {(() => { const _src = getModuleSources("infrastructure", state); return <DataSourceBanner moduleName="infrastructure" sources={_src.sources} updateFrequency={_src.frequency} isLive={_src.isLive} />; })()}
       <AIInsightCard module="infrastructure" district={district} />

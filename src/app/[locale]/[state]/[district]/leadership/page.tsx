@@ -26,6 +26,7 @@ import type { Leader } from "@/hooks/useRealtimeData";
 import { ModuleHeader, LoadingShell, ErrorBlock, AIInsightBanner } from "@/components/district/ui";
 import AIInsightCard from "@/components/common/AIInsightCard";
 import DataSourceBanner from "@/components/common/DataSourceBanner";
+import ModuleDisclaimer from "@/components/common/ModuleDisclaimer";
 import { getModuleSources } from "@/lib/constants/state-config";
 import { getPartyColor } from "@/lib/constants/party-colors";
 import { getRoleDescription } from "@/lib/constants/role-descriptions";
@@ -318,7 +319,20 @@ function LeadershipPageInner({
     return ROLE_ORDER.length + 1;
   }
 
-  const byTier = leaders.reduce((acc: Record<number, Leader[]>, l) => {
+  // Deduplicate leaders by name (case-insensitive) within the same tier.
+  // Catches duplicates like "Narendra Modi / Prime Minister / BJP" vs
+  // "Narendra Modi / Prime Minister of India / Bharatiya Janata Party".
+  // Also filters out entries where the name is just a role echo (e.g. name="Prime Minister").
+  const ROLE_WORDS = /^(prime minister|president|governor|chief minister|minister|mla|mp|speaker|collector|commissioner|mayor|judge|officer|secretary|chairman|director)/i;
+  const deduped = leaders
+    .filter((l) => !ROLE_WORDS.test(l.name.trim()) || l.name.includes(" ") && l.name.split(/\s+/).length > 2)
+    .filter((l, i, arr) =>
+      arr.findIndex((x) =>
+        x.name.toLowerCase() === l.name.toLowerCase() && x.tier === l.tier
+      ) === i
+    );
+
+  const byTier = deduped.reduce((acc: Record<number, Leader[]>, l) => {
     (acc[l.tier] ??= []).push(l);
     return acc;
   }, {});
@@ -346,6 +360,10 @@ function LeadershipPageInner({
         />
       )}
       {(() => { const _src = getModuleSources("leaders", state); return <DataSourceBanner moduleName="leaders" sources={_src.sources} updateFrequency={_src.frequency} isLive={_src.isLive} />; })()}
+
+      <ModuleDisclaimer
+        text="Leader information is sourced from publicly available government records (Election Commission of India, state assembly websites, and district administration portals) and may have delays. For official verification, always refer to the original source."
+      />
 
       <div
         role="note"
