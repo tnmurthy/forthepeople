@@ -21,9 +21,11 @@ model State {
   slug            String           @unique
   active          Boolean          @default(false)
   capital         String?
-  districts       District[]
-  governmentExams GovernmentExam[]
-  supporters      Supporter[]
+  districts           District[]
+  governmentExams     GovernmentExam[]
+  supporters          Supporter[]
+  demographicProfiles DemographicProfile[]
+  demographicUpdates  DemographicUpdate[]
 }
 
 model District {
@@ -96,6 +98,8 @@ model District {
   governmentExams     GovernmentExam[]
   departmentStaffing  DepartmentStaffing[]
   supporters          Supporter[]
+  demographicProfiles DemographicProfile[]
+  demographicUpdates  DemographicUpdate[]
 
   @@unique([stateId, slug])
 }
@@ -432,6 +436,118 @@ model PopulationHistory {
   source     String
 
   @@index([districtId, year])
+}
+
+// ═══ DEMOGRAPHICS v2 — rich multi-source profile ════════════
+
+enum DemographicLevel {
+  STATE
+  DISTRICT
+  SUBDISTRICT
+  WARD
+}
+
+model DemographicProfile {
+  id                 String            @id @default(cuid())
+
+  // Scope — exactly one of districtId / stateId will be set per row
+  districtId         String?
+  district           District?         @relation(fields: [districtId], references: [id])
+  stateId            String?
+  state              State?            @relation(fields: [stateId], references: [id])
+  level              DemographicLevel
+
+  // Observation reference
+  year               Int               // e.g. 2011, 2019, 2024
+  dataset            String            // "Census 2011" | "NFHS-5" | "NITI MPI 2023" | "SRS 2023" | "PLFS 2024-Q4" | "Karnataka ES 2024"
+
+  // Totals
+  totalPopulation    Int?
+  malePopulation     Int?
+  femalePopulation   Int?
+  sexRatio           Int?              // females per 1000 males
+  childSexRatio      Int?              // 0-6, females per 1000 males
+
+  // Age bands
+  pop_0_6            Int?
+  pop_7_14           Int?
+  pop_15_59          Int?
+  pop_60_plus        Int?
+  medianAge          Float?
+
+  // Literacy
+  literacyTotal      Float?
+  literacyMale       Float?
+  literacyFemale     Float?
+
+  // Urban / Rural split
+  urbanPopulation    Int?
+  ruralPopulation    Int?
+  urbanPct           Float?
+
+  // Physical
+  density            Float?            // persons per sq km
+  areaSqKm           Float?
+  households         Int?
+  avgHouseholdSize   Float?
+
+  // Flexible JSONB breakdowns — keys are validated in app code, not schema
+  // religion: { Buddhist, Christian, Hindu, Jain, Muslim, Sikh, Other, NotStated } — ALPHABETICAL, percentages
+  religion           Json?
+  // caste: { SC, ST, Other } — constitutional categories only; no sub-caste
+  caste              Json?
+  // employment: { mainWorkersPct, marginalWorkersPct, nonWorkersPct, workerParticipationRate, cultivators, agriLabourers, householdInd, otherWorkers }
+  employment         Json?
+  // economicClass: { mpiHeadcount, mpiIntensity, mpi, bplPct, source } — NITI MPI 2023 where available
+  economicClass      Json?
+  // education: { illiterate, belowPrimary, primary, middle, secondary, higherSec, graduate, postgrad } — percentages
+  education          Json?
+  // migration: { totalInMigrantsPct, fromSameState, fromOtherState, fromAbroad, reasons: { work, marriage, education, family, other } }
+  migration          Json?
+  // disability: { totalPct, types: { visual, hearing, speech, movement, mental, multiple, other } }
+  disability         Json?
+  // language: { top10: [{name, pct}] } — mother tongue, per Census C-16
+  language           Json?
+  // householdAmenities: { electricityPct, tapWaterPct, toiletPct, lpgCleanFuelPct, bankedHouseholdsPct, internetPct, source }
+  householdAmenities Json?
+  // maritalStatus: { neverMarriedPct, marriedPct, widowedPct, separatedPct, childMarriageU18Pct }
+  maritalStatus      Json?
+
+  // Source & provenance
+  sourceName         String            // "Office of the Registrar General & Census Commissioner, India"
+  sourceUrl          String?
+  sourceLicense      String?           // "Public" | "GODL-India" | "CC BY 4.0"
+  retrievedAt        DateTime
+  publishedAt        DateTime?
+  notes              String?
+  boundaryVintage    String?           // "Census_2011" | "BBMP_198_2010" | "BBMP_243_2022"
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([districtId, year])
+  @@index([stateId, level, year])
+  @@index([dataset, year])
+  @@unique([districtId, year, dataset])
+}
+
+model DemographicUpdate {
+  id          String    @id @default(cuid())
+  districtId  String?
+  district    District? @relation(fields: [districtId], references: [id])
+  stateId     String?
+  state       State?    @relation(fields: [stateId], references: [id])
+  title       String
+  summary     String
+  category    String    // "Vital Rates" | "Migration" | "Literacy" | "Employment" | "Housing" | "Data Release" | "Other"
+  sourceUrl   String?
+  source      String
+  publishedAt DateTime
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  @@index([districtId, publishedAt])
+  @@index([stateId, publishedAt])
 }
 
 // ═══ POLICE ═══════════════════════════════════════════════

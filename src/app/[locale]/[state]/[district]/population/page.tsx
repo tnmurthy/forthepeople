@@ -6,103 +6,404 @@
 
 "use client";
 import { use } from "react";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { BarChart3 } from "lucide-react";
-import { usePopulation, useRainfall } from "@/hooks/useRealtimeData";
-import { ModuleHeader, StatCard, SectionLabel, LoadingShell, ErrorBlock, DataTable } from "@/components/district/ui";
+import { Users } from "lucide-react";
+
+import { usePopulation, usePopulationProfile } from "@/hooks/useRealtimeData";
+import {
+  ModuleHeader,
+  LastUpdatedBadge,
+  StatCard,
+  SectionLabel,
+  LoadingShell,
+  ErrorBlock,
+} from "@/components/district/ui";
 import AIInsightCard from "@/components/common/AIInsightCard";
 import DataSourceBanner from "@/components/common/DataSourceBanner";
 import NoDataCard from "@/components/common/NoDataCard";
-import { getModuleSources } from "@/lib/constants/state-config";
+import ModuleErrorBoundary from "@/components/common/ModuleErrorBoundary";
 import ModuleNews from "@/components/district/ModuleNews";
+import { getModuleSources } from "@/lib/constants/state-config";
 
-export default function PopulationPage({ params }: { params: Promise<{ locale: string; state: string; district: string }> }) {
+import DemographicDisclaimer from "@/components/demographics/DemographicDisclaimer";
+import DataSourceCard from "@/components/demographics/DataSourceCard";
+import type {
+  CasteMap,
+  EducationData,
+  EmploymentData,
+  HouseholdAmenitiesData,
+  LanguageData,
+  MigrationData,
+  EconomicClassData,
+} from "@/components/demographics/types";
+
+import ReligionDonut from "@/components/demographics/charts/ReligionDonut";
+import CasteStackedBar from "@/components/demographics/charts/CasteStackedBar";
+import LiteracyDumbbell from "@/components/demographics/charts/LiteracyDumbbell";
+import EducationBreakdownBar from "@/components/demographics/charts/EducationBreakdownBar";
+import EmploymentStackedBar from "@/components/demographics/charts/EmploymentStackedBar";
+import HouseholdAmenitiesWaffle from "@/components/demographics/charts/HouseholdAmenitiesWaffle";
+import MigrationBreakdown from "@/components/demographics/charts/MigrationBreakdown";
+import LanguageBarChart from "@/components/demographics/charts/LanguageBarChart";
+import MPIIndicatorCard from "@/components/demographics/charts/MPIIndicatorCard";
+import SexRatioGauge, {
+  canRenderSexRatioGauge,
+} from "@/components/demographics/charts/SexRatioGauge";
+import AgePyramidStacked from "@/components/demographics/charts/AgePyramidStacked";
+
+function formatInt(n: number | null | undefined): string {
+  if (n == null) return "—";
+  return n.toLocaleString("en-IN");
+}
+
+function titleCase(slug: string): string {
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const cardShell: React.CSSProperties = {
+  background: "#FFF",
+  border: "1px solid #E8E8E4",
+  borderRadius: 12,
+  padding: 16,
+  marginBottom: 20,
+};
+
+export default function PopulationPage({
+  params,
+}: {
+  params: Promise<{ locale: string; state: string; district: string }>;
+}) {
   const { locale, state, district } = use(params);
   const base = `/${locale}/${state}/${district}`;
-  const { data, isLoading, error } = usePopulation(district, state);
-  const { data: rainfall } = useRainfall(district, state);
+  const districtName = titleCase(district);
 
-  const rows = data?.data ?? [];
-  const latest = rows[rows.length - 1];
-  const rainfallData = (rainfall?.data ?? []).slice(0, 24);
+  const profileQ = usePopulationProfile(district, state);
+  const historyQ = usePopulation(district, state);
 
-  // Monthly rainfall aggregated by year for chart
-  const rainfallByYear = Object.entries(
-    rainfallData.reduce((acc: Record<number, number>, r) => {
-      acc[r.year] = (acc[r.year] ?? 0) + r.rainfall;
-      return acc;
-    }, {})
-  ).map(([year, total]) => ({ year, total: Math.round(total) })).sort((a, b) => Number(a.year) - Number(b.year));
+  const profile = profileQ.data?.data ?? null;
+  const history = historyQ.data?.data ?? [];
+
+  const sources = getModuleSources("population", state);
+
+  const cite = (override?: {
+    source?: string;
+    sourceUrl?: string;
+    referenceYear?: number;
+    license?: string;
+  }) => (
+    <DataSourceCard
+      source={override?.source ?? profile?.sourceName ?? "Census of India 2011"}
+      sourceUrl={override?.sourceUrl ?? profile?.sourceUrl ?? undefined}
+      license={override?.license ?? profile?.sourceLicense ?? undefined}
+      referenceYear={override?.referenceYear ?? profile?.year ?? 2011}
+      retrievedAt={
+        profile?.retrievedAt ? new Date(profile.retrievedAt) : new Date()
+      }
+      boundaryVintage={profile?.boundaryVintage ?? undefined}
+    />
+  );
+
+  const isLoading = profileQ.isLoading && historyQ.isLoading;
+  const hasAnyData = Boolean(profile) || history.length > 0;
 
   return (
-    <div style={{ padding: 24 }}>
-      <ModuleHeader icon={BarChart3} title="Population & Demographics" description="Census data, literacy rates, sex ratio, and rainfall history" backHref={base} />
-      {(() => { const _src = getModuleSources("population", state); return <DataSourceBanner moduleName="population" sources={_src.sources} updateFrequency={_src.frequency} isLive={_src.isLive} />; })()}
-      <AIInsightCard module="population" district={district} />
+    <ModuleErrorBoundary moduleName="Population & Demographics">
+      <div style={{ padding: 24 }}>
+        <ModuleHeader
+          icon={Users}
+          title="Population & Demographics"
+          description="Census data, literacy, sex ratio, religion, caste, age, economy, migration, household amenities"
+          backHref={base}
+        >
+          <LastUpdatedBadge lastUpdated={profileQ.data?.meta.lastUpdated ?? null} />
+        </ModuleHeader>
 
-      {isLoading && <LoadingShell rows={4} />}
-      {error && <ErrorBlock />}
+        <DemographicDisclaimer districtName={districtName} defaultOpen={false} />
 
-      {!isLoading && latest && (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 24 }}>
-            <StatCard label="Population (2021)" value={latest.population?.toLocaleString("en-IN") ?? "—"} icon={BarChart3} />
-            <StatCard label="Sex Ratio" value={latest.sexRatio ? `${latest.sexRatio}/1k` : "—"} />
-            <StatCard label="Literacy" value={latest.literacy ? `${latest.literacy}%` : "—"} accent="#16A34A" />
-            <StatCard label="Urban %" value={latest.urbanPct ? `${latest.urbanPct}%` : "—"} />
-            <StatCard label="Density" value={latest.density ? `${latest.density}/km²` : "—"} />
-          </div>
+        <DataSourceBanner
+          moduleName="population"
+          sources={sources.sources}
+          updateFrequency={sources.frequency}
+          isLive={sources.isLive}
+        />
 
-          <SectionLabel>Population Trend</SectionLabel>
-          <div style={{ background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 12, padding: 16, marginBottom: 20 }}>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={rows} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0F0EC" />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9B9B9B" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#9B9B9B" }} tickFormatter={(v) => `${(v / 100000).toFixed(1)}L`} />
-                <Tooltip formatter={(v) => [Number(v).toLocaleString("en-IN"), "Population"]} />
-                <Bar dataKey="population" fill="#2563EB" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <AIInsightCard module="population" district={district} />
 
-          <SectionLabel>Census Table</SectionLabel>
-          <DataTable
-            columns={[
-              { key: "year", label: "Year" },
-              { key: "pop", label: "Population", mono: true },
-              { key: "sex", label: "Sex Ratio", mono: true },
-              { key: "lit", label: "Literacy", mono: true },
-              { key: "urb", label: "Urban %", mono: true },
-            ]}
-            rows={rows.map(r => ({
-              year: r.year,
-              pop: r.population?.toLocaleString("en-IN"),
-              sex: r.sexRatio ? `${r.sexRatio}/1k` : "—",
-              lit: r.literacy ? `${r.literacy}%` : "—",
-              urb: r.urbanPct ? `${r.urbanPct}%` : "—",
-            }))}
+        {isLoading && <LoadingShell rows={8} />}
+        {profileQ.error && <ErrorBlock />}
+
+        {!isLoading && !hasAnyData && (
+          <NoDataCard
+            module="population"
+            district={district}
+            state={state}
+            customMessage={`Demographic profile for ${districtName} is being assembled. Historical census totals will also appear here once available.`}
           />
-        </>
-      )}
+        )}
 
-      {rainfallByYear.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <SectionLabel>Annual Rainfall (mm)</SectionLabel>
-          <div style={{ background: "#FFF", border: "1px solid #E8E8E4", borderRadius: 12, padding: 16 }}>
-            <ResponsiveContainer width="100%" height={160}>
-              <LineChart data={rainfallByYear} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0F0EC" />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#9B9B9B" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#9B9B9B" }} />
-                <Tooltip formatter={(v) => [`${Number(v)} mm`, "Rainfall"]} />
-                <Line type="monotone" dataKey="total" stroke="#2563EB" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-      <ModuleNews district={district} state={state} locale={locale} module="population" />
-    </div>
+        {!isLoading && hasAnyData && (
+          <>
+            {/* Data-currency notice — Census 2011 is the primary baseline */}
+            <div
+              style={{
+                background: "#FFF7ED",
+                border: "1px solid #FED7AA",
+                borderRadius: 8,
+                padding: "10px 14px",
+                marginBottom: 16,
+                fontSize: 13,
+                color: "#9A3412",
+                lineHeight: 1.5,
+              }}
+            >
+              <strong>Headline figures are from Census of India 2011.</strong>{" "}
+              India&apos;s next decennial Census is in progress — Phase I
+              houselisting April–September 2026, population enumeration reference
+              date 1 March 2027. Updated figures will appear here within 90 days
+              of official release. Recent survey indicators (NFHS, NITI MPI,
+              PLFS) are shown separately in their own sections with the survey
+              year clearly labelled.
+            </div>
+
+            {/* 5. Headline stats */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                gap: 10,
+                marginBottom: 24,
+              }}
+            >
+              <StatCard
+                label={`Population${profile?.year ? ` (${profile.year})` : ""}`}
+                value={formatInt(
+                  profile?.totalPopulation ??
+                    history[history.length - 1]?.population ??
+                    null,
+                )}
+                icon={Users}
+              />
+              <StatCard
+                label="Sex Ratio"
+                value={profile?.sexRatio ? `${profile.sexRatio}/1k` : "—"}
+                sub="♀/1000 ♂"
+              />
+              <StatCard
+                label="Child Sex Ratio"
+                value={
+                  profile?.childSexRatio ? `${profile.childSexRatio}/1k` : "—"
+                }
+                sub="0–6 age*"
+              />
+              <StatCard
+                label="Literacy"
+                value={
+                  profile?.literacyTotal
+                    ? `${profile.literacyTotal.toFixed(1)}%`
+                    : "—"
+                }
+                accent="#16A34A"
+              />
+              <StatCard
+                label="Urban share"
+                value={profile?.urbanPct ? `${profile.urbanPct.toFixed(1)}%` : "—"}
+              />
+              <StatCard
+                label="Density"
+                value={profile?.density ? `${formatInt(profile.density)}/km²` : "—"}
+                sub="persons / sq km"
+              />
+            </div>
+
+            {/* 6. Age pyramid (4-group fallback — schema doesn't store 5-year bands yet) */}
+            <SectionLabel>Age Structure</SectionLabel>
+            <div style={cardShell}>
+              <AgePyramidStacked
+                pop_0_6={profile?.pop_0_6 ?? null}
+                pop_7_14={profile?.pop_7_14 ?? null}
+                pop_15_59={profile?.pop_15_59 ?? null}
+                pop_60_plus={profile?.pop_60_plus ?? null}
+              />
+              {cite()}
+            </div>
+
+            {/* 7. Religion */}
+            <SectionLabel>Religion (Alphabetical)</SectionLabel>
+            <div style={cardShell}>
+              <ReligionDonut religion={profile?.religion ?? null} />
+              {profile?.religion && (
+                <details style={{ marginTop: 8, fontSize: 12 }}>
+                  <summary style={{ cursor: "pointer", color: "#6B6B6B" }}>
+                    Show exact percentages
+                  </summary>
+                  <table
+                    style={{
+                      marginTop: 8,
+                      borderCollapse: "collapse",
+                      width: "100%",
+                    }}
+                  >
+                    <tbody>
+                      {Object.keys(profile.religion)
+                        .sort()
+                        .map((k) => (
+                          <tr key={k}>
+                            <td
+                              style={{
+                                padding: "4px 8px",
+                                color: "#4B4B4B",
+                                width: "60%",
+                              }}
+                            >
+                              {k === "NotStated" ? "Not Stated" : k}
+                            </td>
+                            <td
+                              style={{
+                                padding: "4px 8px",
+                                fontFamily: "var(--font-mono)",
+                                color: "#1A1A1A",
+                              }}
+                            >
+                              {(profile.religion![k] as number).toFixed(2)}%
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </details>
+              )}
+              {cite()}
+            </div>
+
+            {/* 8. Caste categories */}
+            <SectionLabel>Caste Categories</SectionLabel>
+            <div style={cardShell}>
+              <CasteStackedBar
+                caste={(profile?.caste ?? null) as CasteMap | null}
+              />
+              {cite()}
+            </div>
+
+            {/* 9. Literacy & Education */}
+            <SectionLabel>Literacy &amp; Education</SectionLabel>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                gap: 16,
+                marginBottom: 12,
+              }}
+            >
+              <div
+                style={{
+                  background: "#FFF",
+                  border: "1px solid #E8E8E4",
+                  borderRadius: 12,
+                  padding: 16,
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#9B9B9B", marginBottom: 6 }}>
+                  Literacy by sex
+                </div>
+                <LiteracyDumbbell
+                  literacyTotal={profile?.literacyTotal ?? null}
+                  literacyMale={profile?.literacyMale ?? null}
+                  literacyFemale={profile?.literacyFemale ?? null}
+                />
+              </div>
+              <div
+                style={{
+                  background: "#FFF",
+                  border: "1px solid #E8E8E4",
+                  borderRadius: 12,
+                  padding: 16,
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#9B9B9B", marginBottom: 6 }}>
+                  Education attainment
+                </div>
+                <EducationBreakdownBar
+                  education={(profile?.education ?? null) as EducationData | null}
+                />
+              </div>
+            </div>
+            <div style={{ marginBottom: 20 }}>{cite()}</div>
+
+            {/* 10. Employment */}
+            <SectionLabel>Employment</SectionLabel>
+            <div style={cardShell}>
+              <EmploymentStackedBar
+                employment={(profile?.employment ?? null) as EmploymentData | null}
+              />
+              {cite()}
+            </div>
+
+            {/* 11. Economic class (NITI MPI) */}
+            <SectionLabel>Multidimensional Poverty (NITI MPI)</SectionLabel>
+            <div style={{ marginBottom: 20 }}>
+              <MPIIndicatorCard
+                economicClass={
+                  (profile?.economicClass ?? null) as EconomicClassData | null
+                }
+              />
+            </div>
+
+            {/* 12. Household amenities */}
+            <SectionLabel>Household Amenities</SectionLabel>
+            <div style={cardShell}>
+              <HouseholdAmenitiesWaffle
+                amenities={
+                  (profile?.householdAmenities ?? null) as
+                    | HouseholdAmenitiesData
+                    | null
+                }
+              />
+              {cite()}
+            </div>
+
+            {/* 13. Migration */}
+            <SectionLabel>Migration</SectionLabel>
+            <div style={cardShell}>
+              <MigrationBreakdown
+                migration={(profile?.migration ?? null) as MigrationData | null}
+              />
+              {cite()}
+            </div>
+
+            {/* 14. Language (mother tongue) */}
+            <SectionLabel>Mother Tongue — Top 10</SectionLabel>
+            <div style={cardShell}>
+              <LanguageBarChart
+                language={(profile?.language ?? null) as LanguageData | null}
+              />
+              {cite()}
+            </div>
+
+            {/* Bonus: Sex Ratio gauge (only if sex ratio data present) */}
+            {canRenderSexRatioGauge(profile) && (
+              <>
+                <SectionLabel>Sex Ratio</SectionLabel>
+                <div style={cardShell}>
+                  <SexRatioGauge
+                    sexRatio={profile?.sexRatio ?? null}
+                    childSexRatio={profile?.childSexRatio ?? null}
+                  />
+                  {cite()}
+                </div>
+              </>
+            )}
+          </>
+        )}
+
+        {/* Rainfall removed — it belongs on /weather, not /population. */}
+
+        {/* 16. Related news (filtered by targetModule === "population") */}
+        <ModuleNews
+          district={district}
+          state={state}
+          locale={locale}
+          module="population"
+        />
+      </div>
+    </ModuleErrorBoundary>
   );
 }

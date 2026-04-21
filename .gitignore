@@ -76,3 +76,4 @@ docker-compose.override.yml
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+scripts/data-pdfs/

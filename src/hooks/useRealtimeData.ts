@@ -697,6 +697,80 @@ export function usePopulation(district: string, state: string) {
   return useDistrictData<PopulationHistory[]>("population", district, state);
 }
 
+// ── Demographic Profile (rich multi-source) ──────────────
+
+export interface DemographicProfileClient {
+  id: string;
+  year: number;
+  dataset: string;
+  totalPopulation: number | null;
+  malePopulation: number | null;
+  femalePopulation: number | null;
+  sexRatio: number | null;
+  childSexRatio: number | null;
+  pop_0_6: number | null;
+  pop_7_14: number | null;
+  pop_15_59: number | null;
+  pop_60_plus: number | null;
+  medianAge: number | null;
+  literacyTotal: number | null;
+  literacyMale: number | null;
+  literacyFemale: number | null;
+  urbanPopulation: number | null;
+  ruralPopulation: number | null;
+  urbanPct: number | null;
+  density: number | null;
+  areaSqKm: number | null;
+  households: number | null;
+  avgHouseholdSize: number | null;
+  religion: Record<string, number> | null;
+  caste: Record<string, number> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  employment: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  economicClass: any;
+  education: Record<string, number> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  migration: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  disability: any;
+  language: { top10: Array<{ name: string; pct: number }> } | null;
+  householdAmenities: Record<string, number> | null;
+  maritalStatus: Record<string, number> | null;
+  sourceName: string;
+  sourceUrl: string | null;
+  sourceLicense: string | null;
+  retrievedAt: string;
+  publishedAt: string | null;
+  notes: string | null;
+  boundaryVintage: string | null;
+}
+
+export interface PopulationProfileResponse {
+  data: DemographicProfileClient | null;
+  allDatasets: Array<{ year: number; dataset: string }>;
+  meta: {
+    lastUpdated: string | null;
+    dataAgeDays: number | null;
+    boundaryVintage: string | null;
+  };
+}
+
+export function usePopulationProfile(district: string, state: string) {
+  return useQuery<PopulationProfileResponse, Error>({
+    queryKey: ["population-profile", district, state],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/data/population/profile?district=${encodeURIComponent(district)}&state=${encodeURIComponent(state)}`,
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+    enabled: Boolean(district && state),
+    staleTime: 10 * 60_000,
+  });
+}
+
 export function useTaluks(district: string, state: string) {
   return useDistrictData<Taluk[]>("taluks", district, state);
 }

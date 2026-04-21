@@ -29,6 +29,7 @@ import { getStateConfig } from "@/lib/constants/state-config";
 import DistrictHeroIllustration from "@/components/district/DistrictHeroIllustration";
 import InfraSnippet from "@/components/district/InfraSnippet";
 import LeadersSnippet from "@/components/district/LeadersSnippet";
+import PopulationSnippet from "@/components/district/PopulationSnippet";
 import TenderSnippet from "@/components/district/TenderSnippet";
 import LiveElectionBanner from "@/components/district/LiveElectionBanner";
 import type { DistrictBadge } from "@/lib/constants/districts";
@@ -321,6 +322,9 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
             <StatCard label="Schools" value={overview?.data?._count?.schools?.toString() ?? "—"} icon={BarChart3} />
           </div>
         </div>
+
+        {/* ── Population & Demographics snippet — auto-hides if no DemographicProfile ── */}
+        <PopulationSnippet district={districtSlug} state={stateSlug} base={base} />
 
         {/* ── District Leadership snippet — auto-hides if 0 leaders ── */}
         <LeadersSnippet district={districtSlug} state={stateSlug} base={base} />

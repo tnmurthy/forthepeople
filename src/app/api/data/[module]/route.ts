@@ -527,14 +527,20 @@ async function fetchModule(
     case "population": {
       // Exclude non-district metro-area estimates (e.g. "Mumbai Metropolitan Region")
       // so Overview (district) and Population page (district census) stay consistent.
-      const data = await prisma.populationHistory.findMany({
-        where: {
-          districtId: did,
-          NOT: { source: { contains: "Metropolitan Region", mode: "insensitive" } },
-        },
-        orderBy: { year: "asc" },
-      });
-      return { data, meta };
+      const [data, profile] = await Promise.all([
+        prisma.populationHistory.findMany({
+          where: {
+            districtId: did,
+            NOT: { source: { contains: "Metropolitan Region", mode: "insensitive" } },
+          },
+          orderBy: { year: "asc" },
+        }),
+        prisma.demographicProfile.findFirst({
+          where: { districtId: did },
+          orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
+        }),
+      ]);
+      return { data, profile, meta };
     }
 
     // ══════════════════════════════════════════════════

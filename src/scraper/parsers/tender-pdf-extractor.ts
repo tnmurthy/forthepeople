@@ -17,8 +17,6 @@ export async function extractTenderPdf(buffer: Buffer): Promise<PdfExtractResult
   try {
     // Lazy require so missing optional dep doesn't break the scraper at boot.
     type PdfParseFn = (data: Buffer) => Promise<{ text: string }>;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error optional dependency; may not be installed
     const mod = await import("pdf-parse").catch(() => null);
     if (!mod) {
       return { text: "", extractionFailed: true, reason: "pdf-parse not installed (add via npm i pdf-parse)" };

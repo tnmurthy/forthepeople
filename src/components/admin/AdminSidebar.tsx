@@ -31,6 +31,7 @@ import {
   History,
   Heart,
   Megaphone,
+  Users,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -41,6 +42,7 @@ type ItemId =
   | "alerts"
   | "ai-settings"
   | "review"
+  | "population-audit"
   | "revenue"
   | "expenditure"
   | "costs"
@@ -162,6 +164,15 @@ const GROUPS: Group[] = [
         routeSegment: "review",
         help: "Approve or reject AI-generated insights before they go live",
         badgeKey: "pendingReviews",
+      },
+      {
+        id: "population-audit",
+        label: "Population Audit",
+        icon: Users,
+        buildHref: (locale) => `/${locale}/admin/population`,
+        inPageTab: false,
+        routeSegment: "population",
+        help: "Per-district demographic profile completeness grid (Census, NFHS-5, MPI)",
       },
     ],
   },
@@ -549,6 +560,7 @@ function resolveActiveItem(
   // Full-route pages first
   if (pathname.startsWith(`${base}/ai-settings`)) return "ai-settings";
   if (pathname.startsWith(`${base}/review`)) return "review";
+  if (pathname.startsWith(`${base}/population`)) return "population-audit";
   if (pathname.startsWith(`${base}/supporters`)) return "revenue";
   if (pathname.startsWith(`${base}/security`)) return "security";
   if (pathname.startsWith(`${base}/feedback`)) return "feedback";
