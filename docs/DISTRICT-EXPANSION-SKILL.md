@@ -330,3 +330,118 @@ Mysuru taluks: datameet.org or Survey of India
 Download and store in: public/geo/karnataka-bengaluru-urban-taluks.json
                        public/geo/karnataka-mysuru-taluks.json
 ```
+
+---
+
+## POPULATION MODULE v2 — DATA SEEDING CHECKLIST
+
+When onboarding a new district (after the standard 7-step expansion: hierarchy
+→ districts.ts → overrides → fonts → data seed → docs → testing), seed its
+demographic profile as a separate step.
+
+### Per-district checklist
+
+1. **Census 2011 core profile** — create `prisma/seed-<district>-demographics.ts`
+   with one `DemographicProfile` row:
+     dataset: "Census 2011", year: 2011, level: "DISTRICT"
+     Fields: totalPopulation, male/femalePopulation, sexRatio, childSexRatio,
+     pop_0_6, literacyTotal/Male/Female, urbanPopulation, ruralPopulation,
+     urbanPct, density, areaSqKm, households.
+     JSONB: religion (8 alphabetical keys), caste (SC/ST/Other).
+     Optional for deep pilot: employment, education, migration, disability,
+     language, householdAmenities, maritalStatus.
+     Source: https://censusindia.gov.in/nada/index.php/catalog/42571
+
+2. **NITI MPI 2023** — if district existed in 2019-21 (i.e. NOT a post-2019
+   bifurcation), extract from `scripts/data-pdfs/niti-mpi-2023.pdf` and create
+   TWO rows:
+     (a) dataset: "NITI MPI 2023", year: 2021
+         economicClass: { mpiHeadcount, mpiIntensity, mpi, districtRankInState,
+                          totalDistrictsInState, source }
+     (b) dataset: "NITI MPI 2021 Baseline", year: 2016
+         economicClass: { mpiHeadcount, mpiIntensity, mpi, source }
+         (no rank — rank computed only for current period)
+
+   Use `scripts/extract-mpi-barchart-full.ts` as the extraction pattern.
+   Every row MUST pass the arithmetic check: MPI = H × A / 10000.
+
+3. **NFHS-5 placeholder** (current deferred state) — create one row:
+     dataset: "NFHS-5", year: 2020, level: "DISTRICT"
+     All quantitative fields: null
+     All JSONB blocks: null
+     sourceUrl: null (original rchiips.org URL deprecated)
+     notes: "NFHS-5 district factsheet. Data NOT YET LOADED — see Phase 2."
+
+   Rationale: explicit placeholder row shows "pending" in admin audit grid
+   (amber status) instead of "none" (red — treated as oversight).
+
+4. **Verify provenance** — every row MUST have: `sourceName`, `sourceUrl` (can
+   be null for placeholders), `sourceLicense`, `retrievedAt`, `boundaryVintage`.
+
+5. **Verify in admin panel** — /en/admin/population must show the district's
+   row with expected ✓/— cells. If a cell shows ✓ but the JSONB is actually
+   empty, investigate.
+
+### Slug spelling mismatches (learned the hard way — Karnataka MPI seed)
+
+Government sources use different English transliterations for the same district.
+**The slug in seed code MUST match the slug in your DB** (reflects canonical
+hierarchy), NOT the PDF's spelling. Canonical DB wins.
+
+Known Karnataka variants:
+
+| Source says | DB slug |
+|---|---|
+| NITI PDF "Bagalkote" | `bagalkot` (Census 2011 spelling) |
+| NITI PDF "Bangalore Urban" | `bengaluru-urban` |
+| NITI PDF "Bangalore Rural" | `bengaluru-rural` |
+| NITI PDF "Mysore" | `mysuru` |
+| NITI PDF "Tumkur" | `tumakuru` |
+| NITI PDF "Shimoga" | `shivamogga` |
+| NITI PDF "Gulbarga" | `kalaburagi` |
+| NITI PDF "Bellary" | `ballari` |
+| NITI PDF "Bijapur" | `vijayapura` |
+
+Other states will have their own variants. Before seeding any new state, run:
+
+```bash
+npx tsx -r dotenv/config -e "
+  import { PrismaClient } from './src/generated/prisma';
+  import { PrismaPg } from '@prisma/adapter-pg';
+  const p = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+  (async () => {
+    const s = await p.state.findUniqueOrThrow({ where: { slug: '<STATE_SLUG>' } });
+    const ds = await p.district.findMany({ where: { stateId: s.id }, select: { slug: true, name: true }, orderBy: { slug: 'asc' } });
+    ds.forEach(d => console.log(d.slug, '(', d.name, ')'));
+    await p.\$disconnect();
+  })();
+"
+```
+
+### Handling post-2019 bifurcated districts
+
+Example: Vijayanagara was bifurcated from Ballari in 2021. It exists in our DB
+hierarchy (created to support current-day queries) but has NO Census 2011 row
+and NO NITI MPI 2023 row (NFHS-5 fieldwork predates the bifurcation). The seed
+loop must gracefully skip such districts without crashing:
+
+```ts
+if (!district) {
+  console.log(`  ⚠️  District not found: ${slug} — SKIPPED (check hierarchy)`);
+  skipped++;
+  continue;
+}
+```
+
+### Anti-patterns
+
+```
+❌ Seeding estimated values when the PDF is accessible — always extract
+❌ Guessing district rank — compute it at seed time from sorted H values
+❌ Filling SECC 2011 caste sub-categories (raw data not released — see
+  State of Maharashtra v UoI 2021)
+❌ Using the word "scraped" in any source field (user-facing)
+❌ Labelling any religion as "majority" or "minority"
+❌ Using commercial/paywalled source (CMIE CPHS, Nielsen, Kantar, etc.)
+❌ Mixing slug spellings (NITI's "Bagalkote" vs Census "Bagalkot")
+```

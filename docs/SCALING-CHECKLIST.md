@@ -524,3 +524,123 @@ npx tsx prisma/seed-features.ts
 
 *Last updated: 2026-04-10*
 *8 pilot districts active across 6 states/UTs (Mandya, Mysuru, Bengaluru Urban, New Delhi, Mumbai, Kolkata, Chennai, Hyderabad). 10 Delhi districts + 4 Telangana districts ready to activate.*
+
+---
+
+## POPULATION MODULE v2 — SCALING NOTES
+
+Added 2026-04-21.
+
+### Database footprint (as of 2026-04-21, Karnataka pilot)
+
+```
+New tables:      2 (DemographicProfile, DemographicUpdate) + 1 enum (DemographicLevel)
+New indexes:     6 on DemographicProfile (incl unique composite) + 2 on DemographicUpdate
+Row counts:
+  DemographicProfile:  98 rows
+    - Census 2011 × STATE:           1
+    - Census 2011 × DISTRICT:       30
+    - NFHS-5 × DISTRICT:             3 (placeholder — data pending)
+    - NITI MPI 2023 × STATE:         1
+    - NITI MPI 2023 × DISTRICT:     30
+    - NITI MPI 2023 Rural × STATE:   1
+    - NITI MPI 2023 Urban × STATE:   1
+    - NITI MPI 2021 Baseline × STATE:    1
+    - NITI MPI 2021 Baseline × DISTRICT: 30
+  DemographicUpdate:   0 rows (populated via news pipeline category-tagging)
+```
+
+### Growth projection
+
+At 780-district + 37-state full-India scale, with 3-4 datasets per district
+(Census, NFHS, MPI current, MPI baseline) and ~6 state-level rows per state:
+
+```
+DemographicProfile:     ~3,000 rows (well within Postgres comfort for a single table)
+Per-row payload size:   3-8 KB (JSONB breakdowns vary by how many dimensions
+                                are populated)
+Total table payload:    ~15-25 MB at full India scale — trivial
+```
+
+### Query patterns and indexes
+
+```
+Pattern 1: single district's current profile
+  WHERE districtId = ? AND dataset = 'Census 2011'
+  → Index on (districtId, year, dataset) — composite unique
+  → p95 latency <5ms on shared pooler
+
+Pattern 2: district trend (MPI current + baseline)
+  WHERE districtId = ? AND dataset LIKE 'NITI MPI%'
+  → Same composite index
+  → p95 <10ms
+
+Pattern 3: state rollup (all districts, one state)
+  WHERE state.id = ? → districts.many → DemographicProfile.many
+  → Index on districtId
+  → p95 <50ms for 30-district state
+
+Pattern 4: admin audit completeness scan
+  Group by district, check JSONB key presence
+  → Full-ish scan acceptable at 100-row scale
+  → At 3,000+ rows (full India), consider materialised view
+```
+
+### Caching strategy
+
+```
+/api/data/population/profile   revalidate: 86400 (24h)
+/api/data/population/state     revalidate: 86400 (24h)
+/api/data/population           backward-compatible shape preserved
+/api/admin/population-audit    revalidate: 0 (admin must see fresh state)
+
+Next.js page cache tags:
+  district:{slug}:population
+  district:{slug}:overview
+  state:{slug}:population
+  state:{slug}:overview
+```
+
+### Load test expectations
+
+```
+v1 (9 active districts):  Current Vercel Pro + Neon free suffices easily.
+                            No k6 run needed pre-launch.
+
+Pre-launch at 25+ districts: Run k6 with 2,000 concurrent on
+                              /en/karnataka/bengaluru-urban/population.
+                              Expected: all queries <100ms at p95. No AI call
+                              on page render (insight card is cache-only).
+
+Post-launch at 25,000+ concurrent:
+  - Materialised view for /en/karnataka state rollup
+  - Pin DemographicProfile for active districts in Redis (24h TTL)
+  - Consider Neon Scale tier ($20/mo) for connection pooling beyond current limits
+```
+
+### What this module does NOT add
+
+- No new Vercel cron (confirmed in vercel.json — 7 pre-existing crons unchanged)
+- No new Railway scraper job
+- No new AI provider call
+- No pgvector / HNSW index (RAG integration is Phase 3, not v1)
+- No background worker
+- No webhooks
+
+### Runtime cost impact
+
+```
+Vercel:        0 change (schema change + static-ish pages)
+Neon:          +~25 MB storage at full India scale (within free tier)
+Upstash:       0 new Redis keys
+OpenRouter:    0 new calls
+Anthropic API: 0 new calls
+```
+
+### Known unresolved issues
+
+- `src/scraper/parsers/tender-pdf-extractor.ts` was dormant pre-Population-v2
+  (missing pdf-parse devDep). Adding pdf-parse@2.4.5 made TypeScript happy
+  but the extractor still uses v1 API patterns — still broken at runtime
+  but fails gracefully via its `{extractionFailed: true}` return. Flagged
+  for the tenders team. Not a blocker.

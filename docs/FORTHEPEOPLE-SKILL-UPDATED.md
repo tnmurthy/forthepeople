@@ -20,15 +20,8 @@ ALL STATES:       36 states/UTs browsable (locked ones show preview + sponsor CT
 ALL DISTRICTS:    152 districts in DB (locked ones show LockedDistrictPreview)
 STATE MAPS:       33 GeoJSON maps from DataMeet Census 2011 + Karnataka hand-tuned
 PROJECT ID:       FTP-JMB-2026-IN (watermark ID)
-LAST UPDATED:     April 14, 2026 (contributors final polish: combined
-                  Supporters + Sponsor CTA card in cool slate — distinct
-                  from AI Analysis, per-line independent auto-scroll
-                  tickers 120s/90s/60s with overflow detection + pause on
-                  hover, view-all modal opened by clickable count badges,
-                  support wall slowed to 180s, growth chart filtered to
-                  ≥2026-04-01, dynamic getTotalActiveDistrictCount(),
-                  contributors page hero + WHY IT MATTERS + bottom CTA,
-                  homepage ticker 60s/45s mobile CSS loop).
+LAST UPDATED:     April 2026 (Population Module v2 live — Karnataka pilot,
+                  98 DemographicProfile rows, NITI MPI 2023 integrated)
                   April 13: contributors system COMPLETE — dynamic Razorpay
                   plans, 5-tier merge, Indian hook lines, state page sponsors,
                   admin manual CRUD, growth chart, expiry system, amount-sorted,
@@ -844,3 +837,91 @@ scripts/cleanup-test-contributors.ts   — Removes [TEST] records before deploy
 43. **Never hardcode live-district counts in UI copy** — Use `getTotalActiveDistrictCount()` / `getActiveStateCount()` from `src/lib/constants/districts.ts`. Formulas like "N × 29 dashboards" for data-point totals should compute dynamically too (see `GlobalContributorsClient.tsx` WHY card). The numbers change as new districts go live, and hardcoding them creates silent drift between copy and reality.
 
 44. **Growth chart launch floor** — The contributors growth query filters `createdAt >= 2026-04-01` (project launch). Any older rows (from test migrations, seed scripts, or bulk imports) would corrupt the timeline. `ContributorGrowthChart.tsx` shows a stat card when fewer than 2 months of data exist and auto-promotes to the Recharts `AreaChart` once the second month arrives — no chart with one data point.
+
+---
+
+## POPULATION MODULE v2 — DATA ARCHITECTURE
+
+### Data sources (tiered by authority + update cadence)
+
+```
+Census of India (ORGI)         Decennial. 2011 canonical; 2027 fieldwork
+                                 Phase I Apr-Sep 2026, Phase II reference
+                                 date 1 Mar 2027.
+NFHS-5 (IIPS Mumbai)           Quinquennial. 2019-21 data PENDING in v1 —
+                                 rchiips.org reorganized April 2026, IIPS's
+                                 new portal (nfhsiips.in) requires guest
+                                 login. Placeholder rows in DB for 3 active
+                                 districts. Phase 2 via Harvard Dataverse
+                                 (doi:10.7910/DVN/42WNZF, CC-BY 4.0).
+NITI MPI 2023 Progress Review  Periodic. Latest issued July 2023. 12
+                                 indicators, 707 districts. District H+A+MPI
+                                 for both 2019-21 and 2015-16 — trend
+                                 analysis. Full PDF (22 MB, 410 pp) in
+                                 scripts/data-pdfs/ (gitignored).
+SRS (ORGI)                     Annual. State-level only (not district).
+PLFS (MoSPI)                   Quarterly + annual. State-level only.
+Karnataka DES + BBMP           Ad-hoc. Karnataka Econ Survey annual.
+```
+
+### Update cadence enforced in code
+
+```
+Census data           Manual reseed on new Census release. No scheduled check.
+NFHS data             Manual reseed on NFHS-6 release (~2027).
+NITI MPI              Manual reseed on new Progress Review. Next expected 2026-27.
+SRS / CRS             Optional supplement — state-level only.
+PLFS                  Optional supplement — state-level only.
+Demographic news      Piggybacks existing 10-min news pipeline. Category
+                         filter: "demographics". No new cron.
+AI insight card       Piggybacks existing 2-hour insight cron. No new AI calls.
+```
+
+### Runtime cost impact
+
+```
+Vercel:         0 new cron jobs
+Neon storage:   +98 rows today (~200 KB with JSONB), +2,500 rows at 780-district scale
+Upstash:        0 new Redis keys beyond existing insight cache
+OpenRouter:     0 new AI calls
+Anthropic API:  0 new AI calls
+```
+
+### Schema decisions
+
+```
+PopulationHistory     KEPT intact. Backward-compatible. Totals by year.
+DemographicProfile    NEW. Canonical per-(district, year, dataset) profile.
+                         JSONB for all multi-dimensional breakdowns — avoids
+                         column explosion and schema churn when new breakdown
+                         keys appear (e.g., a new religion category).
+DemographicUpdate     NEW. Per-district update log. Isolated per district.
+```
+
+### Frontend
+
+```
+Chart library         Recharts 3.8 (already installed).
+Map library           react-simple-maps 3.0 (already installed).
+Categorical palette   Okabe-Ito (8-color colorblind-safe) for religion, sex.
+Sequential palette    Viridis for education, ranking.
+Caste palette         Neutral grays only. No saturated colour on any caste
+                         category (legal + respectful framing).
+Ordering              Alphabetical for religion, caste, language. Never
+                         "majority/minority/dominant" in UI copy.
+```
+
+### Known gaps / Phase 2 backlog
+
+- 5-year age bands for Bengaluru Urban (Census 2011 Table C-13 not yet extracted)
+- NFHS-5 district indicators (3 active districts have placeholder rows only)
+- State-specific statistical handbooks beyond Karnataka DES
+- Per-ward BBMP demographic data (boundary vintage work pending; BBMP restructured
+  from 198 wards in 2010 → 243 (draft 2022) → 225 (notified 2023) → GBA era 2024-25)
+
+### Admin audit
+
+/en/admin/population — 31 × 14 completeness grid. Columns: Active, Census 2011,
+NFHS-5 (data/placeholder/none), NITI MPI, Religion, Caste, Employment, Education,
+Migration, Disability, Language, HH Amenities, Marital, Economic Class.
+Click a row to inspect raw JSON. CSV export.

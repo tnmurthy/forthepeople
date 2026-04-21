@@ -909,7 +909,12 @@ water             — Live KRS dam levels, inflow/outflow, canal releases
 industries        — Sugar factories (Mandya-specific), crushing data
 finance           — Budget breakdown (Crores), lapsed funds, revenue collection
 crops             — Real-time mandi prices from AGMARKNET (DATA_GOV_API_KEY)
-population        — Census 2011 data, literacy, sex ratio, urban/rural trends
+population        — Rich demographic dashboard: Census 2011 + NFHS-5 (placeholder) +
+                    NITI MPI 2023 + NITI MPI 2021 Baseline. Religion, caste, age,
+                    literacy, employment, education, migration, disability, language,
+                    household amenities, marital status, economic class (MPI + trend).
+                    State-level Karnataka aggregate at /en/karnataka with choropleth.
+                    Admin audit at /en/admin/population.
 weather           — Live weather (OpenWeatherMap), historical rainfall
 police            — Station directory, traffic revenue, crime stats by year
 ```
@@ -964,6 +969,14 @@ Use:    /api/data/police        (correct)
 Use:    /api/data/news          (correct)
 Use:    /api/data/population    (correct)
 Use:    /api/data/exams         (correct — new, Phase 5)
+Use:    /api/data/population/profile   (new — DemographicProfile for one district,
+                                        defaults to dataset="Census 2011" with
+                                        economicClass overlay from latest NITI MPI)
+Use:    /api/data/population/state     (new — state rollup + all districts array
+                                        for choropleth, includes inactive)
+Use:    /api/data/population           (existing — now returns {data, profile, meta},
+                                        backward-compatible, data field unchanged)
+Admin:  /api/admin/population-audit    (new — summary stats + 31×14 completeness grid)
 ```
 
 ### Navigation
@@ -1044,6 +1057,21 @@ CropPrice           — commodity, variety, market, minPrice, maxPrice, modalPri
 WeatherReading      — temp, feelsLike, humidity, windSpeed, conditions, rainfall, pressure
 RainfallHistory     — year, month, rainfall, normal, departure
 PopulationHistory   — year, total, rural, urban, literacy, sexRatio, density
+DemographicProfile  — id, districtId?/stateId?, level (STATE/DISTRICT/SUBDISTRICT/
+                      WARD), year, dataset ("Census 2011" | "NFHS-5" | "NITI MPI
+                      2023" | "NITI MPI 2021 Baseline" | "NITI MPI 2023 Rural" |
+                      "NITI MPI 2023 Urban"). Totals: totalPopulation, male/female,
+                      sexRatio, childSexRatio, age bands, literacy M/F/total, urban/
+                      rural split, density, households. JSONB blocks (nullable):
+                      religion (alphabetical 8 keys), caste (SC/ST/Other),
+                      employment, economicClass (MPI H/A/MPI/rank), education,
+                      migration, disability, language (top-10 mother tongue),
+                      householdAmenities, maritalStatus. Source chain: sourceName,
+                      sourceUrl, sourceLicense, retrievedAt, publishedAt,
+                      boundaryVintage. @@unique([districtId, year, dataset]).
+DemographicUpdate   — per-district demographic news/update log. Scoped via index
+                      on (districtId, publishedAt) and (stateId, publishedAt).
+                      Updates for one district never appear on another's page.
 PoliceStation       — name, type, sho, phone, address, lat, lng, jurisdiction
 TrafficCollection   — month, revenue, vehicles, fines
 CrimeStat           — year, category, cases, solved
@@ -2140,6 +2168,27 @@ Cost scales: linearly with active districts × modules × cron frequency
 ---
 
 ## 24. PROGRESS TRACKER
+
+- **2026-04-21 · Population Module v2** — Major upgrade. Additive schema
+  (`DemographicProfile`, `DemographicUpdate` models + `DemographicLevel` enum);
+  zero breaking changes to existing `PopulationHistory`. 14 chart primitives
+  (Recharts + Okabe-Ito palette) in `src/components/demographics/charts/`.
+  7-section `DemographicDisclaimer` wrapper with stable legal IDs §3A-§3G.
+  `DataSourceCard` per chart (source + licence + data-age chip). 3 API routes
+  (`/api/data/population/profile`, `/api/data/population/state`, backward-
+  compatible update to `/api/data/population`). Admin Population Audit tab at
+  `/en/admin/population` with 31×14 completeness grid + CSV export. 98
+  `DemographicProfile` rows seeded — Karnataka state (5 rows: Census 2011 + 4
+  MPI variants), 30 Karnataka districts (Census 2011 baseline + NITI MPI 2023
+  for 2019-21 and 2015-16), 3 active districts with NFHS-5 placeholder rows.
+  Bengaluru Urban MPI = 0.007 (H=1.47%, A=45.68%, rank 3 of 30 in Karnataka —
+  Ramanagara and Bengaluru Rural rank higher/better). Vijayanagara excluded
+  from MPI (bifurcated from Ballari 2021, post-NFHS-5 fieldwork). NFHS-5
+  district factsheets deferred to Phase 2 (original rchiips.org URLs dead
+  after IIPS site reorganization; to be loaded via Harvard Dataverse CC-BY-4.0
+  CSV mirror or manual nfhsiips.in guest-login). Zero new crons, zero new AI
+  cost at runtime. 2 local commits (`6bc0225`, `28e0307`) not yet pushed —
+  Group E docs commit pending.
 
 ```
 Section 1:  Foundation           COMPLETE
