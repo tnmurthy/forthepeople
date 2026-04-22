@@ -76,11 +76,18 @@ export async function GET(req: NextRequest) {
     orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
   });
 
-  // Fallback when defaulted dataset wasn't found (e.g. districts with only
-  // NFHS-5 placeholder and MPI rows — no Census 2011).
+  // Fallback: prefer rows with real data, avoid empty NFHS-5 placeholders.
+  // Dataset constraint is deliberately dropped here — the primary findFirst
+  // already tried `dataset = "Census 2011"` and returned null.
   if (!primary && explicitYear == null && !explicitDataset) {
     primary = await prisma.demographicProfile.findFirst({
-      where: { districtId: district.id },
+      where: {
+        districtId: district.id,
+        OR: [
+          { totalPopulation: { not: null } },
+          { dataset: "Census 2011" },
+        ],
+      },
       orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
     });
   }

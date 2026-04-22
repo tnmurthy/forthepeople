@@ -120,6 +120,7 @@ const KARNATAKA: StateConfig = {
   gramPanchayatApplicable: true,
   jjmApplicable: true,
   stateHealthScheme: "Arogya Karnataka",
+  municipalBody: "BBMP",
   lastElectionYear: 2023,
   lastElectionType: "Karnataka assembly",
   dataSources: [
@@ -459,8 +460,10 @@ export function getModuleSources(moduleName: string, stateSlug: string): ModuleS
         "NITI Aayog Multidimensional Poverty Index 2023",
         "Sample Registration System (SRS) — latest",
         "PLFS (MoSPI) — latest quarter (state-level)",
-        "Karnataka Directorate of Economics & Statistics (where applicable)",
-        "BBMP / Municipal sources (where applicable)",
+        `${config?.name ?? "State"} Directorate of Economics & Statistics (where applicable)`,
+        config?.municipalBody
+          ? `${config.municipalBody} / Municipal sources (where applicable)`
+          : "Municipal sources (where applicable)",
       ],
       frequency: "Foundational data is decadal (Census); supplements refresh monthly (NFHS, SRS) to quarterly (PLFS).",
       isLive: false,

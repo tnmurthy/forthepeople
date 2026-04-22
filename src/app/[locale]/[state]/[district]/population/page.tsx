@@ -94,7 +94,10 @@ export default function PopulationPage({
       source={override?.source ?? profile?.sourceName ?? "Census of India 2011"}
       sourceUrl={override?.sourceUrl ?? profile?.sourceUrl ?? undefined}
       license={override?.license ?? profile?.sourceLicense ?? undefined}
-      referenceYear={override?.referenceYear ?? profile?.year ?? 2011}
+      referenceYear={
+        override?.referenceYear ??
+        (profile?.totalPopulation ? profile.year : 2011)
+      }
       retrievedAt={
         profile?.retrievedAt ? new Date(profile.retrievedAt) : new Date()
       }
@@ -173,15 +176,42 @@ export default function PopulationPage({
                 marginBottom: 24,
               }}
             >
-              <StatCard
-                label={`Population${profile?.year ? ` (${profile.year})` : ""}`}
-                value={formatInt(
-                  profile?.totalPopulation ??
-                    history[history.length - 1]?.population ??
-                    null,
-                )}
-                icon={Users}
-              />
+              {(() => {
+                if (profile?.totalPopulation) {
+                  return (
+                    <StatCard
+                      label={`Population (${profile.year})`}
+                      value={formatInt(profile.totalPopulation)}
+                      icon={Users}
+                    />
+                  );
+                }
+                const census2011 = history.find(
+                  (h) => h.year === 2011 && !h.source?.startsWith("Estimate"),
+                );
+                if (census2011) {
+                  return (
+                    <StatCard
+                      label={`Population (2011)`}
+                      value={formatInt(census2011.population)}
+                      icon={Users}
+                    />
+                  );
+                }
+                const nonEstimate = [...history]
+                  .reverse()
+                  .find((h) => !h.source?.startsWith("Estimate"));
+                if (nonEstimate) {
+                  return (
+                    <StatCard
+                      label={`Population (${nonEstimate.year})`}
+                      value={formatInt(nonEstimate.population)}
+                      icon={Users}
+                    />
+                  );
+                }
+                return <StatCard label="Population" value="—" icon={Users} />;
+              })()}
               <StatCard
                 label="Sex Ratio"
                 value={profile?.sexRatio ? `${profile.sexRatio}/1k` : "—"}
