@@ -3,8 +3,82 @@
 # SINGLE SOURCE OF TRUTH — Combines original + all addendums
 # Claude Code: Read this file at the start of EVERY session.
 # Generic for ANY Indian district. Pilots: Mandya, Mysuru, Bengaluru Urban (Karnataka).
-# Last updated: April 19, 2026
+# Last updated: April 23, 2026
 # ═══════════════════════════════════════════════════════════
+#
+# 2026-04-23 — PUNE DISTRICT #10 LAUNCH (Maharashtra):              COMPLETE (local, pre-push)
+#   Active district count: 9 → 10. Maharashtra now has 2 active (Mumbai + Pune).
+#   Launched via 6-prompt sequential write-not-run pattern — new gold-standard
+#   expansion workflow (supersedes single-prompt expansion for quality + audit).
+#
+#   RECORDS SEEDED (idempotent findFirst-then-create, confirmed in Neon prod):
+#   • 41 Leaders = 17 governance (tier 1/3/4/5/6) + 24 elected reps (tier 1/2)
+#       Landge (PCMC Mayor) cross-file deduped correctly between Prompts 2 & 4
+#       Baramati MLA seeded as VACANT (active=false, by-election April 23 pending ECI)
+#   • 5 BudgetAllocation rich records — PMC 25-26, PMC 26-27, PCMC 25-26,
+#       PCMC 26-27 core, ZP 25-26 = ₹42,236 cr across all years, ₹19,942.73 cr FY 26-27
+#   • 5 BudgetEntry sector aggregates (parallel model for /finance UI compat,
+#       derived from BudgetAllocation, sums match to the rupee)
+#   • 13 InfraProject — Metro Purple/Aqua/Pink, Phase 2, Outer+Inner Ring Roads,
+#       Mula-Mutha rejuvenation, Purandar airport, Lohegaon T2, 33 Missing Link
+#       Roads, Pavana-Indrayani, PCMC TTPs, Pavana pipeline. hasPublicOpposition=4.
+#   • 8 School = 3 ZP/PMC aggregates + 5 notables (SPPU, Fergusson, COEP, FTII, NDA)
+#   • 6 Scheme — PMAY-U, PMAY-G, JJM, MGNREGA, PM-JAY, PM POSHAN
+#   • 14 Taluk (Prompt 1) — Pune City, Haveli, Khed, Junnar, Ambegaon, Maval, Mulshi,
+#       Shirur, Purandar, Velhe, Bhor, Baramati, Indapur, Daund (with Marathi names)
+#   • 0 Hospital — schema model missing across the fleet; blocked, parked for schema expansion
+#   • Maharashtra hierarchy expanded 5 → 35 districts (30 new inactive + aurangabad
+#       slug renamed to chhatrapati-sambhajinagar via one-off migration script)
+#
+#   UI + SCRAPER WIRING:
+#   • /en/maharashtra/pune routes 34/34 HTTP 200; DataSourceBanner + ModuleDisclaimer
+#       on all 12 core module routes.
+#   • Pune added to OWM_CITY_OVERRIDE (weather.ts) and AGMARKNET_DISTRICT_OVERRIDE
+#       (crops.ts). Scrapers fetch live data.
+#   • Noto_Sans_Devanagari added via next/font in src/app/layout.tsx to cover
+#       Marathi + Hindi regional text. `--font-devanagari` CSS var exposed.
+#   • districts.ts has Pune minimal active stub (no fabricated leaders/modules —
+#       all content DB-sourced).
+#   • public/geo/pune-taluks.json shipped as stub FeatureCollection; 14 polygons
+#       pending authoritative fetch from datameet/geohacker/OSM. TalukMap
+#       DISTRICT_PROJECTION now includes Pune {center [73.86, 18.52], scale 6000}.
+#
+#   ARCHITECTURE PATTERNS ESTABLISHED:
+#   • Write-not-run 6-prompt sequential pattern (Prompts 1-5 write files only,
+#       Prompt 6 executes seeds + commits + pushes). Each prompt reports back
+#       before next. Supersedes older single-prompt district expansion.
+#   • Aggregate-first for high-N entities (3 school aggregates + 5 notables
+#       instead of 3,546 individual ZP schools). Scales to 780 districts.
+#   • Source-with-pipe-delimiter "Publication | URL" format for Leader model
+#       (lacks sourceUrl column).
+#   • JSON-packed legal flags on InfraProject — sourceUrls field carries
+#       {primary, secondary, disclaimer, subJudice, hasPublicOpposition,
+#       environmentalClearance} structured.
+#   • Live-event seat handling — VACANT placeholder with active=false when
+#       constituency is in transition (Ajit Pawar died Jan 28, 2026; Baramati
+#       by-election April 23, 2026; row will be updated to certified winner
+#       post-ECI declaration).
+#   • Parallel dual-model seeding — BudgetAllocation (rich) + BudgetEntry
+#       (UI-compat sector aggregates) both seeded; reconciliation deferred.
+#   • Landge cross-file dedup — same record in Prompts 2 and 4 seed files,
+#       findFirst({districtId, name, role}) idempotency guard handles cleanly.
+#
+#   KNOWN BUGS / DEFERRALS:
+#   • [HIGH] Hospital model missing — affects all 10 districts
+#   • [HIGH] Pre-existing fleet-wide GeoJSON attribution debt (~40 public/geo files)
+#   • [MED] BudgetAllocation vs BudgetEntry parallel models — reconciliation deferred
+#   • [MED] Mumbai DB tier 1/2 diverges from its own seed file
+#   • [MED] Baramati VACANT row exists but API's active=true filter hides from UI
+#   • [LOW] 14 Pune taluk polygons pending authoritative fetch
+#   • [LOW] Hyderabad still missing from TalukMap DISTRICT_PROJECTION
+#   • [LOW] Party-name convention 3-way split (SHS-UBT vs Shiv Sena (UBT) vs RPI (A))
+#   • [LOW] Role-string full-form vs Mumbai's short-form divergence
+#   • [LOW] Ravi Landge party (BJP) needs primary-source re-verification
+#   • [LOW] Cross-file Landge record duplication (Prompts 2 & 4) — idempotent
+#   • [LOW] Scheme level enum mixed-case in DB
+#   • [LIVE-EVENT] Baramati by-election ECI certification pending (post-launch patch)
+#
+#   FILES CREATED / MODIFIED: see Phase-G commit plan in SESSION-LOG.md.
 #
 # 2026-04-19 — Module 30: GOVERNMENT TENDERS (Karnataka pilot):    COMPLETE (local, not pushed)
 #   • First transparency-first module with legal-grade factual copy: tenders

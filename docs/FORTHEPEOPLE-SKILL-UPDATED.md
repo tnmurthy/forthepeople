@@ -12,21 +12,25 @@ STATUS:           Sections 1-10 COMPLETE + Contributor system + All states unloc
 LIVE URL:         https://forthepeople.in
 GITHUB:           https://github.com/jayanthmb14/forthepeople (PUBLIC — clean history, MIT with Attribution)
 VERCEL:           zurvoapp Pro (scope: zurvoapps-projects)
-ACTIVE DISTRICTS: 9 across 7 states (Karnataka: Mandya, Mysuru, Bengaluru Urban;
-                  Delhi: New Delhi; Maharashtra: Mumbai;
+ACTIVE DISTRICTS: 10 across 7 states (Karnataka: Mandya, Mysuru, Bengaluru Urban;
+                  Delhi: New Delhi; Maharashtra: Mumbai + Pune;
                   West Bengal: Kolkata; Tamil Nadu: Chennai;
                   Telangana: Hyderabad; Uttar Pradesh: Lucknow)
 ALL STATES:       36 states/UTs browsable (locked ones show preview + sponsor CTA)
-ALL DISTRICTS:    152 districts in DB (locked ones show LockedDistrictPreview)
-STATE MAPS:       33 GeoJSON maps from DataMeet Census 2011 + Karnataka hand-tuned
+ALL DISTRICTS:    ~180 districts in DB — Maharashtra expanded 5→35 during Pune launch
+STATE MAPS:       33 GeoJSON maps from DataMeet Census 2011 + Karnataka hand-tuned.
+                  public/geo/pune-taluks.json is a stub — 14 polygons pending.
 PROJECT ID:       FTP-JMB-2026-IN (watermark ID)
-LAST UPDATED:     April 2026 (Population Module v2 live — Karnataka pilot,
-                  98 DemographicProfile rows, NITI MPI 2023 integrated)
-                  April 13: contributors system COMPLETE — dynamic Razorpay
-                  plans, 5-tier merge, Indian hook lines, state page sponsors,
-                  admin manual CRUD, growth chart, expiry system, amount-sorted,
-                  mobile optimized, paginated + performance. Earlier same day:
-                  Content Editor, Update Log, AI Admin Bot, Tax Overview + fixes.
+LAST UPDATED:     April 23, 2026 — Pune district #10 launch:
+                    41 Leaders, 5 BudgetAllocation + 5 BudgetEntry, 13 InfraProject,
+                    8 Schools, 6 Schemes, 14 Taluks (Hospital module blocked —
+                    schema gap). Launched via new 6-prompt sequential write-not-run
+                    pattern — supersedes single-prompt expansion.
+                  April 2026 (earlier) — Population Module v2 live: 190
+                    DemographicProfile rows, NITI MPI 2023 integrated.
+                  April 13 — contributors system COMPLETE: dynamic Razorpay plans,
+                    5-tier merge, Indian hook lines, state page sponsors, admin
+                    manual CRUD, growth chart, expiry system.
 ```
 
 ---
@@ -544,10 +548,10 @@ Desktop: 2-col grid (60% map + 40% district cards), Mobile: stacked.
 ```
 1. Header (Logo + nav + district selector)
 2. MarketTicker (40px bar: Gold, Silver(/g), Petrol, Diesel, USD/INR, SENSEX, NIFTY, Crude — 5min market hours, 30min off-hours)
-3. HomepageStats (animated counters: 9 districts, 29 modules, data points)
+3. HomepageStats (animated counters: 10 districts — DB-sourced via getTotalActiveDistrictCount(), 29 modules, data points)
 4. DrillDownMap + ActiveDistrictsCard (2-col on desktop, stacked on mobile)
    - Map: India states, click to drill into state
-   - District cards: all 9 active districts with health grade, weather, dam, crop snippets
+   - District cards: all 10 active districts with health grade, weather, dam, crop snippets (count DB-sourced)
 5. LiveDataPreview (horizontally scrollable preview cards, links to active districts)
 6. HowItWorks (3-column explainer)
 7. DistrictRequestSection (vote to add new districts)

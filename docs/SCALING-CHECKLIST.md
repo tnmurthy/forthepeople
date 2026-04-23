@@ -1,9 +1,26 @@
 # ForThePeople.in — Scaling Checklist
 # How to Add New Districts and States
 #
-# Generated: 2026-03-29
-# Status: Pilot (Karnataka: Mandya ✅ | Mysuru ✅ | Bengaluru Urban ✅ | Delhi: New Delhi ✅ | Maharashtra: Mumbai ✅ | West Bengal: Kolkata ✅ | Tamil Nadu: Chennai ✅ | Telangana: Hyderabad ✅)
+# Generated: 2026-03-29 (last updated 2026-04-23 for Pune #10)
+# Status: 10 live (Karnataka: Mandya ✅ | Mysuru ✅ | Bengaluru Urban ✅ | Delhi: New Delhi ✅ | Maharashtra: Mumbai ✅ + Pune ✅ | West Bengal: Kolkata ✅ | Tamil Nadu: Chennai ✅ | Telangana: Hyderabad ✅ | Uttar Pradesh: Lucknow ✅)
 # ─────────────────────────────────────────────────────────────────────
+
+## 2026-04-23 — Pune launch traffic notes
+
+- Pune population 94.3 lakh (3rd-largest in Maharashtra, after Mumbai Suburban
+  and Mumbai City). Likely traffic-heavy district once Instagram launch
+  campaign runs.
+- **ACTION:** run k6 load test before the Instagram launch push (not before
+  Pune go-live — initial go-live absorbs organic Pune discovery; Instagram
+  spike is the forcing function for load testing).
+- SSR payload add-on from Pune: ~2 MB across 13 data-bound routes (41 Leader
+  + 13 InfraProject + 8 School + 6 Scheme + 5 Budget rows + 14 Taluk). Well
+  within Vercel response-budget.
+- Scraper increment: weather + crops now run for Pune. No new jobs. Approximate
+  added cron overhead: ~10–15 seconds per cycle.
+- Observe first 24h post-push: Sentry for new Pune-route errors, Plausible
+  for organic-vs-Instagram traffic split. Threshold for Neon Scale tier
+  upgrade: sustained >50 RPS for 2+ hours.
 
 ---
 

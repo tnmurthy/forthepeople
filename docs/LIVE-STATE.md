@@ -4,6 +4,39 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-23 — Pune #10 LAUNCH (local complete, PRE-PUSH)
+
+**Status:** All 6 prompts complete locally (Phases A-F of Prompt 6 done). Awaiting commits (G), pre-push verification (H), and explicit go-ahead for push (I), then 24-48h monitoring (J).
+
+### Record counts in Neon production (confirmed Phase C idempotency)
+- Leader: **41** (17 governance + 24 elected reps; Baramati seat seeded VACANT pending ECI)
+- BudgetAllocation: **5** (rich per-body data — PMC 25-26 + PMC 26-27 + PCMC 25-26 + PCMC 26-27 core + ZP 25-26)
+- BudgetEntry: **5** (sector aggregates for `/finance` UI compat — derived from BudgetAllocation; sums match to the rupee)
+- InfraProject: **13**
+- School: **8** (3 aggregates + 5 notables)
+- Scheme: **6**
+- Taluk: **14** (Prompt 1)
+- Hospital: **0** (schema model missing across the fleet)
+
+### Commits ahead of origin/main
+1 so far (`09a4109` Prompt 1 Foundation). Phase G will add ~8 more → **~9 total in single batched push**.
+
+### Phase status
+A pre-flight ✓ | B GeoJSON ✓ | C seeds executed ✓ | D admin+budget UI ✓ | E smoke test ✓ | F docs ✓ | G commits ⏳ | H pre-push ⏳ | I push ⏳ | J monitor ⏳
+
+### Known gaps at launch (all documented in BUG-TRACKER)
+- **Hospital module:** generic `/health` template only; Hospital schema model missing fleet-wide
+- **Baramati MLA:** VACANT row seeded but API's `active=true` filter silently hides it from UI — ship-as-is, patch post-ECI certification
+- **14 Pune taluk polygons** pending authoritative fetch (DataMeet / geohacker / OSM)
+- **BudgetAllocation / BudgetEntry** parallel models — reconciliation deferred
+- **Mumbai DB ≠ Mumbai seed file** (surfaced during Pune launch) — dedicated reconciliation prompt needed
+- **Cross-district convention drift** (party names, role strings, scheme level casing) — low-priority backlog
+
+### Live event
+Baramati Assembly by-election April 23, 2026. ECI certification pending (~24-72h window). Sunetra Pawar principal candidate (NCP-SP did not field; Congress withdrew Aakash More). Post-launch patch will update VACANT row to certified winner.
+
+---
+
 ## Tooling added 2026-04-20
 
 - **CodeRabbit**: Installed on jayanthmb14/forthepeople repo only (not all repos). Pro tier auto-enabled (free for public repos regardless of license). Permissions: read + write on single repo for PR review comments. Action: next PR opened on main will trigger automated review comments within ~2 min of push.

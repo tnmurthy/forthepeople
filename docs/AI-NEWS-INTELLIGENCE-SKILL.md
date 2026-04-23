@@ -10,9 +10,16 @@ description: "AI News Intelligence pipeline for ForThePeople.in. Use this skill 
 4 AI engines integrated into the platform. This skill covers all of them.
 
 ```
-Last updated: 2026-03-29
+Last updated: 2026-04-23 (Pune #10 launch added to news targets)
 Status:       All 4 engines COMPLETE and running in production
 ```
+
+**2026-04-23 addition:** Pune added to news-pipeline targets via its activation
+in the `District` table. `findTargetDistricts()` now surfaces Pune-specific
+news. Maharashtra state-level news routing now covers 2 districts (Mumbai,
+Pune) instead of 1. No new scraper jobs introduced. No cron schedule changes.
+AI cost impact: one additional district's news volume, absorbed within the
+existing $0.50/day news-pipeline budget guard.
 
 ---
 

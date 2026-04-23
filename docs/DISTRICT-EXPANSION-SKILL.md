@@ -445,3 +445,56 @@ if (!district) {
 ❌ Using commercial/paywalled source (CMIE CPHS, Nielsen, Kantar, etc.)
 ❌ Mixing slug spellings (NITI's "Bagalkote" vs Census "Bagalkot")
 ```
+
+---
+
+## Case study: Pune #10 (Maharashtra) — 6-prompt sequential write-not-run pattern (2026-04-23)
+
+Pune's launch introduced a new district-expansion workflow that supersedes the older single-prompt pattern for all future district additions.
+
+### The 6-prompt pattern
+
+| Prompt | Scope | Execution |
+|---|---|---|
+| 1 — Foundation | Hierarchy, taluks, scraper overrides, font loading, districts.ts active stub | Write + commit locally |
+| 2 — Seed A: Governance | 17 governance leaders (admin / police / municipal / judiciary / political) | **Write only** |
+| 3 — Seed B: Money + Infra | BudgetAllocation + InfraProject with legal flags + sources | **Write only** |
+| 4 — Seed C: Elections + addendum | MLAs + MPs + live-event VACANT handling | **Write only** |
+| 5 — Seed D: Services | Schools (aggregate-first) + Schemes | **Write only** |
+| 6 — Finalization (Phases A–J) | Execute seeds, smoke test, docs, commits, push | **Execute** |
+
+Why it works: review every seed file offline before any DB write. Calibration issues (schema mismatches, role-string conventions, party-name formats, count errors, live-event handling) surface in reports before they corrupt the DB. Execution itself takes ~3 minutes for a 74-record district; review spreads across the session.
+
+### Pune-specific patterns that should propagate
+
+**Aggregate-first for high-N entities.** Pune has 3,546+ ZP primary schools — seeding all is out of scope. Seed 3 admin-body aggregates (`Pune ZP — Primary Education`, `Pune ZP — Secondary`, `PMC Education`) with aggregate student/teacher counts, plus ~5 notable institutions (SPPU, Fergusson, COEP, FTII, NDA). Scales cleanly to 780 districts without 2M+ school rows. Same approach applies to hospitals once that model ships.
+
+**Live-event seat handling.** Ajit Pawar died Jan 28 2026; Baramati Assembly seat became vacant; by-election April 23 2026. Prompt 4 seeded the seat as a VACANT placeholder row with `active: false`, `party: null`, full explanatory `roleDescription`. **Never seed a speculative winner pre-ECI.** Post-certification, patch the row to the certified winner.
+
+**Source with pipe-delimiter + JSON legal flags.** Leader model lacks a `sourceUrl` column — Pune standardizes `"Publication | URL"` in the single `source` string. InfraProject has a `sourceUrls` JSON field — use it for structured legal metadata (`{primary, secondary, disclaimer, subJudice, hasPublicOpposition, environmentalClearance}`).
+
+**Parallel dual-model seeding when district schema use diverges.** Mumbai uses `BudgetEntry` (sector-based, 10 rows). Pune data fit `BudgetAllocation` better (per-body rich records, 5 rows). Rather than rewriting the /finance UI (risks breaking Mumbai), Pune seeds both: rich per-body data in BudgetAllocation + UI-compat sector aggregates in BudgetEntry. Allocated sums match exactly. Reconciliation deferred to a future unified-model pass.
+
+**Cross-file record dedup.** PCMC Mayor Ravi Landge appears in both `seed-pune-leaders.ts` and `seed-pune-elected-reps.ts`. Idempotent `findFirst({districtId, name, role})` guard handles it — whichever seed runs second skips cleanly. `name` + `role` strings must be byte-identical across files.
+
+**Route-name divergence from expected.** Always enumerate actual `src/app/[locale]/[state]/[district]/` sub-routes before writing prompts that reference module URLs. Pune launch surfaced `/finance` not `/budget-utilization`, `/health` not `/hospitals`, `/elections` not `/elected-reps`. Never assume.
+
+**Mumbai DB ≠ Mumbai seed file.** Pune's launch discovered Mumbai's current DB state diverges from its own seed file — tier 1 holds PM/President/BIA President instead of LS MPs; tier 2 holds bureaucrats instead of MLAs. Query the DB for current state; don't trust seed files as an accurate reflection of production.
+
+**Fleet-wide pre-existing gaps surface during expansion.** Pune's launch surfaced ~40 GeoJSON files with no inline `_attribution`; Hyderabad missing from `DISTRICT_PROJECTION`; Hospital model missing entirely. Log as BUG-TRACKER items; fix in dedicated passes. Don't block district expansion to fix fleet-wide debt.
+
+### Pune phase-by-phase timing
+
+- Phase A (pre-flight) ~2 min — Git + TSC + Prisma validate + Obsidian read
+- Phase B (GeoJSON) ~10 min — Pune district polygon reused; taluk stub; TalukMap projection; DATA-SOURCES.md attribution
+- Phase C (seed execution) ~4 min — 7 seeds + idempotency re-run
+- Phase D (Admin + Budget UI) ~15 min — B(ii) parallel BudgetEntry seed, Mumbai regression
+- Phase E (smoke test) ~10 min — 34 routes HTTP 200, banners/disclaimers present, 9-district regression clean
+- Phase F (docs) ~15 min — this file + BLUEPRINT + Obsidian 3-file
+- Phase G (commits) ~10 min — 8-9 logical commits
+- Phase H (pre-push) ~5 min — npm run build, mock-data grep, commit-email check
+- Phase I (push) ~3-5 min — single Vercel build
+- Phase J (monitor) ~30 min — Sentry + Plausible
+
+Total Pune #10: ~1.5h Claude Code execution, ~1h review + calibration. Earlier single-prompt districts took ~45 min but carried 2-3× the post-launch cleanup burden. Net: 6-prompt pattern trades wall-clock for data quality.
+

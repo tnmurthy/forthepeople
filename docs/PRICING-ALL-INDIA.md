@@ -15,6 +15,24 @@ Languages Needed:    22 scheduled + English
 
 ---
 
+## 2026-04-23 UPDATE — Pune #10 launch (cost-neutral)
+
+Adding Pune (10th active district) does not change the current Pro tier:
+
+- Neon: ~74 new rows total (41 Leader + 5 BudgetAllocation + 5 BudgetEntry +
+  13 InfraProject + 8 School + 6 Scheme, minus Landge cross-file dedup).
+  Negligible storage growth; current Pro tier has ~90% headroom.
+- Vercel: one additional district doesn't shift SSR or function budget.
+- Scraper crons: weather + crops add Pune (~2 extra API calls per cycle,
+  within free tiers).
+- AI insight cron: +1 district × ~$0.002/12h cycle = +$0.004/day.
+
+**Projected scaling threshold:** if next quarter adds 20+ more districts,
+consider Neon Scale tier upgrade (current Pro is $20/mo). Until then,
+existing infrastructure covers 10–30 active districts without tier change.
+
+---
+
 ## INFRASTRUCTURE COSTS (MONTHLY)
 
 ### TIER 1: Single District (Mandya Pilot)
