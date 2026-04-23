@@ -20,6 +20,7 @@ const DISTRICT_PROJECTION: Record<string, { center: [number, number]; scale: num
   "chennai":         { center: [80.22, 13.05], scale: 22000 },
   "kolkata":         { center: [88.37, 22.55], scale: 25000 },
   "lucknow":         { center: [80.90, 26.85], scale: 10000 },
+  "pune":            { center: [73.86, 18.52], scale: 6000  },
 };
 const DEFAULT_PROJECTION = { center: [76.77, 12.55] as [number, number], scale: 16000 };
 

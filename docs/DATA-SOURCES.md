@@ -138,6 +138,31 @@ display data without a citation back to one of these entries.
   - GBA era (2024-25, restructured)
 - **Seeded:** Census 2011 canonical; future ward-level work tagged with vintage.
 
+### Geography / GeoJSON boundaries (maps module)
+
+- **State + district polygons:** `public/geo/{state-slug}-districts.json` files
+  were added in earlier expansion batches (pre-dating this document section).
+  Those files carry no inline attribution metadata — historical tech debt
+  to be backfilled in a dedicated provenance audit. Intended source across
+  the fleet is one of:
+  - **DataMeet Maps** (OGL India / CC-BY 2.5 IN) —
+    https://github.com/datameet/maps
+  - **geohacker/india** (CC-BY) — https://github.com/geohacker/india
+- **Taluk polygons per district:** `public/geo/{district-slug}-taluks.json`.
+  Existing coverage: bengaluru-urban, chennai, kolkata, lucknow, mandya,
+  mumbai, mysuru, new-delhi, and karnataka-mysuru. Provenance inline only
+  on new files going forward.
+- **Pune (added 2026-04-23 as district #10):**
+  - District polygon already present in `maharashtra-districts.json`
+    (feature `{name: "Pune", slug: "pune", stateSlug: "maharashtra"}`);
+    reused unchanged from existing Maharashtra FeatureCollection.
+  - **`public/geo/pune-taluks.json`** — stub FeatureCollection with
+    `features: []`. Inline `_attribution` field documents pending-source
+    status. 14 expected taluks listed in `_expected_taluks`. Stub prevents
+    the `/map/` page from 404-ing; the TalukMap component handles empty
+    features array via its `coverage: missing` fallback. Authoritative
+    polygon fetch is a follow-up task (see BUG-TRACKER).
+
 ### SHRUG (Development Data Lab)
 
 - **Publisher:** Sam Asher, Paul Novosad et al.
