@@ -33,6 +33,7 @@ const AGMARKNET_DISTRICT_OVERRIDE: Record<string, string> = {
   "mumbai":          "Mumbai",
   "kolkata":         "Kolkata",
   "chennai":         "Chennai",
+  "pune":            "Pune",
 };
 
 interface AgmarkRecord {

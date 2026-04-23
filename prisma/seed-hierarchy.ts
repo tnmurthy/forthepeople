@@ -275,6 +275,13 @@ async function main() {
   });
   console.log("✓ Maharashtra state");
 
+  // Maharashtra hierarchy — 34 districts after decision A (Mumbai stays
+  // combined; Mumbai City / Mumbai Suburban split deferred to Phase 2).
+  // Aurangabad slug is DELETED via scripts/migrate-aurangabad-to-chhatrapati-sambhajinagar.ts
+  // after this seed runs (new slug chhatrapati-sambhajinagar added below).
+  // Source URLs per district are inline comments (no schema column for URLs
+  // — data-carrying rows like Leader/Budget/DemographicProfile store their
+  // own sourceUrl in the relevant tables).
   const maharashtraDistrictDefs = [
     {
       slug: "mumbai", name: "Mumbai", nameLocal: "मुंबई",
@@ -292,13 +299,30 @@ async function main() {
         { slug: "malad", name: "Malad", nameLocal: "मालाड", tagline: "Western Suburbs Growth Centre", pop: 1500000, area: 70, villages: 0 },
       ],
     },
+    // Pune (active, 14 tehsils — source: https://pune.gov.in/en/tehsil/)
     {
       slug: "pune", name: "Pune", nameLocal: "पुणे",
-      tagline: "Oxford of the East", active: false,
+      tagline: "Oxford of the East", active: true,
       population: 9426959, area: 15643, talukCount: 14, villageCount: 1866,
       literacy: 87.19, sexRatio: 915, density: 603,
-      taluks: [],
+      taluks: [
+        { slug: "pune-city", name: "Pune City", nameLocal: "पुणे शहर", tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "haveli",    name: "Haveli",    nameLocal: "हवेली",    tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "khed",      name: "Khed",      nameLocal: "खेड",     tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "junnar",    name: "Junnar",    nameLocal: "जुन्नर",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "ambegaon",  name: "Ambegaon",  nameLocal: "आंबेगाव",  tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "maval",     name: "Maval",     nameLocal: "मावळ",    tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "mulshi",    name: "Mulshi",    nameLocal: "मुळशी",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "shirur",    name: "Shirur",    nameLocal: "शिरूर",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "purandar",  name: "Purandar",  nameLocal: "पुरंदर",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "velhe",     name: "Velhe",     nameLocal: "वेल्हे",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "bhor",      name: "Bhor",      nameLocal: "भोर",     tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "baramati",  name: "Baramati",  nameLocal: "बारामती",  tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "indapur",   name: "Indapur",   nameLocal: "इंदापूर",   tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+        { slug: "daund",     name: "Daund",     nameLocal: "दौंड",    tagline: undefined, pop: undefined, area: undefined, villages: undefined },
+      ],
     },
+    // Nagpur (unchanged) — source: https://nagpur.gov.in
     {
       slug: "nagpur", name: "Nagpur", nameLocal: "नागपूर",
       tagline: "Orange City", active: false,
@@ -306,6 +330,7 @@ async function main() {
       literacy: 88.54, sexRatio: 948, density: 470,
       taluks: [],
     },
+    // Nashik (unchanged) — source: https://nashik.gov.in
     {
       slug: "nashik", name: "Nashik", nameLocal: "नाशिक",
       tagline: "Wine Capital of India", active: false,
@@ -313,13 +338,42 @@ async function main() {
       literacy: 82.31, sexRatio: 931, density: 393,
       taluks: [],
     },
-    {
-      slug: "aurangabad", name: "Aurangabad", nameLocal: "औरंगाबाद",
-      tagline: "City of Gates", active: false,
-      population: 3695928, area: 10100, talukCount: 9, villageCount: 1502,
-      literacy: 79.02, sexRatio: 923, density: 366,
-      taluks: [],
-    },
+
+    // ── 30 additional Maharashtra districts (new) ────────────
+    // All inactive; Marathi names per canonical authoritative list from Jayanth.
+    // source URLs inline (unverified — HEAD-check results reported separately).
+
+    { slug: "ahilyanagar",              name: "Ahilyanagar",              nameLocal: "अहिल्यानगर",        active: false, taluks: [] }, // source: https://ahilyanagar.nic.in — renamed 2024 from Ahmednagar
+    { slug: "akola",                    name: "Akola",                    nameLocal: "अकोला",             active: false, taluks: [] }, // source: https://akola.gov.in
+    { slug: "amravati",                 name: "Amravati",                 nameLocal: "अमरावती",            active: false, taluks: [] }, // source: https://amravati.gov.in
+    { slug: "chhatrapati-sambhajinagar", name: "Chhatrapati Sambhajinagar", nameLocal: "छत्रपती संभाजीनगर", active: false, taluks: [] }, // source: https://aurangabad.gov.in — renamed 2023 from Aurangabad (old slug deleted by migration script)
+    { slug: "beed",                     name: "Beed",                     nameLocal: "बीड",              active: false, taluks: [] }, // source: https://beed.gov.in
+    { slug: "bhandara",                 name: "Bhandara",                 nameLocal: "भंडारा",            active: false, taluks: [] }, // source: https://bhandara.gov.in
+    { slug: "buldhana",                 name: "Buldhana",                 nameLocal: "बुलढाणा",           active: false, taluks: [] }, // source: https://buldhana.nic.in
+    { slug: "chandrapur",               name: "Chandrapur",               nameLocal: "चंद्रपूर",           active: false, taluks: [] }, // source: https://chanda.nic.in
+    { slug: "dharashiv",                name: "Dharashiv",                nameLocal: "धाराशिव",            active: false, taluks: [] }, // source: https://osmanabad.gov.in — renamed 2023 from Osmanabad
+    { slug: "dhule",                    name: "Dhule",                    nameLocal: "धुळे",              active: false, taluks: [] }, // source: https://dhule.gov.in
+    { slug: "gadchiroli",               name: "Gadchiroli",               nameLocal: "गडचिरोली",          active: false, taluks: [] }, // source: https://gadchiroli.gov.in
+    { slug: "gondia",                   name: "Gondia",                   nameLocal: "गोंदिया",           active: false, taluks: [] }, // source: https://gondia.gov.in
+    { slug: "hingoli",                  name: "Hingoli",                  nameLocal: "हिंगोली",           active: false, taluks: [] }, // source: https://hingoli.nic.in
+    { slug: "jalgaon",                  name: "Jalgaon",                  nameLocal: "जळगाव",             active: false, taluks: [] }, // source: https://jalgaon.gov.in
+    { slug: "jalna",                    name: "Jalna",                    nameLocal: "जालना",             active: false, taluks: [] }, // source: https://jalna.gov.in
+    { slug: "kolhapur",                 name: "Kolhapur",                 nameLocal: "कोल्हापूर",          active: false, taluks: [] }, // source: https://kolhapur.gov.in
+    { slug: "latur",                    name: "Latur",                    nameLocal: "लातूर",             active: false, taluks: [] }, // source: https://latur.gov.in
+    { slug: "nanded",                   name: "Nanded",                   nameLocal: "नांदेड",             active: false, taluks: [] }, // source: https://nanded.gov.in
+    { slug: "nandurbar",                name: "Nandurbar",                nameLocal: "नंदुरबार",          active: false, taluks: [] }, // source: https://nandurbar.gov.in
+    { slug: "palghar",                  name: "Palghar",                  nameLocal: "पालघर",             active: false, taluks: [] }, // source: https://palghar.gov.in
+    { slug: "parbhani",                 name: "Parbhani",                 nameLocal: "परभणी",             active: false, taluks: [] }, // source: https://parbhani.gov.in
+    { slug: "raigad",                   name: "Raigad",                   nameLocal: "रायगड",             active: false, taluks: [] }, // source: https://raigad.gov.in
+    { slug: "ratnagiri",                name: "Ratnagiri",                nameLocal: "रत्नागिरी",          active: false, taluks: [] }, // source: https://ratnagiri.gov.in
+    { slug: "sangli",                   name: "Sangli",                   nameLocal: "सांगली",             active: false, taluks: [] }, // source: https://sangli.nic.in
+    { slug: "satara",                   name: "Satara",                   nameLocal: "सातारा",             active: false, taluks: [] }, // source: https://satara.gov.in
+    { slug: "sindhudurg",               name: "Sindhudurg",               nameLocal: "सिंधुदुर्ग",         active: false, taluks: [] }, // source: https://sindhudurg.nic.in
+    { slug: "solapur",                  name: "Solapur",                  nameLocal: "सोलापूर",            active: false, taluks: [] }, // source: https://solapur.gov.in
+    { slug: "thane",                    name: "Thane",                    nameLocal: "ठाणे",              active: false, taluks: [] }, // source: https://thane.gov.in
+    { slug: "wardha",                   name: "Wardha",                   nameLocal: "वर्धा",             active: false, taluks: [] }, // source: https://wardha.gov.in
+    { slug: "washim",                   name: "Washim",                   nameLocal: "वाशीम",             active: false, taluks: [] }, // source: https://washim.nic.in
+    { slug: "yavatmal",                 name: "Yavatmal",                 nameLocal: "यवतमाळ",            active: false, taluks: [] }, // source: https://yavatmal.nic.in
   ];
 
   for (const def of maharashtraDistrictDefs) {

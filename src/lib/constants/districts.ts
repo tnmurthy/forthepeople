@@ -1105,10 +1105,24 @@ export const INDIA_STATES: State[] = [
     active: true, capital: "Mumbai", type: "state",
     districts: [
       MUMBAI_DISTRICT,
-      lockedDistrict("pune", "Pune"),
+      // Pune — active stub. Content (leaders, modules, hero) comes from DB
+      // via Prompts 2–5 of Pune #10 rollout. Fields populated here are only
+      // those the District TS interface requires.
+      {
+        slug: "pune", name: "Pune", nameLocal: "पुणे",
+        tagline: "Oxford of the East",
+        active: true,
+        population: 9426959,
+        area: 15643,
+        talukCount: 14,
+        villageCount: 1866,
+        literacy: 87.19,
+        sexRatio: 915,
+        taluks: [],
+      },
       lockedDistrict("nagpur", "Nagpur"),
       lockedDistrict("nashik", "Nashik"),
-      lockedDistrict("aurangabad", "Aurangabad"),
+      lockedDistrict("chhatrapati-sambhajinagar", "Chhatrapati Sambhajinagar"),
     ],
   },
   {

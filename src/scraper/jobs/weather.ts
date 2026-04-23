@@ -32,6 +32,7 @@ const OWM_CITY_OVERRIDE: Record<string, string> = {
   "mumbai":          "Mumbai",
   "kolkata":         "Kolkata",
   "chennai":         "Chennai",
+  "pune":            "Pune",
 };
 
 interface OWMResponse {

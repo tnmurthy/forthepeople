@@ -25,6 +25,7 @@
   --font-sans: var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
   --font-regional: var(--font-noto-kannada), "Noto Sans Kannada", sans-serif;
+  --font-devanagari: var(--font-noto-devanagari), "Noto Sans Devanagari", sans-serif;
 
   /* ── Border Radius ── */
   --radius-card: 16px;
