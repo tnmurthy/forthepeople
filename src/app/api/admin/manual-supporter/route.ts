@@ -15,6 +15,7 @@ import { logAuditAuto } from "@/lib/audit-log";
 import { calculateOneTimeExpiry } from "@/lib/contribution-expiry";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 import { detectAndCleanSocialLink } from "@/lib/social-detect";
+import { validateContributorName } from "@/lib/validators/contributor-name";
 
 const COOKIE = "ftp_admin_v1";
 
@@ -43,6 +44,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  const nameResult = validateContributorName(body.name);
+  if (!nameResult.ok) {
+    return NextResponse.json({ error: nameResult.reason }, { status: 400 });
+  }
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
     return NextResponse.json({ error: "amount must be a positive number" }, { status: 400 });
@@ -69,7 +74,7 @@ export async function POST(req: NextRequest) {
 
   const supporter = await prisma.supporter.create({
     data: {
-      name: String(body.name).trim(),
+      name: nameResult.cleaned,
       email: body.email ? String(body.email).trim() : null,
       phone: body.phone ? String(body.phone).trim() : null,
       amount,

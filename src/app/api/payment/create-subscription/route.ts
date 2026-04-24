@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
+import { validateContributorName } from "@/lib/validators/contributor-name";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,9 +33,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!name?.trim()) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    const nameResult = validateContributorName(name);
+    if (!nameResult.ok) {
+      return NextResponse.json({ error: nameResult.reason }, { status: 400 });
     }
+    const cleanedName = nameResult.cleaned;
 
     const tierConfig = TIER_CONFIG[tier];
     if (!tierConfig || !tierConfig.isRecurring) {
@@ -107,7 +110,7 @@ export async function POST(req: NextRequest) {
           notify_phone: `+91${phoneDigits}`,
         },
         notes: {
-          name: name.trim(),
+          name: cleanedName,
           email: email?.trim() || "",
           phone: phoneDigits,
           tier,

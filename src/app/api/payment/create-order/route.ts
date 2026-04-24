@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRazorpay } from "@/lib/razorpay";
 import prisma from "@/lib/db";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
+import { validateContributorName } from "@/lib/validators/contributor-name";
 
 const ABSOLUTE_MIN = 10;
 const ABSOLUTE_MAX = 500000;
@@ -28,8 +29,9 @@ export async function POST(req: NextRequest) {
     const phoneDigits = (phone ?? "").replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
 
     // Validate
-    if (!name || name.trim().length === 0) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    const nameResult = validateContributorName(name);
+    if (!nameResult.ok) {
+      return NextResponse.json({ error: nameResult.reason }, { status: 400 });
     }
     if (!Number.isInteger(amount) || amount < ABSOLUTE_MIN || amount > ABSOLUTE_MAX) {
       return NextResponse.json(
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
     // Create Prisma record first to get contributionId for receipt
     const contribution = await prisma.contribution.create({
       data: {
-        name: name.trim(),
+        name: nameResult.cleaned,
         email: email?.trim() || null,
         amount: amount * 100, // store in paise
         tier: tier || "custom",

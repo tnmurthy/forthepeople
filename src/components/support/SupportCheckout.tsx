@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { Instagram, Linkedin, Github, Twitter, ExternalLink } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
 import { validateSocialLink } from "@/lib/social-detect";
+import { validateContributorName } from "@/lib/validators/contributor-name";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 declare global {
@@ -187,8 +188,11 @@ export default function SupportCheckout({ tier }: Props) {
   const phoneValid = phoneDigits.length === 10;
   const phoneRequired = !!tier.isMonthly;
 
+  const nameCheck = useMemo(() => validateContributorName(name), [name]);
+  const nameError = name.length > 0 && !nameCheck.ok ? nameCheck.reason : null;
+
   const canSubmit =
-    name.trim() &&
+    nameCheck.ok &&
     scriptReady &&
     (!districtRequired || selectedDistrict) &&
     (!stateRequired || selectedState) &&
@@ -412,9 +416,18 @@ export default function SupportCheckout({ tier }: Props) {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <input
             type="text" placeholder="Your Name *" value={name}
-            onChange={(e) => setName(e.target.value)} maxLength={50}
-            style={{ padding: "9px 12px", border: "1px solid #E8E8E4", borderRadius: 8, fontSize: 13, outline: "none", background: "#FAFAF8" }}
+            onChange={(e) => setName(e.target.value)} maxLength={40}
+            style={{
+              padding: "9px 12px",
+              border: `1px solid ${nameError ? "#D4523A" : "#E8E8E4"}`,
+              borderRadius: 8, fontSize: 13, outline: "none", background: "#FAFAF8",
+            }}
           />
+          {nameError && (
+            <div style={{ fontSize: 11, color: "#D4523A", marginTop: -4, marginBottom: 2 }}>
+              {nameError}
+            </div>
+          )}
           <input
             type="email" placeholder="Email (optional — for receipt)" value={email}
             onChange={(e) => setEmail(e.target.value)}
