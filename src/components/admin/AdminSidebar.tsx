@@ -32,6 +32,7 @@ import {
   Heart,
   Megaphone,
   Users,
+  Lightbulb,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -44,6 +45,7 @@ type ItemId =
   | "review"
   | "population-audit"
   | "revenue"
+  | "contributors-flagged"
   | "expenditure"
   | "costs"
   | "analytics"
@@ -54,7 +56,8 @@ type ItemId =
   | "update-log"
   | "support-page"
   | "announcement"
-  | "feedback";
+  | "feedback"
+  | "suggestions";
 
 interface NavItem {
   id: ItemId;
@@ -189,6 +192,15 @@ const GROUPS: Group[] = [
         help: "Track contributions, add manual supporters, sync Razorpay",
       },
       {
+        id: "contributors-flagged",
+        label: "Flagged Names",
+        icon: ShieldCheck,
+        buildHref: (locale) => `/${locale}/admin/contributors-flagged`,
+        inPageTab: false,
+        routeSegment: "contributors-flagged",
+        help: "Review supporters whose names were auto-flagged as spam or promotional",
+      },
+      {
         id: "expenditure",
         label: "Expenditure",
         icon: TrendingDown,
@@ -261,6 +273,15 @@ const GROUPS: Group[] = [
         routeSegment: "feedback",
         help: "Read and respond to user feedback with AI classification",
         badgeKey: "unreadFeedback",
+      },
+      {
+        id: "suggestions",
+        label: "Suggestions",
+        icon: Lightbulb,
+        buildHref: (locale) => `/${locale}/admin/suggestions`,
+        inPageTab: false,
+        routeSegment: "suggestions",
+        help: "Review citizen-submitted ideas: accept, reject, mark as spam, or track as implemented",
       },
     ],
   },
