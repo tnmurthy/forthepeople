@@ -4,6 +4,33 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 2: Pune responsibility module + grade/NEW tile fix (PRE-PUSH)
+
+**Status:** 55 commits ahead of origin/main. 7 code commits + 1 research-data commit this session.
+
+### Schema
+- New model **ResponsibilityItem** (districtId, section, action, whyRelevant, reportTo*, phoneVerified, sourceNotes, ordering, active). District gained `responsibilityItems` reverse relation. Pushed via `db push`.
+
+### Data seeded (Neon prod)
+- ResponsibilityItem: **50** for Pune across 8 sections. 3 phones flagged unverified (admin review pending).
+- DistrictHealthScore: new row for Pune (C, 48.91) — computed via existing `calculateDistrictHealthScore()`.
+
+### API + UI
+- `GET /api/data/responsibility` — district-specific when available, `{ fallback: "generic" }` otherwise.
+- `/responsibility` page renders 8 section cards with phone/URL links + Source expanders for Pune; other districts continue to render generic content (no regression).
+- `/admin/responsibility` — district picker + unverified-phone filter + bulk verify + per-row edit/hide/delete. Sidebar entry added under Community group.
+
+### Fix: Pune grade + NEW badge on /en/india
+- DistrictHealthScore was null for Pune because cron hadn't swept the just-launched district. Computed via one-shot script using the existing health-score function. Tile now shows `C` grade + NEW badge like Hyderabad/Lucknow.
+
+### Row counts (end of session)
+- Supporter: 70 (unchanged — no writes)
+- NewsItem: 461 (unchanged)
+- ResponsibilityItem: 50 (Pune only)
+- DistrictHealthScore: 10 (all active districts)
+
+---
+
 ## 2026-04-25 — Session 1 pre-push fix pass (PRE-PUSH, local only)
 
 **Status:** 47 commits ahead of origin/main. Dev server on :3000, all schema migrations pushed via `prisma db push`.
