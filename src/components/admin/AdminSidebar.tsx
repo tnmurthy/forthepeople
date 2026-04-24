@@ -33,6 +33,7 @@ import {
   Megaphone,
   Users,
   Lightbulb,
+  Flame,
 } from "lucide-react";
 import ModuleHelp from "./ModuleHelp";
 import { logoutAction } from "@/app/[locale]/admin/actions";
@@ -57,7 +58,8 @@ type ItemId =
   | "support-page"
   | "announcement"
   | "feedback"
-  | "suggestions";
+  | "suggestions"
+  | "responsibility";
 
 interface NavItem {
   id: ItemId;
@@ -282,6 +284,15 @@ const GROUPS: Group[] = [
         inPageTab: false,
         routeSegment: "suggestions",
         help: "Review citizen-submitted ideas: accept, reject, mark as spam, or track as implemented",
+      },
+      {
+        id: "responsibility",
+        label: "Responsibility",
+        icon: Flame,
+        buildHref: (locale) => `/${locale}/admin/responsibility`,
+        inPageTab: false,
+        routeSegment: "responsibility",
+        help: "Per-district civic responsibility items. Verify unverified phones before they go public.",
       },
     ],
   },
