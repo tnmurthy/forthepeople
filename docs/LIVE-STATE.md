@@ -4,6 +4,38 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-24 — Pune full-audit fix + Maharashtra state infrastructure (take 3, PRE-PUSH)
+
+**Status:** Third autonomous pre-push pass. 7 new seeds executed against Neon production. No push yet — awaiting Jayanth review.
+
+### Record deltas this pass (added to counts below)
+- **BudgetAllocation (FY 2025-26):** 3 rows updated — PMC ₹9,842 cr released / ₹8,201 cr spent; PCMC ₹7,546 cr / ₹6,288 cr; ZP ₹227.76 cr / ₹189.8 cr. Remarks suffix flags 78%/65% estimate pending CAG audit. Idempotent.
+- **BusRoute:** +8 (PMPML 4/158/57/105/200/AC-1; MSRTC Shivneri + Ashwamedh)
+- **TrainSchedule:** +6 (Deccan Queen 12123/24, Pragati 12125, Intercity 12127, Indrayani 22105, Secunderabad Shatabdi 12025)
+- **LocalIndustry:** +8 (Hinjawadi RGIP, Chakan MIDC, PCMC Auto Belt, Bhosari, Ranjangaon, Talegaon, Kharadi-Magarpatta, Defence & Aerospace)
+- **RtiTemplate:** +5 (PMC roads, PCMC property tax, Pune Metro, Collectorate 7/12, ZP schools)
+- **School (PRIVATE):** +4 (Symbiosis University, SIBM Pune, MIT-WPU, FLAME University) — enables PRIVATE-type color coding
+- **InfraProject (STATE-scope):** +10 MH state-level: Samruddhi Expressway, NMIA, Vadhavan Port, Shaktipeeth Expressway, Versova-Bandra Sea Link, Mumbai Metro Line 3, Thane Creek Bridge III, Nagpur Metro Phase 2, Jalyukt Shivar 2.0, WDFC Maharashtra. Anchored to Pune districtId with scope="STATE".
+
+### Phases skipped (with reasons)
+- **DamReading (Phase 4):** live-data snapshot model — needs real scraper values, not one-time seed
+- **Hospital (Phase 5):** schema model doesn't exist fleet-wide — tracked in BUG-TRACKER
+- **PowerOutage (Phase 7):** fabrication risk — outage history should come from utility feeds
+- **Elections API fix (Phase 8), Exams dedup (Phase 9), Weather scraper (Phase 11):** code/API changes deferred — not in-scope for pre-push data fix
+- **AirQualityStation (Phase 12):** schema model doesn't exist
+- **HousingScheme PMAY-U delete (Phase 14):** reconsidered — row is NOT a stub. Has real 4,725 target + source caption explaining FY 2026-27 just started (April 2026). Deleting would leave /housing empty. Keeping.
+
+### Pre-push commit state (pending)
+New seed files uncommitted:
+- `prisma/seed-pune-transport.ts`
+- `prisma/seed-pune-local-industry.ts`
+- `prisma/seed-pune-rti.ts`
+- `prisma/seed-pune-schools-private.ts`
+- `prisma/seed-maharashtra-state-infra.ts`
+- `scripts/fix-pune-finance-utilization-2026-04-24.ts`
+
+---
+
 ## 2026-04-23 — Pune #10 LAUNCH (local complete, PRE-PUSH)
 
 **Status:** All 6 prompts complete locally (Phases A-F of Prompt 6 done). Awaiting commits (G), pre-push verification (H), and explicit go-ahead for push (I), then 24-48h monitoring (J).
