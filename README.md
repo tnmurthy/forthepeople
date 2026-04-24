@@ -9,7 +9,7 @@
 [Live Site](https://forthepeople.in) · [Watch the Platform Walkthrough](https://www.instagram.com/reel/DW0UIkWvmxq/) · [Vote for Features](https://forthepeople.in/en/features) · [Support the Project](https://forthepeople.in/support)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Districts](https://img.shields.io/badge/districts_live-9-green.svg)
+![Districts](https://img.shields.io/badge/districts_live-10-green.svg)
 ![Modules](https://img.shields.io/badge/dashboards-29_per_district-orange.svg)
 
 </div>
@@ -21,7 +21,7 @@
 ForThePeople.in aggregates publicly available Indian government data into clean, citizen-friendly dashboards — one for every district. Instead of navigating 50+ government portals, citizens get a single platform with real-time data on crop prices, dam levels, budget spending, school performance, infrastructure projects, and 25+ more modules.
 
 **Currently live:** Karnataka (Mandya, Mysuru, Bengaluru Urban) |
-Delhi (New Delhi) | Maharashtra (Mumbai) | West Bengal (Kolkata) | Tamil Nadu (Chennai) | Telangana (Hyderabad) | Uttar Pradesh (Lucknow)
+Delhi (New Delhi) | Maharashtra (Mumbai, Pune) | West Bengal (Kolkata) | Tamil Nadu (Chennai) | Telangana (Hyderabad) | Uttar Pradesh (Lucknow)
 **Goal:** All 780+ districts across 28 states and 8 UTs.
 
 ## 29 Dashboard Modules
@@ -99,7 +99,7 @@ Running this platform for all 780+ districts costs approximately ₹12 lakh/year
 
 - **One-Time Contribution** — any amount from ₹10
 - **District Champion** — ₹99/mo, name on your chosen district page
-- **State Champion** — ₹1,999/mo, name on every district in that state
+- **State Champion** — ₹999/mo, name on every district in that state
 - **All-India Patron** — ₹9,999/mo, featured on every district page
 - **Founding Builder** — ₹50,000/mo, permanent homepage spotlight
 
