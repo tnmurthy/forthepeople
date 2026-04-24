@@ -1112,6 +1112,12 @@ export const INDIA_STATES: State[] = [
         slug: "pune", name: "Pune", nameLocal: "पुणे",
         tagline: "Oxford of the East",
         active: true,
+        badges: [
+          { emoji: "🎓", label: "Education Hub of India" },
+          { emoji: "🏍️", label: "Detroit of India" },
+          { emoji: "💻", label: "IT Corridor — Hinjawadi" },
+          { emoji: "🎭", label: "Cultural Capital of Maharashtra" },
+        ],
         population: 9426959,
         area: 15643,
         talukCount: 14,
