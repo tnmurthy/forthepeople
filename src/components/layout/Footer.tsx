@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Github } from "lucide-react";
 import FeedbackModal from "@/components/common/FeedbackModal";
 
 export default function Footer() {
@@ -98,6 +99,24 @@ export default function Footer() {
           <Link href="/disclaimer"  style={{ color: "#9B9B9B", textDecoration: "none" }}>Disclaimer</Link>
           <span style={{ color: "#C0C0C0" }}>·</span>
           <Link href="/privacy"     style={{ color: "#9B9B9B", textDecoration: "none" }}>Privacy</Link>
+          <span style={{ color: "#C0C0C0" }}>·</span>
+          <a
+            href="https://github.com/jayanthmb14/forthepeople"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View source on GitHub"
+            style={{
+              color: "#4B4B4B",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontWeight: 500,
+            }}
+          >
+            <Github size={12} aria-hidden="true" />
+            GitHub
+          </a>
           <span style={{ color: "#C0C0C0" }}>·</span>
           <Link href="/en/features" style={{ color: "#7C3AED", textDecoration: "none" }}>Features</Link>
           <span style={{ color: "#C0C0C0" }}>·</span>
