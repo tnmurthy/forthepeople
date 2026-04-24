@@ -52,6 +52,7 @@ model District {
   avgRainfall   Float?
   goLiveDate    DateTime? // When this district was first activated. Drives the NEW badge (45-day window).
   taluks        Taluk[]
+  responsibilityItems ResponsibilityItem[]
 
   leaders             Leader[]
   infraProjects       InfraProject[]
@@ -2286,4 +2287,34 @@ enum SuggestionStatus {
   REJECTED
   SPAM
   IMPLEMENTED
+}
+
+// ═══ CIVIC RESPONSIBILITY ═════════════════════════════════
+
+model ResponsibilityItem {
+  id               String   @id @default(cuid())
+  districtId       String
+  district         District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  section          String // e.g. "Water" | "Traffic & Commute" | "Air Quality" | ...
+  sectionIcon      String // emoji for the section header
+  sectionOrder     Int // 1-8 (stable display order)
+
+  action           String   @db.Text
+  whyRelevant      String   @db.Text // district-specific rationale
+
+  reportToName     String?
+  reportToUrl      String?
+  reportToPhone    String? // null when research marked "verify_before_use"
+  phoneVerified    Boolean  @default(true)
+
+  sourceNotes      String?  @db.Text
+
+  itemOrder        Int
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([districtId, sectionOrder, itemOrder, active])
+  @@index([phoneVerified])
 }
