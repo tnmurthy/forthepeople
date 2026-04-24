@@ -10,6 +10,8 @@ import prisma from "@/lib/db";
 import { cacheSet } from "@/lib/cache";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 import { detectAndCleanSocialLink } from "@/lib/social-detect";
+import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 
 // All cache keys used by /api/data/contributors — must invalidate ALL on payment
 const CONTRIBUTOR_CACHE_KEYS = [
@@ -83,6 +85,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
     }
 
+    // Re-validate name (defense-in-depth — client could tamper between
+    // create-subscription and verify-subscription).
+    const nameCheck = validateContributorName(name);
+    if (!nameCheck.ok) {
+      return NextResponse.json({ success: false, error: nameCheck.reason }, { status: 400 });
+    }
+    const cleanedName = nameCheck.cleaned;
+
+    const msgCheck = validateSupporterMessage(message);
+    if (!msgCheck.ok) {
+      return NextResponse.json({ success: false, error: msgCheck.reason }, { status: 400 });
+    }
+    const cleanedMessage = msgCheck.cleaned;
+
     // Clean + detect social link: "@handle" → "https://instagram.com/handle",
     // bare "foo.com" → "https://foo.com", noisy post URLs normalized, etc.
     const social = socialLink?.trim() ? detectAndCleanSocialLink(socialLink.trim()) : null;
@@ -99,7 +115,7 @@ export async function POST(req: NextRequest) {
     await prisma.supporter.upsert({
       where: { paymentId: razorpay_payment_id },
       update: {
-        name: name.trim(),
+        name: cleanedName,
         email: email?.trim() || null,
         phone: phoneToStore,
         amount,
@@ -114,12 +130,12 @@ export async function POST(req: NextRequest) {
         socialLink: cleanedSocialUrl,
         socialPlatform: social?.platform ?? null,
         badgeType,
-        message: message?.trim().slice(0, 100) || null,
+        message: cleanedMessage,
         isPublic: isPublic !== false,
         status: "success",
       },
       create: {
-        name: name.trim(),
+        name: cleanedName,
         email: email?.trim() || null,
         phone: phoneToStore,
         amount,
@@ -136,7 +152,7 @@ export async function POST(req: NextRequest) {
         socialPlatform: social?.platform ?? null,
         badgeType,
         badgeLevel: null,
-        message: message?.trim().slice(0, 100) || null,
+        message: cleanedMessage,
         isPublic: isPublic !== false,
         status: "success",
       },

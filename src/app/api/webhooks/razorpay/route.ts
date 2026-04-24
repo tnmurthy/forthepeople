@@ -75,22 +75,18 @@ export async function POST(req: NextRequest) {
         },
       });
     } else if (event === "payment.failed" && paymentEntity) {
-      await prisma.supporter.upsert({
-        where: { paymentId: String(paymentEntity.id ?? "") },
-        update: { status: "failed" },
-        create: {
-          name: String(paymentEntity.contact ?? paymentEntity.email ?? "Anonymous"),
-          email: paymentEntity.email ? String(paymentEntity.email) : null,
-          phone: paymentEntity.contact ? String(paymentEntity.contact) : null,
-          amount: Number(paymentEntity.amount ?? 0) / 100,
-          currency: String(paymentEntity.currency ?? "INR"),
-          paymentId: String(paymentEntity.id),
-          orderId: paymentEntity.order_id ? String(paymentEntity.order_id) : null,
-          method: paymentEntity.method ? String(paymentEntity.method) : null,
-          status: "failed",
-          razorpayData: paymentEntity as object,
-        },
-      });
+      // Policy (2026-04-25): no successful payment = no DB row.
+      // If a Supporter was somehow created for this payment (e.g. earlier
+      // code path), delete it. Never create a new row on payment.failed.
+      const paymentId = String(paymentEntity.id ?? "");
+      if (paymentId) {
+        const deleted = await prisma.supporter.deleteMany({
+          where: { paymentId, status: { not: "success" } },
+        });
+        if (deleted.count > 0) {
+          console.log(`[razorpay-webhook] payment.failed — deleted ${deleted.count} orphan Supporter row(s) for payment ${paymentId}`);
+        }
+      }
 
     // ── Subscription events ───────────────────────────────────
     } else if (event === "subscription.charged" && subscriptionEntity) {
