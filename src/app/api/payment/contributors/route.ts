@@ -44,7 +44,7 @@ function anonymizeName(raw: string, isPublic: boolean): string {
 // where a contributor actually appears.
 function tierLabelFor(amountRupees: number): string {
   if (amountRupees < 99) return "☕ Chai Supporter";
-  if (amountRupees < 1999) return "🏛️ District Supporter";
+  if (amountRupees < 999) return "🏛️ District Supporter";
   if (amountRupees < 9999) return "🗺️ State Supporter";
   if (amountRupees < 50000) return "🌟 All-India Patron";
   return "👑 Founding Builder";

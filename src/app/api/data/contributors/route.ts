@@ -140,7 +140,7 @@ function notExpired() {
 // subscriber.
 export const VISIBILITY_THRESHOLD = {
   national: 9999,   // homepage + every district page
-  state:    1999,   // every district page in that state
+  state:    999,    // every district page in that state (was 1999 until 2026-04-24)
   district: 99,     // a specific district page
 } as const;
 
@@ -211,7 +211,8 @@ export async function GET(req: NextRequest) {
     // ── State page sponsors ─────────────────────────────────
     // Visibility on a state page = NATIONAL contributors (tier OR amount
     // ≥ ₹9,999) PLUS anyone who explicitly sponsored this state OR donated
-    // ≥ ₹1,999 within this state (subscription or one-time).
+    // ≥ ₹999 within this state (subscription or one-time). Threshold dropped
+    // from ₹1,999 on 2026-04-24 when State Champion monthly price was halved.
     if (type === "state-page" && stateSlug) {
       const { limit, offset } = parsePaging(url, 60);
       const cacheKey = `ftp:contributors:state-page:${stateSlug}:v3`;

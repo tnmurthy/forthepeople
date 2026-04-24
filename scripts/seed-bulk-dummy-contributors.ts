@@ -148,7 +148,7 @@ async function main() {
       activatedAt = new Date(Date.now() - randInt(1, 18) * 30 * 24 * 60 * 60 * 1000);
       subscriptionStatus = "active";
     } else if (tier === "state") {
-      amount = 1999 + randInt(0, 4) * 500;
+      amount = 999 + randInt(0, 4) * 500;
       const s = pick(states);
       stateId = s.id;
       activatedAt = new Date(Date.now() - randInt(1, 14) * 30 * 24 * 60 * 60 * 1000);

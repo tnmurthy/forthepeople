@@ -164,7 +164,7 @@ function generate(count: number): MockContributor[] {
       monthsActive = randInt(rng, 1, 18);
       activatedAt = new Date(Date.now() - monthsActive * 30 * 24 * 60 * 60 * 1000);
     } else if (tier === "state") {
-      amount = 1999 + randInt(rng, 0, 4) * 500;
+      amount = 999 + randInt(rng, 0, 4) * 500;
       stateData = pick(rng, statePool);
       monthsActive = randInt(rng, 1, 14);
       activatedAt = new Date(Date.now() - monthsActive * 30 * 24 * 60 * 60 * 1000);
