@@ -50,6 +50,7 @@ model District {
   sexRatio      Int?
   density       Float?
   avgRainfall   Float?
+  goLiveDate    DateTime? // When this district was first activated. Drives the NEW badge (45-day window).
   taluks        Taluk[]
 
   leaders             Leader[]
@@ -677,25 +678,29 @@ model CourtStat {
 // ═══ NEWS ═════════════════════════════════════════════════
 
 model NewsItem {
-  id           String    @id @default(cuid())
-  districtId   String?
-  district     District? @relation(fields: [districtId], references: [id])
-  title        String
-  titleLocal   String?
-  summary      String?
-  url          String
-  source       String
-  category     String?
-  publishedAt  DateTime
-  fetchedAt    DateTime  @default(now())
-  targetModule String? // e.g. "police", "infrastructure", "elections"
-  moduleAction String? // e.g. "New SP appointed"
-  classifiedBy String? // "opus", "gemini", "manual"
-  classifiedAt DateTime?
+  id              String    @id @default(cuid())
+  districtId      String?
+  district        District? @relation(fields: [districtId], references: [id])
+  title           String
+  titleLocal      String?
+  summary         String?
+  originalSummary String?   @db.Text // Pre-clean raw RSS description (audit trail)
+  publisher       String?   // Extracted from RSS description suffix (Google News pattern)
+  duplicateOf     String?   // id of the canonical (earliest) article for this story
+  url             String
+  source          String
+  category        String?
+  publishedAt     DateTime
+  fetchedAt       DateTime  @default(now())
+  targetModule    String? // e.g. "police", "infrastructure", "elections"
+  moduleAction    String? // e.g. "New SP appointed"
+  classifiedBy    String? // "opus", "gemini", "manual"
+  classifiedAt    DateTime?
 
   @@index([districtId, publishedAt])
   @@index([publishedAt])
   @@index([targetModule])
+  @@index([duplicateOf])
 }
 
 // ═══ WATER & DAMS ═════════════════════════════════════════
@@ -1453,6 +1458,10 @@ model Supporter {
   nameFlagged  Boolean @default(false)
   originalName String?
 
+  // Message moderation (spam/promo cleanup 2026-04-25)
+  messageFlagged   Boolean @default(false)
+  originalMessage  String? @db.Text
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1464,6 +1473,7 @@ model Supporter {
   @@index([subscriptionStatus])
   @@index([isRecurring, subscriptionStatus])
   @@index([nameFlagged])
+  @@index([messageFlagged])
 }
 
 model FactCheck {

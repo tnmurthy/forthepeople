@@ -12,15 +12,14 @@ import Link from "next/link";
 import { Search, ArrowRight, MapPin } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
 
-// Districts activated within the last 30 days get a "NEW" badge
-const DISTRICT_ACTIVATED_AT: Record<string, string> = {
-  hyderabad: "2026-04-10",
-  // Add new districts here as they go live
-};
-function isNewDistrict(slug: string): boolean {
-  const activatedAt = DISTRICT_ACTIVATED_AT[slug];
-  if (!activatedAt) return false;
-  return Date.now() - new Date(activatedAt).getTime() < 30 * 24 * 60 * 60 * 1000;
+// Districts activated within the last 45 days get a "NEW" badge.
+// Driven by District.goLiveDate (populated via backfill script + set on
+// district activation). See scripts/backfill-district-go-live-dates-2026-04-25.ts.
+const DAYS_NEW = 45;
+function isNewDistrict(goLiveDate: string | null | undefined): boolean {
+  if (!goLiveDate) return false;
+  const ms = Date.now() - new Date(goLiveDate).getTime();
+  return ms >= 0 && ms < DAYS_NEW * 24 * 60 * 60 * 1000;
 }
 import dynamic from "next/dynamic";
 import HomepageStats from "@/components/home/HomepageStats";
@@ -72,6 +71,7 @@ interface DistrictPreview {
   name: string;
   nameLocal: string;
   tagline: string | null;
+  goLiveDate: string | null;
   weather: { temp: number | null; conditions: string | null } | null;
   dam: { name: string; storagePct: number } | null;
   crop: { commodity: string; price: number } | null;
@@ -123,6 +123,7 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
   );
 
   const districtPreviews = previewData?.districtPreviews ?? [];
+  const goLiveBySlug = new Map(districtPreviews.map((d) => [d.slug, d.goLiveDate]));
 
   return (
     <main style={{ background: "#FAFAF8", paddingBottom: 40 }}>
@@ -202,7 +203,7 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
                           {district.nameLocal}
                         </span>
                       )}
-                      {isNewDistrict(district.slug) && (
+                      {isNewDistrict(goLiveBySlug.get(district.slug)) && (
                         <span style={{ fontSize: 9, fontWeight: 500, padding: "1px 6px", background: "#D1FAE5", color: "#065F46", borderRadius: 10, marginLeft: 5 }}>NEW</span>
                       )}
                       <span style={{ fontSize: 12, color: "#9B9B9B", marginLeft: "auto" }}>{state.name}</span>
@@ -299,7 +300,7 @@ function ActiveDistrictsCard({
                       {preview.healthGrade}
                     </span>
                   )}
-                  {isNewDistrict(d.slug) && (
+                  {isNewDistrict(preview?.goLiveDate) && (
                     <span style={{
                       fontSize: 10, fontWeight: 500, padding: "2px 8px",
                       background: "#D1FAE5", color: "#065F46",

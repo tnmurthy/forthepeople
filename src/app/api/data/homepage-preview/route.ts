@@ -25,7 +25,7 @@ export async function GET() {
     // Get active districts
     const activeDistricts = await prisma.district.findMany({
       where: { active: true },
-      select: { id: true, slug: true, name: true, nameLocal: true, tagline: true, state: { select: { slug: true } } },
+      select: { id: true, slug: true, name: true, nameLocal: true, tagline: true, goLiveDate: true, state: { select: { slug: true } } },
     });
 
     // For each district, fetch latest weather, dam, crop in one pass
@@ -64,6 +64,7 @@ export async function GET() {
           name: d.name,
           nameLocal: d.nameLocal,
           tagline: d.tagline,
+          goLiveDate: d.goLiveDate ? d.goLiveDate.toISOString() : null,
           weather: weather
             ? {
                 temp: weather.temperature ? Math.round(weather.temperature) : null,
