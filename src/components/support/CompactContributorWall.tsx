@@ -7,6 +7,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ContributorsResponse } from "@/app/api/payment/contributors/route";
 
@@ -17,6 +18,9 @@ export default function CompactContributorWall() {
     refetchInterval: 60_000,
     staleTime: 50_000,
   });
+
+  // Mobile touch pause — tap the strip to stop, release to resume.
+  const [touchPaused, setTouchPaused] = useState(false);
 
   const contributors = data?.contributors ?? [];
 
@@ -31,10 +35,18 @@ export default function CompactContributorWall() {
           100% { transform: translateX(-50%); }
         }
         .compact-track {
-          animation: compact-scroll 20s linear infinite;
+          /* Was 20s; 2× slower (40s) gives readers time to recognize names
+             before they scroll off. hover pauses on desktop; touchstart
+             pauses on mobile via the touch-paused class hook. */
+          animation: compact-scroll 40s linear infinite;
+          will-change: transform;
         }
-        .compact-track:hover {
+        .compact-track:hover,
+        .compact-track.compact-track--touch-paused {
           animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .compact-track { animation: none; }
         }
       `}</style>
 
@@ -60,7 +72,12 @@ export default function CompactContributorWall() {
             </div>
 
             {/* Scrolling names */}
-            <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+            <div
+              style={{ flex: 1, overflow: "hidden", position: "relative" }}
+              onTouchStart={() => setTouchPaused(true)}
+              onTouchEnd={() => setTouchPaused(false)}
+              onTouchCancel={() => setTouchPaused(false)}
+            >
               {/* Fade mask left */}
               <div
                 style={{
@@ -73,7 +90,10 @@ export default function CompactContributorWall() {
                 <div style={{ height: 16, width: 200, background: "#E8E8E4", borderRadius: 4, animation: "pulse 1.5s ease-in-out infinite" }} />
               ) : (
                 <div
-                  className={contributors.length >= 3 ? "compact-track" : undefined}
+                  className={[
+                    contributors.length >= 3 ? "compact-track" : "",
+                    touchPaused ? "compact-track--touch-paused" : "",
+                  ].filter(Boolean).join(" ") || undefined}
                   style={{ display: "flex", gap: 16, width: contributors.length >= 3 ? "max-content" : undefined, alignItems: "center" }}
                 >
                   {(contributors.length >= 3 ? [...contributors, ...contributors] : contributors).map((c, i) => (

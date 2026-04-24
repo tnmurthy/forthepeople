@@ -7,6 +7,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Instagram, Linkedin, Github, Twitter, ExternalLink } from "lucide-react";
 import { getContributorLabel } from "@/lib/contributor-label";
@@ -42,6 +43,9 @@ export default function TopTierShowcase({ locale = "en" }: { locale?: string }) 
     staleTime: 120_000,
     refetchInterval: 300_000,
   });
+
+  // Mobile touch pause — complements the CSS :hover rule for desktop.
+  const [touchPaused, setTouchPaused] = useState(false);
 
   const contributors = data?.contributors ?? [];
 
@@ -95,16 +99,20 @@ export default function TopTierShowcase({ locale = "en" }: { locale?: string }) 
           100% { transform: translateX(-50%); }
         }
         .ftp-ticker-track {
-          animation: ticker-scroll 60s linear infinite;
+          /* Was 60s desktop / 30s mobile (mobile faster — counter-intuitive).
+             Slowed 2× on both and normalised mobile to match desktop, since
+             mobile users need MORE time to parse tiny text, not less. */
+          animation: ticker-scroll 120s linear infinite;
           will-change: transform;
         }
-        .ftp-ticker-viewport:hover .ftp-ticker-track {
+        .ftp-ticker-viewport:hover .ftp-ticker-track,
+        .ftp-ticker-viewport.ftp-ticker-viewport--touch-paused .ftp-ticker-track {
           animation-play-state: paused;
         }
         .ftp-ticker-viewport::-webkit-scrollbar { display: none; }
         @media (max-width: 768px) {
           .ftp-ticker-track {
-            animation-duration: 30s;
+            animation-duration: 120s;
           }
           .top-tier-row {
             flex-direction: column;
@@ -162,7 +170,10 @@ export default function TopTierShowcase({ locale = "en" }: { locale?: string }) 
           </div>
 
           <div
-            className="ftp-ticker-viewport"
+            className={`ftp-ticker-viewport${touchPaused ? " ftp-ticker-viewport--touch-paused" : ""}`}
+            onTouchStart={() => setTouchPaused(true)}
+            onTouchEnd={() => setTouchPaused(false)}
+            onTouchCancel={() => setTouchPaused(false)}
             style={{
               display: "flex",
               flex: 1,
