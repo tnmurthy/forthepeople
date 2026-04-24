@@ -17,9 +17,29 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { useSchools } from "@/hooks/useRealtimeData";
 import { ModuleHeader, StatCard, SectionLabel, ProgressBar, LoadingShell, ErrorBlock } from "@/components/district/ui";
 
-const TYPE_COLORS: Record<string, string> = {
-  Government: "#2563EB", "Private-Aided": "#7C3AED", "Private-Unaided": "#D97706", Central: "#0891B2",
+// Type chips: base + selected backgrounds + text colors, keyed by type string.
+// Covers current Pune + Mumbai seed values: GOVERNMENT, AIDED, PRIVATE,
+// CENTRAL_GOVT, AGGREGATE, University — plus legacy labels.
+type ChipColors = { base: string; text: string; sel: string; selText: string };
+const TYPE_CHIP_COLORS: Record<string, ChipColors> = {
+  GOVERNMENT:     { base: "#ECFDF5", text: "#15803D", sel: "#BBF7D0", selText: "#14532D" },
+  Government:     { base: "#ECFDF5", text: "#15803D", sel: "#BBF7D0", selText: "#14532D" },
+  AIDED:          { base: "#EFF6FF", text: "#1D4ED8", sel: "#BFDBFE", selText: "#1E3A8A" },
+  "Private-Aided":{ base: "#EFF6FF", text: "#1D4ED8", sel: "#BFDBFE", selText: "#1E3A8A" },
+  PRIVATE:        { base: "#FFFBEB", text: "#B45309", sel: "#FDE68A", selText: "#78350F" },
+  "Private-Unaided":{ base: "#FFFBEB", text: "#B45309", sel: "#FDE68A", selText: "#78350F" },
+  CENTRAL_GOVT:   { base: "#EEF2FF", text: "#4338CA", sel: "#C7D2FE", selText: "#312E81" },
+  Central:        { base: "#EEF2FF", text: "#4338CA", sel: "#C7D2FE", selText: "#312E81" },
+  AGGREGATE:      { base: "#F3F4F6", text: "#374151", sel: "#D1D5DB", selText: "#111827" },
+  University:     { base: "#FAF5FF", text: "#6D28D9", sel: "#DDD6FE", selText: "#4C1D95" },
+  "Higher Education": { base: "#FAF5FF", text: "#6D28D9", sel: "#DDD6FE", selText: "#4C1D95" },
 };
+const ALL_CHIP: ChipColors = { base: "#F5F5F0", text: "#6B6B6B", sel: "#E5E7EB", selText: "#111827" };
+
+// Legacy export kept for the card-type badge rendered in the school cards.
+const TYPE_COLORS: Record<string, string> = Object.fromEntries(
+  Object.entries(TYPE_CHIP_COLORS).map(([k, v]) => [k, v.selText]),
+);
 
 function SchoolsPageInner({ params }: { params: Promise<{ locale: string; state: string; district: string }> }) {
   const { locale, state, district } = use(params);
@@ -100,17 +120,29 @@ function SchoolsPageInner({ params }: { params: Promise<{ locale: string; state:
             </div>
           )}
 
-          {/* Type filter */}
+          {/* Type filter — one color per school type, flex-wrap responsive */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             {types.map((t) => {
-              const color = t !== "all" ? (TYPE_COLORS[t] ?? "#6B7280") : "#2563EB";
+              const c = t === "all" ? ALL_CHIP : (TYPE_CHIP_COLORS[t] ?? ALL_CHIP);
+              const isActive = filter === t;
               return (
-                <button key={t} onClick={() => setFilter(t)} style={{
-                  padding: "4px 10px", borderRadius: 16, fontSize: 12, cursor: "pointer",
-                  background: filter === t ? color : "#F5F5F0",
-                  color: filter === t ? "#FFF" : "#6B6B6B",
-                  border: filter === t ? `1px solid ${color}` : "1px solid #E8E8E4",
-                }}>
+                <button
+                  key={t}
+                  onClick={() => setFilter(t)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 16,
+                    fontSize: 12,
+                    fontWeight: isActive ? 600 : 500,
+                    cursor: "pointer",
+                    background: isActive ? c.sel : c.base,
+                    color: isActive ? c.selText : c.text,
+                    border: `1px solid ${isActive ? c.selText : c.base}`,
+                    boxShadow: isActive ? `0 0 0 2px ${c.selText}22` : "none",
+                    minHeight: 36, minWidth: 44,
+                    transition: "all 120ms ease",
+                  }}
+                >
                   {t === "all" ? `All (${schools.length})` : `${t} (${schools.filter(s => s.type === t).length})`}
                 </button>
               );
