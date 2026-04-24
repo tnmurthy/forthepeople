@@ -16,10 +16,15 @@ import { INDIA_STATES } from "@/lib/constants/districts";
 // Driven by District.goLiveDate (populated via backfill script + set on
 // district activation). See scripts/backfill-district-go-live-dates-2026-04-25.ts.
 const DAYS_NEW = 45;
+// Grace window: if goLiveDate is up to 1 day in the future (IST/UTC skew
+// around midnight — goLiveDate stored as UTC 00:00 reads as 05:30 IST on
+// launch day), still treat as NEW. Prevents the same-day activation from
+// silently failing the "ms >= 0" check on launch morning.
+const FUTURE_GRACE_MS = 24 * 60 * 60 * 1000;
 function isNewDistrict(goLiveDate: string | null | undefined): boolean {
   if (!goLiveDate) return false;
   const ms = Date.now() - new Date(goLiveDate).getTime();
-  return ms >= 0 && ms < DAYS_NEW * 24 * 60 * 60 * 1000;
+  return ms >= -FUTURE_GRACE_MS && ms < DAYS_NEW * 24 * 60 * 60 * 1000;
 }
 import dynamic from "next/dynamic";
 import HomepageStats from "@/components/home/HomepageStats";
