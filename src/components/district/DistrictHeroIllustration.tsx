@@ -26,6 +26,7 @@ export const PALETTES: Record<string, Palette> = {
   mumbai:           { primary: "#6a7a8a", secondary: "#4e6070", accent: "#c8d4de", gradientBase: "244,247,250" },
   kolkata:          { primary: "#c4a050", secondary: "#a8862e", accent: "#f0e0b0", gradientBase: "250,246,235" },
   lucknow:          { primary: "#a87d9e", secondary: "#8a6185", accent: "#e0cede", gradientBase: "248,242,247" },
+  pune:             { primary: "#c48a5a", secondary: "#a87045", accent: "#e8d0b8", gradientBase: "250,245,238" },
 };
 
 export const DEFAULT_PALETTE: Palette = { primary: "#9B9B9B", secondary: "#7a7a7a", accent: "#e0e0e0", gradientBase: "248,248,245" };
@@ -258,6 +259,38 @@ function DistrictSVG({ slug, p }: { slug: string; p: Palette }) {
           {/* Birds */}
           <path d="M210 70 Q214 66 218 70" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.3" />
           <path d="M230 60 Q233 57 236 60" stroke={p.secondary} strokeWidth="1" fill="none" opacity="0.25" />
+        </svg>
+      );
+
+    case "pune":
+      // Shaniwar Wada — Peshwa-era fort, iconic Delhi Darwaza + bastion towers.
+      return (
+        <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }} aria-hidden="true">
+          {/* Distant Sahyadri hill silhouette */}
+          <path d="M200 290 Q260 240 330 265 Q370 250 400 275 L400 300 L200 300Z" fill={p.accent} opacity="0.35" />
+          {/* Main fort wall base */}
+          <rect x="225" y="190" width="160" height="70" rx="2" fill={p.primary} opacity="0.5" />
+          {/* Left bastion tower */}
+          <rect x="225" y="135" width="36" height="75" rx="2" fill={p.primary} opacity="0.55" />
+          <path d="M225 135 L243 115 L261 135 Z" fill={p.secondary} opacity="0.5" />
+          {/* Right bastion tower */}
+          <rect x="349" y="135" width="36" height="75" rx="2" fill={p.primary} opacity="0.55" />
+          <path d="M349 135 L367 115 L385 135 Z" fill={p.secondary} opacity="0.5" />
+          {/* Delhi Darwaza — central arched gateway */}
+          <path d="M280 190 L280 165 Q305 140 330 165 L330 190 Z" fill={p.secondary} opacity="0.55" />
+          <path d="M288 190 L288 172 Q305 154 322 172 L322 190 Z" fill={p.accent} opacity="0.55" />
+          {/* Crenellations along main wall */}
+          {[270, 285, 335, 350].map((x) => (
+            <rect key={x} x={x} y="182" width="8" height="8" fill={p.primary} opacity="0.5" />
+          ))}
+          {/* Small flags on bastion towers */}
+          <line x1="243" y1="108" x2="243" y2="95" stroke={p.secondary} strokeWidth="1.3" opacity="0.5" />
+          <path d="M244 96 L253 99 L244 102 Z" fill={p.secondary} opacity="0.45" />
+          <line x1="367" y1="108" x2="367" y2="95" stroke={p.secondary} strokeWidth="1.3" opacity="0.5" />
+          <path d="M368 96 L377 99 L368 102 Z" fill={p.secondary} opacity="0.45" />
+          {/* Birds */}
+          <path d="M200 80 Q205 75 210 80" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.35" />
+          <path d="M220 70 Q224 66 228 70" stroke={p.secondary} strokeWidth="1" fill="none" opacity="0.3" />
         </svg>
       );
 
