@@ -100,6 +100,8 @@ export default function Footer() {
           <Link href="/privacy"     style={{ color: "#9B9B9B", textDecoration: "none" }}>Privacy</Link>
           <span style={{ color: "#C0C0C0" }}>·</span>
           <Link href="/en/features" style={{ color: "#7C3AED", textDecoration: "none" }}>Features</Link>
+          <span style={{ color: "#C0C0C0" }}>·</span>
+          <Link href="/en/features?tab=suggest" style={{ color: "#7C3AED", textDecoration: "none" }}>Share an Idea</Link>
           <span style={{ color: "#C0C0C0" }} className="hidden sm:inline">·</span>
           <Link href="/contribute"  style={{ color: "#9B9B9B", textDecoration: "none" }} className="hidden sm:inline">Contribute</Link>
           <span style={{ color: "#C0C0C0" }} className="hidden sm:inline">·</span>

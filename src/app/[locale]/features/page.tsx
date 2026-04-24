@@ -5,14 +5,16 @@
  */
 
 // ═══════════════════════════════════════════════════════════
-// Feature Voting — /features
-// Citizens vote on what ForThePeople.in should build next
+// Features page — /features
+// Two tabs: Vote on Features (existing) + Share Your Idea (2026-04-24)
 // ═══════════════════════════════════════════════════════════
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, CheckCircle, Clock, Zap } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { ThumbsUp, CheckCircle, Clock, Zap, Vote, MessageSquare } from "lucide-react";
+import SuggestionForm from "@/components/features/SuggestionForm";
 
 interface Feature {
   id: string;
@@ -23,6 +25,17 @@ interface Feature {
   votes: number;
   status: "proposed" | "in-progress" | "completed";
   priority: number;
+}
+
+interface PublicSuggestion {
+  id: string;
+  name: string;
+  title: string;
+  body: string;
+  category: string | null;
+  status: "ACCEPTED" | "IMPLEMENTED";
+  upvotes: number;
+  createdAt: string;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -39,13 +52,81 @@ const STATUS_CONFIG = {
   completed:   { label: "Completed",   icon: CheckCircle, color: "#16A34A" },
 };
 
+type Tab = "vote" | "suggest";
+
 export default function FeaturesPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const initialTab: Tab = searchParams.get("tab") === "suggest" ? "suggest" : "vote";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  const switchTab = (t: Tab) => {
+    setActiveTab(t);
+    const params = new URLSearchParams(searchParams.toString());
+    if (t === "suggest") params.set("tab", "suggest");
+    else params.delete("tab");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
+
+  return (
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 48px" }}>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: 36, marginBottom: 8 }}>{activeTab === "vote" ? "🗳️" : "💬"}</div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
+          Help Shape ForThePeople.in
+        </h1>
+        <p style={{ fontSize: 15, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 500, margin: "0 auto" }}>
+          Vote for pre-defined features, or share your own idea. Citizen voices drive what we build next.
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{
+        display: "flex", gap: 4, marginBottom: 20, padding: 4,
+        background: "#F3F4F6", borderRadius: 10, maxWidth: 420, margin: "0 auto 20px",
+      }}>
+        <TabBtn active={activeTab === "vote"} onClick={() => switchTab("vote")} icon={<Vote size={15} />}>
+          Vote on Features
+        </TabBtn>
+        <TabBtn active={activeTab === "suggest"} onClick={() => switchTab("suggest")} icon={<MessageSquare size={15} />}>
+          Share Your Idea
+        </TabBtn>
+      </div>
+
+      {activeTab === "vote" ? <VoteTab /> : <SuggestTab />}
+    </div>
+  );
+}
+
+function TabBtn({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, padding: "8px 12px",
+        background: active ? "white" : "transparent",
+        color: active ? "#1A1A1A" : "#6B6B6B",
+        border: "none", borderRadius: 8,
+        fontSize: 13, fontWeight: active ? 600 : 500,
+        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+      }}
+    >
+      {icon}{children}
+    </button>
+  );
+}
+
+// ═══ VOTE TAB (existing behaviour, unchanged) ═══════════════
+function VoteTab() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [voted, setVoted] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
-    try {
-      return new Set(JSON.parse(localStorage.getItem("ftp_votes") ?? "[]") as string[]);
-    } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem("ftp_votes") ?? "[]") as string[]); }
+    catch { return new Set(); }
   });
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<string | null>(null);
@@ -68,9 +149,7 @@ export default function FeaturesPage() {
       const res = await fetch(`/api/features?id=${featureId}`, { method: "POST" });
       const data = await res.json() as { success?: boolean; votes?: number; error?: string };
       if (res.ok && data.success) {
-        setFeatures((prev) =>
-          prev.map((f) => f.id === featureId ? { ...f, votes: data.votes ?? f.votes + 1 } : f)
-        );
+        setFeatures((prev) => prev.map((f) => f.id === featureId ? { ...f, votes: data.votes ?? f.votes + 1 } : f));
         const newVoted = new Set(voted);
         newVoted.add(featureId);
         setVoted(newVoted);
@@ -81,61 +160,41 @@ export default function FeaturesPage() {
   }
 
   const categories = ["All", ...Array.from(new Set(features.map((f) => f.category)))];
-  const filtered = activeCategory === "All"
-    ? features
-    : features.filter((f) => f.category === activeCategory);
+  const filtered = activeCategory === "All" ? features : features.filter((f) => f.category === activeCategory);
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 48px" }}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>🗳️</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
-          Help Shape ForThePeople.in
-        </h1>
-        <p style={{ fontSize: 15, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 500, margin: "0 auto" }}>
-          Vote for the features you want most. The highest-voted features get built first.
-          Your voice drives what we build next.
-        </p>
-        {!loading && (
-          <div style={{ marginTop: 12, fontSize: 13, color: "#9B9B9B" }}>
-            {features.reduce((s, f) => s + f.votes, 0).toLocaleString("en-IN")} total votes across {features.length} ideas
-          </div>
-        )}
-      </div>
+    <>
+      {!loading && (
+        <div style={{ textAlign: "center", fontSize: 13, color: "#9B9B9B", marginBottom: 16 }}>
+          {features.reduce((s, f) => s + f.votes, 0).toLocaleString("en-IN")} total votes across {features.length} ideas
+        </div>
+      )}
 
-      {/* Category filter */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20, justifyContent: "center" }}>
         {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
             style={{
-              padding: "6px 14px",
-              borderRadius: 20,
+              padding: "6px 14px", borderRadius: 20,
               border: `1px solid ${activeCategory === cat ? "#2563EB" : "#E8E8E4"}`,
               background: activeCategory === cat ? "#EFF6FF" : "#FFFFFF",
               color: activeCategory === cat ? "#2563EB" : "#6B6B6B",
-              fontSize: 13,
-              fontWeight: activeCategory === cat ? 600 : 400,
-              cursor: "pointer",
-              minHeight: 36,
+              fontSize: 13, fontWeight: activeCategory === cat ? 600 : 400,
+              cursor: "pointer", minHeight: 36,
             }}
           >
             {cat !== "All" && (
-              <span
-                style={{
-                  display: "inline-block", width: 8, height: 8, borderRadius: "50%",
-                  background: CATEGORY_COLORS[cat] ?? "#9B9B9B", marginRight: 5,
-                }}
-              />
+              <span style={{
+                display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+                background: CATEGORY_COLORS[cat] ?? "#9B9B9B", marginRight: 5,
+              }} />
             )}
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Feature list */}
       {loading ? (
         <div style={{ textAlign: "center", color: "#9B9B9B", padding: "48px 0" }}>Loading features…</div>
       ) : (
@@ -146,64 +205,40 @@ export default function FeaturesPage() {
             const statusConfig = STATUS_CONFIG[feature.status];
             const StatusIcon = statusConfig.icon;
             const catColor = CATEGORY_COLORS[feature.category] ?? "#9B9B9B";
-
             return (
-              <div
-                key={feature.id}
-                style={{
-                  background: "#FFFFFF",
-                  border: `1px solid ${hasVoted ? "#BFDBFE" : "#E8E8E4"}`,
-                  borderRadius: 14,
-                  padding: "16px 20px",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 16,
-                  transition: "border-color 0.15s",
-                }}
-              >
-                {/* Icon */}
+              <div key={feature.id} style={{
+                background: "#FFFFFF",
+                border: `1px solid ${hasVoted ? "#BFDBFE" : "#E8E8E4"}`,
+                borderRadius: 14, padding: "16px 20px",
+                display: "flex", alignItems: "flex-start", gap: 16,
+              }}>
                 <div style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{feature.icon}</div>
-
-                {/* Content */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
                     <span style={{ fontSize: 15, fontWeight: 600, color: "#1A1A1A" }}>{feature.title}</span>
-                    {/* Category badge */}
-                    <span
-                      style={{
-                        fontSize: 10, fontWeight: 600, padding: "2px 7px",
-                        borderRadius: 10, background: `${catColor}15`, color: catColor,
-                      }}
-                    >
-                      {feature.category}
-                    </span>
-                    {/* Status badge */}
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10,
+                      background: `${catColor}15`, color: catColor,
+                    }}>{feature.category}</span>
                     <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: statusConfig.color }}>
                       <StatusIcon size={11} />
                       {statusConfig.label}
                     </span>
                   </div>
-                  <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5, margin: 0 }}>
-                    {feature.description}
-                  </p>
+                  <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.5, margin: 0 }}>{feature.description}</p>
                 </div>
-
-                {/* Vote button */}
                 <div style={{ flexShrink: 0, textAlign: "center" }}>
                   <button
                     onClick={() => handleVote(feature.id)}
                     disabled={hasVoted || feature.status === "completed" || isVoting}
                     style={{
                       display: "flex", flexDirection: "column", alignItems: "center",
-                      padding: "10px 14px",
-                      borderRadius: 10,
+                      padding: "10px 14px", borderRadius: 10,
                       border: `1.5px solid ${hasVoted ? "#2563EB" : "#E8E8E4"}`,
                       background: hasVoted ? "#EFF6FF" : "#FAFAF8",
                       color: hasVoted ? "#2563EB" : "#6B6B6B",
                       cursor: hasVoted || feature.status === "completed" ? "default" : "pointer",
-                      minWidth: 56, minHeight: 56,
-                      transition: "all 0.15s",
-                      opacity: isVoting ? 0.7 : 1,
+                      minWidth: 56, minHeight: 56, opacity: isVoting ? 0.7 : 1,
                     }}
                   >
                     <ThumbsUp size={16} fill={hasVoted ? "#2563EB" : "none"} />
@@ -218,20 +253,93 @@ export default function FeaturesPage() {
         </div>
       )}
 
-      {/* Footer note */}
-      <div
-        style={{
-          marginTop: 32, padding: "16px 20px",
-          background: "#F8FAFC", borderRadius: 12,
-          border: "1px solid #E8E8E4", textAlign: "center",
-        }}
-      >
+      <div style={{
+        marginTop: 32, padding: "16px 20px",
+        background: "#F8FAFC", borderRadius: 12,
+        border: "1px solid #E8E8E4", textAlign: "center",
+      }}>
         <p style={{ fontSize: 13, color: "#6B6B6B", margin: 0 }}>
           Have a feature idea not listed here?{" "}
-          <Link href="/feedback" style={{ color: "#2563EB", textDecoration: "none" }}>
-            Submit feedback →
+          <Link href="?tab=suggest" style={{ color: "#2563EB", textDecoration: "none", fontWeight: 600 }}>
+            Share your idea →
           </Link>
         </p>
+      </div>
+    </>
+  );
+}
+
+// ═══ SUGGEST TAB (NEW) ═══════════════════════════════════════
+function SuggestTab() {
+  const [items, setItems] = useState<PublicSuggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/suggestions")
+      .then((r) => r.json())
+      .then((d: { data: PublicSuggestion[] }) => { setItems(d.data ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  async function refreshList() {
+    try {
+      const r = await fetch("/api/suggestions");
+      const d = await r.json() as { data: PublicSuggestion[] };
+      setItems(d.data ?? []);
+    } catch { /* ignore */ }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+      <div style={{
+        padding: "20px 22px", background: "#FFFFFF",
+        border: "1px solid #E8E8E4", borderRadius: 14,
+      }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>
+          Share your idea
+        </div>
+        <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
+          Spot something wrong? Want a new feature? Tell us — we read every one.
+        </div>
+        <SuggestionForm onSuccess={refreshList} />
+      </div>
+
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", marginBottom: 12 }}>
+          Accepted + implemented suggestions
+        </div>
+        {loading ? (
+          <div style={{ textAlign: "center", color: "#9B9B9B", padding: "24px 0", fontSize: 13 }}>Loading…</div>
+        ) : items.length === 0 ? (
+          <div style={{ textAlign: "center", color: "#9B9B9B", padding: "24px 0", fontSize: 13 }}>
+            No public suggestions yet. Be the first!
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {items.map((s) => (
+              <div key={s.id} style={{
+                background: "#FFFFFF", border: "1px solid #E8E8E4",
+                borderRadius: 12, padding: "14px 18px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A" }}>{s.title}</span>
+                  {s.category && (
+                    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: "#EFF6FF", color: "#2563EB" }}>
+                      {s.category}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10,
+                    background: s.status === "IMPLEMENTED" ? "#DCFCE7" : "#FEF3C7",
+                    color: s.status === "IMPLEMENTED" ? "#166534" : "#854D0E" }}>
+                    {s.status === "IMPLEMENTED" ? "✓ Shipped" : "Accepted"}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: "#6B6B6B", lineHeight: 1.5, margin: "0 0 6px" }}>{s.body}</p>
+                <div style={{ fontSize: 11, color: "#9B9B9B" }}>— {s.name}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

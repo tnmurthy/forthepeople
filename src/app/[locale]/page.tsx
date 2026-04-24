@@ -5,6 +5,7 @@
  */
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import HomeDrilldown from "@/components/layout/HomeDrilldown";
 import MarketTickerClient from "@/components/layout/MarketTickerClient";
 import CompactContributorWallClient from "@/components/support/CompactContributorWallClient";
@@ -47,6 +48,22 @@ export default async function HomePage({
       <MarketTickerClient />
       <TopTierShowcase locale={locale} />
       <HomeDrilldown locale={locale} tickerShown />
+      <div style={{
+        maxWidth: 720,
+        margin: "4px auto 12px",
+        padding: "10px 14px",
+        background: "#F5F3FF",
+        border: "1px solid #DDD6FE",
+        borderRadius: 10,
+        fontSize: 13,
+        color: "#5B21B6",
+        textAlign: "center",
+      }}>
+        💬 Got an idea for a new feature or spot something wrong?{" "}
+        <Link href={`/${locale}/features?tab=suggest`} style={{ color: "#7C3AED", fontWeight: 600, textDecoration: "none" }}>
+          Share it with us →
+        </Link>
+      </div>
       <CompactContributorWallClient />
     </>
   );

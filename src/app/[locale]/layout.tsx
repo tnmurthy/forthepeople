@@ -9,6 +9,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import DisclaimerBar from "@/components/layout/DisclaimerBar";
 import MigrationBanner from "@/components/layout/MigrationBanner";
+import SuggestionFloatingButton from "@/components/common/SuggestionFloatingButton";
 
 export default async function LocaleLayout({
   children,
@@ -26,6 +27,7 @@ export default async function LocaleLayout({
       <Header locale={locale} />
       {children}
       <Footer />
+      <SuggestionFloatingButton />
     </QueryProvider>
   );
 }

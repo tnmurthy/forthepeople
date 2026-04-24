@@ -253,6 +253,25 @@ export default function Sidebar({ locale, stateSlug, districtSlug }: SidebarProp
             <span style={{ fontSize: 14, flexShrink: 0 }}>🗳️</span>
             <span>Vote on Features</span>
           </Link>
+          <Link
+            href={`/${locale}/features?tab=suggest`}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "6px 12px", textDecoration: "none",
+              color: "#16A34A", fontSize: 13, fontWeight: 500,
+              borderLeft: "3px solid transparent",
+              borderRadius: "0 6px 6px 0",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "#F0FDF4";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+          >
+            <span style={{ fontSize: 14, flexShrink: 0 }}>💬</span>
+            <span>Spot something wrong? Tell us.</span>
+          </Link>
           <div style={{ height: 12 }} />
         </div>
       )}
