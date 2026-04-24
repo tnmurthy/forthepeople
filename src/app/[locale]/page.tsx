@@ -10,6 +10,7 @@ import HomeDrilldown from "@/components/layout/HomeDrilldown";
 import MarketTickerClient from "@/components/layout/MarketTickerClient";
 import CompactContributorWallClient from "@/components/support/CompactContributorWallClient";
 import TopTierShowcase from "@/components/support/TopTierShowcase";
+import { NewPill } from "@/components/ui/NewPill";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -48,6 +49,22 @@ export default async function HomePage({
       <MarketTickerClient />
       <TopTierShowcase locale={locale} />
       <HomeDrilldown locale={locale} tickerShown />
+      <div style={{ textAlign: "center", margin: "4px auto 16px", padding: "0 16px" }}>
+        <Link
+          href={`/${locale}/india-detail`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 13,
+            color: "#2563EB",
+            textDecoration: "none",
+            fontWeight: 500,
+          }}
+        >
+          View India in one page →<NewPill slug="india-detail" />
+        </Link>
+      </div>
       <div style={{
         maxWidth: 720,
         margin: "4px auto 12px",
