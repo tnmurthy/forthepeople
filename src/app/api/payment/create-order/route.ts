@@ -9,6 +9,7 @@ import { getRazorpay } from "@/lib/razorpay";
 import prisma from "@/lib/db";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 
 const ABSOLUTE_MIN = 10;
 const ABSOLUTE_MAX = 500000;
@@ -32,6 +33,10 @@ export async function POST(req: NextRequest) {
     const nameResult = validateContributorName(name);
     if (!nameResult.ok) {
       return NextResponse.json({ error: nameResult.reason }, { status: 400 });
+    }
+    const messageResult = validateSupporterMessage(message);
+    if (!messageResult.ok) {
+      return NextResponse.json({ error: messageResult.reason }, { status: 400 });
     }
     if (!Number.isInteger(amount) || amount < ABSOLUTE_MIN || amount > ABSOLUTE_MAX) {
       return NextResponse.json(
@@ -66,7 +71,7 @@ export async function POST(req: NextRequest) {
         email: email?.trim() || null,
         amount: amount * 100, // store in paise
         tier: tier || "custom",
-        message: message?.trim().slice(0, 100) || null,
+        message: messageResult.cleaned,
         isPublic: isPublic !== false,
         status: "created",
       },

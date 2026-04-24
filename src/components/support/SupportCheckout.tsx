@@ -13,6 +13,7 @@ import { Instagram, Linkedin, Github, Twitter, ExternalLink } from "lucide-react
 import { INDIA_STATES } from "@/lib/constants/districts";
 import { validateSocialLink } from "@/lib/social-detect";
 import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 declare global {
@@ -191,8 +192,12 @@ export default function SupportCheckout({ tier }: Props) {
   const nameCheck = useMemo(() => validateContributorName(name), [name]);
   const nameError = name.length > 0 && !nameCheck.ok ? nameCheck.reason : null;
 
+  const messageCheck = useMemo(() => validateSupporterMessage(message), [message]);
+  const messageError = message.length > 0 && !messageCheck.ok ? messageCheck.reason : null;
+
   const canSubmit =
     nameCheck.ok &&
+    messageCheck.ok &&
     scriptReady &&
     (!districtRequired || selectedDistrict) &&
     (!stateRequired || selectedState) &&
@@ -569,10 +574,19 @@ export default function SupportCheckout({ tier }: Props) {
           )}
 
           <input
-            type="text" placeholder="Message (optional, max 100 chars)" value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, 100))}
-            style={{ padding: "9px 12px", border: "1px solid #E8E8E4", borderRadius: 8, fontSize: 13, outline: "none", background: "#FAFAF8" }}
+            type="text" placeholder="Message (optional, max 280 chars)" value={message}
+            onChange={(e) => setMessage(e.target.value.slice(0, 280))}
+            style={{
+              padding: "9px 12px",
+              border: `1px solid ${messageError ? "#D4523A" : "#E8E8E4"}`,
+              borderRadius: 8, fontSize: 13, outline: "none", background: "#FAFAF8",
+            }}
           />
+          {messageError && (
+            <div style={{ fontSize: 11, color: "#D4523A", marginTop: -4 }}>
+              {messageError}
+            </div>
+          )}
 
           <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer" }}>
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />

@@ -16,6 +16,7 @@ import { calculateOneTimeExpiry } from "@/lib/contribution-expiry";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 import { detectAndCleanSocialLink } from "@/lib/social-detect";
 import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 
 const COOKIE = "ftp_admin_v1";
 
@@ -47,6 +48,10 @@ export async function POST(req: NextRequest) {
   const nameResult = validateContributorName(body.name);
   if (!nameResult.ok) {
     return NextResponse.json({ error: nameResult.reason }, { status: 400 });
+  }
+  const messageResult = validateSupporterMessage(body.message);
+  if (!messageResult.ok) {
+    return NextResponse.json({ error: messageResult.reason }, { status: 400 });
   }
   const amount = Number(body.amount);
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -84,7 +89,7 @@ export async function POST(req: NextRequest) {
       status: "success",
       source: "manual",
       referenceNumber: body.referenceNumber ?? null,
-      message: body.message ?? null,
+      message: messageResult.cleaned,
       districtId: body.districtId ?? null,
       stateId: body.stateId ?? null,
       socialLink: (() => {

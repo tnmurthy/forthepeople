@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Plus, X } from "lucide-react";
 import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 
 // Suggested visibility expiry (days from today) by donation amount.
 // These are SUGGESTIONS only — admin can override or leave blank for permanent.
@@ -138,6 +139,11 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
     const nameResult = validateContributorName(name);
     if (!nameResult.ok) {
       setError(nameResult.reason);
+      return;
+    }
+    const msgResult = validateSupporterMessage(message);
+    if (!msgResult.ok) {
+      setError(msgResult.reason);
       return;
     }
     setSaving(true);
@@ -420,10 +426,16 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
               <Field label="Message" full>
                 <textarea
                   rows={2}
+                  maxLength={280}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   style={{ ...input, resize: "vertical" }}
                 />
+                {message.length > 0 && !validateSupporterMessage(message).ok && (
+                  <div style={{ fontSize: 11, color: "#D4523A", marginTop: 4 }}>
+                    {(validateSupporterMessage(message) as { reason: string }).reason}
+                  </div>
+                )}
               </Field>
               <label
                 style={{

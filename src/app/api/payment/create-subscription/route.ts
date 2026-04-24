@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TIER_CONFIG } from "@/lib/constants/razorpay-plans";
 import { validateContributorName } from "@/lib/validators/contributor-name";
+import { validateSupporterMessage } from "@/lib/validators/supporter-message";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +39,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: nameResult.reason }, { status: 400 });
     }
     const cleanedName = nameResult.cleaned;
+
+    const messageResult = validateSupporterMessage(message);
+    if (!messageResult.ok) {
+      return NextResponse.json({ error: messageResult.reason }, { status: 400 });
+    }
+    const cleanedMessage = messageResult.cleaned;
 
     const tierConfig = TIER_CONFIG[tier];
     if (!tierConfig || !tierConfig.isRecurring) {
@@ -118,7 +125,7 @@ export async function POST(req: NextRequest) {
           districtId: districtId || "",
           stateId: stateId || "",
           socialLink: socialLink?.trim() || "",
-          message: message?.trim().slice(0, 100) || "",
+          message: cleanedMessage ?? "",
           platform: "forthepeople.in",
         },
       }),
