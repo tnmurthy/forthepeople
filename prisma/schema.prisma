@@ -1448,6 +1448,11 @@ model Supporter {
   isPublic     Boolean  @default(true)
   receiptSent  Boolean  @default(false)
   razorpayData Json?
+
+  // Name moderation (spam/promo cleanup 2026-04-24)
+  nameFlagged  Boolean @default(false)
+  originalName String?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -1458,6 +1463,7 @@ model Supporter {
   @@index([stateId])
   @@index([subscriptionStatus])
   @@index([isRecurring, subscriptionStatus])
+  @@index([nameFlagged])
 }
 
 model FactCheck {
@@ -2245,4 +2251,29 @@ model TenderEducationContent {
 
   @@index([section, orderIndex])
   @@index([docType, stateSlug])
+}
+
+model Suggestion {
+  id         String           @id @default(cuid())
+  name       String
+  email      String?
+  title      String
+  body       String           @db.Text
+  category   String? // "Feature" | "Bug" | "Data" | "UX" | "Other"
+  status     SuggestionStatus @default(PENDING)
+  adminNotes String?          @db.Text
+  upvotes    Int              @default(0)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([status, createdAt])
+}
+
+enum SuggestionStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+  SPAM
+  IMPLEMENTED
 }
