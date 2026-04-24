@@ -4,6 +4,37 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 3: India aggregate page + mobile/visual fixes (PRE-PUSH)
+
+**Status:** 66 commits ahead of origin/main. 10 code commits this session — all UI, zero backend.
+
+### Reversibility (3 layers)
+- Git tag `pre-session-3-ui-2026-04-25` at commit `b658eef` (Session 2 end)
+- Backup branch `ui-backup-2026-04-25`
+- `.v1.tsx` backups committed BEFORE each edit: `Footer.v1.tsx`, `CompactContributorWall.v1.tsx`, `TopTierShowcase.v1.tsx`, `[locale]/page.v1.tsx`
+- Rollback guide: Obsidian `32-Session3-UI-Rollback-Guide.md`
+
+### Fixes
+- **Pune NEW badge** on `/en` now renders. Root cause: `isNewDistrict` gated on `ms >= 0` → failed on launch-morning UTC skew. Fix: `FUTURE_GRACE_MS = 24h`.
+- **GitHub link** visible in Footer (text + icon, no `hidden sm:inline` guard) so innerText contains "GitHub" at any viewport.
+- **Carousels slowed** 2× + touch-pause: `CompactContributorWall` 20s→40s; `TopTierShowcase` 60s/30s→120s both.
+
+### New surfaces
+- `src/lib/config/module-launches.ts` — single source of truth for launch dates. NEW pill auto-expires 30 days later.
+- `src/components/ui/NewPill.tsx` — subtle pastel green pill, no animation.
+- `src/components/home/NextDistrictLeaderboard.tsx` — reads `DistrictRequest` top-3.
+- `/[locale]/india-detail` — 8-section aggregate India page (hero, new districts, next district leaderboard, latest news, health ranking, 4× Coming Soon, Royal CTA).
+- `/en` gains ONE new link ("View India in one page →" + NewPill) above the Suggest banner. All other /en content unchanged.
+
+### Backend policy compliance
+- Zero Prisma schema edits
+- Zero API route edits
+- Zero seed scripts
+- Paid-supporter + failed-payment policies: no Supporter rows touched
+- Email hardcode scan: 0 hits for `jayanthmbj@gmail.com` in src/prisma/scripts
+
+---
+
 ## 2026-04-25 — Session 2: Pune responsibility module + grade/NEW tile fix (PRE-PUSH)
 
 **Status:** 55 commits ahead of origin/main. 7 code commits + 1 research-data commit this session.
