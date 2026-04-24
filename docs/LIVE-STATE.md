@@ -8,21 +8,28 @@ _Living document. Append new sections; don't rewrite history._
 
 **Status:** All 6 prompts complete locally (Phases A-F of Prompt 6 done). Awaiting commits (G), pre-push verification (H), and explicit go-ahead for push (I), then 24-48h monitoring (J).
 
-### Record counts in Neon production (confirmed Phase C idempotency)
+### Record counts in Neon production (Phase C + 2026-04-24 fix passes)
 - Leader: **41** (17 governance + 24 elected reps; Baramati seat seeded VACANT pending ECI)
 - BudgetAllocation: **5** (rich per-body data — PMC 25-26 + PMC 26-27 + PCMC 25-26 + PCMC 26-27 core + ZP 25-26)
 - BudgetEntry: **5** (sector aggregates for `/finance` UI compat — derived from BudgetAllocation; sums match to the rupee)
 - InfraProject: **13**
-- School: **8** (3 aggregates + 5 notables)
-- Scheme: **6**
+- School: **8** (3 aggregates + 5 notables; descriptions rewritten 2026-04-24)
+- Scheme: **10** (was 6 — added 4 Maharashtra state schemes 2026-04-24: Ladki Bahin, MJPJAY, Maharashtra Gharkul, Ramai Awas; eligibility format cleaned)
+- HousingScheme: **1** (PMAY-U FY 2026-27 — 2026-04-24; PMAY-G deferred)
+- PopulationHistory: **4** (Census 1991/2001/2011 + 2021 estimate — added 2026-04-24)
+- FamousPersonality: **6** (Tilak, Gokhale, J Phule, S Phule, Karve, Savarkar — added 2026-04-24)
+- GovOffice: **8** (Collectorate, PMC, PCMC, ZP, 2 Police, RTO, IT — added 2026-04-24)
+- ServiceGuide: **5** (birth/death, property tax, DL, ration, water — added 2026-04-24)
+- Tagline badges (districts.ts): **4** (Education Hub, Detroit, IT Corridor, Cultural Capital — added 2026-04-24)
 - Taluk: **14** (Prompt 1)
+- CourtStat: **0** (deferred — schema requires non-nullable Int stats; awaiting live NJDG API)
 - Hospital: **0** (schema model missing across the fleet)
 
 ### Commits ahead of origin/main
-1 so far (`09a4109` Prompt 1 Foundation). Phase G will add ~8 more → **~9 total in single batched push**.
+**18 total** = 1 Prompt 1 + 9 Phase G + 2 morning UX fix (schemes/housing) + 6 afternoon module-population fix (badges/pop/famous/offices/services/schools).
 
 ### Phase status
-A pre-flight ✓ | B GeoJSON ✓ | C seeds executed ✓ | D admin+budget UI ✓ | E smoke test ✓ | F docs ✓ | G commits ⏳ | H pre-push ⏳ | I push ⏳ | J monitor ⏳
+A pre-flight ✓ | B GeoJSON ✓ | C seeds executed ✓ | D admin+budget UI ✓ | E smoke test ✓ | F docs ✓ | G commits ✓ | + 2026-04-24 morning UX fix ✓ | + 2026-04-24 afternoon module population ✓ | H pre-push ✓ | I push ⏳ | J monitor ⏳
 
 ### Known gaps at launch (all documented in BUG-TRACKER)
 - **Hospital module:** generic `/health` template only; Hospital schema model missing fleet-wide
