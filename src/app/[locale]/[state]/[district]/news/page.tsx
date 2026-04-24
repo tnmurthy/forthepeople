@@ -165,10 +165,10 @@ function NewsPageInner({ params }: { params: Promise<{ locale: string; state: st
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                           <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: `${color}15`, color }}>{n.category}</span>
                           <span style={{ fontSize: 11, color: "#9B9B9B", display: "flex", alignItems: "center", gap: 3 }}><Clock size={10} />{timeAgo(n.publishedAt)}</span>
-                          <span style={{ fontSize: 11, color: "#9B9B9B" }}>{n.source}</span>
+                          <span style={{ fontSize: 11, color: "#9B9B9B" }}>{n.publisher ?? n.source}</span>
                         </div>
                         <div style={{ fontSize: 17, fontWeight: 700, color: "#1A1A1A", lineHeight: 1.4, marginBottom: n.summary ? 8 : 0 }}>{cleanHtml(n.headline)}</div>
-                        {n.summary && <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.6 }}>{cleanHtml(n.summary)}</div>}
+                        {n.summary && n.summary !== n.headline && <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.6 }}>{cleanHtml(n.summary)}</div>}
                         {n.targetModule && <ModuleTag targetModule={n.targetModule} moduleAction={n.moduleAction} base={base} />}
                       </div>
                       {n.url && (
@@ -198,10 +198,10 @@ function NewsPageInner({ params }: { params: Promise<{ locale: string; state: st
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 8, background: `${color}15`, color }}>{n.category}</span>
                         <span style={{ fontSize: 11, color: "#9B9B9B", display: "flex", alignItems: "center", gap: 3 }}><Clock size={10} />{timeAgo(n.publishedAt)}</span>
-                        <span style={{ fontSize: 11, color: "#9B9B9B" }}>{n.source}</span>
+                        <span style={{ fontSize: 11, color: "#9B9B9B" }}>{n.publisher ?? n.source}</span>
                       </div>
                       <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.4, marginBottom: n.summary ? 4 : 0 }}>{cleanHtml(n.headline)}</div>
-                      {n.summary && <div style={{ fontSize: 12, color: "#9B9B9B", lineHeight: 1.5 }}>{cleanHtml(n.summary)}</div>}
+                      {n.summary && n.summary !== n.headline && <div style={{ fontSize: 12, color: "#9B9B9B", lineHeight: 1.5 }}>{cleanHtml(n.summary)}</div>}
                       {n.targetModule && <ModuleTag targetModule={n.targetModule} moduleAction={n.moduleAction} base={base} />}
                     </div>
                     {n.url && (

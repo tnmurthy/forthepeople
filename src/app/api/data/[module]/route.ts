@@ -284,8 +284,10 @@ async function fetchModule(
     // 12. NEWS
     // ══════════════════════════════════════════════════
     case "news": {
+      // Filter out near-duplicates (duplicateOf != null) so the public list
+      // shows one article per story. Admin retains full visibility.
       const rows = await prisma.newsItem.findMany({
-        where: { districtId: did },
+        where: { districtId: did, duplicateOf: null },
         orderBy: { publishedAt: "desc" },
         take: 30,
       });

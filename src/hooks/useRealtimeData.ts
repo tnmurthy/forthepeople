@@ -248,6 +248,7 @@ export interface NewsItem {
   id: string;
   headline: string;
   summary?: string | null;
+  publisher?: string | null;
   source: string;
   url?: string | null;
   category: string;

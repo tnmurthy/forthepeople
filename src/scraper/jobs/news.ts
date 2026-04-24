@@ -114,6 +114,67 @@ function isArticleFresh(publishedDate: Date, maxAgeDays = 3): boolean {
   return true;
 }
 
+// Extract publisher from Google News RSS description suffix, and clear
+// summary when the cleaned text is just a repeat of the title.
+function extractPublisherAndClean(
+  rawSummary: string | undefined | null,
+  title: string,
+): { publisher: string | null; cleanedSummary: string | null } {
+  if (!rawSummary) return { publisher: null, cleanedSummary: null };
+
+  let publisher: string | null = null;
+  let cleaned = rawSummary.trim();
+
+  // Google News pattern: "<title>&nbsp;&nbsp;<Publisher>" or "  <Publisher>".
+  const nbspMatch = cleaned.match(/&nbsp;&nbsp;(.+?)$/);
+  const dblSpaceMatch = cleaned.match(/\s{2,}([^\s][^]+)$/);
+  if (nbspMatch) {
+    publisher = nbspMatch[1].trim();
+    cleaned = cleaned.replace(nbspMatch[0], "").trim();
+  } else if (dblSpaceMatch) {
+    publisher = dblSpaceMatch[1].trim();
+    cleaned = cleaned.replace(dblSpaceMatch[0], "").trim();
+  }
+
+  const norm = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim().slice(0, 40);
+
+  const finalSummary = !cleaned || norm(cleaned) === norm(title) ? null : cleaned;
+  return { publisher, cleanedSummary: finalSummary };
+}
+
+// Near-duplicate check at ingest: returns canonical id if one exists within
+// 24h sharing the same first-40-char normalized title prefix.
+async function findNearDuplicateCanonical(
+  title: string,
+  districtId: string,
+  publishedAt: Date,
+): Promise<string | null> {
+  const prefix = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+  if (!prefix || prefix.length < 15) return null;
+
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const candidate = await prisma.newsItem.findFirst({
+    where: {
+      districtId,
+      duplicateOf: null,
+      publishedAt: {
+        gte: new Date(publishedAt.getTime() - DAY_MS),
+        lte: new Date(publishedAt.getTime() + DAY_MS),
+      },
+      title: { contains: prefix, mode: "insensitive" },
+    },
+    orderBy: { publishedAt: "asc" },
+    select: { id: true },
+  });
+  return candidate?.id ?? null;
+}
+
 // Dedup by first 5 significant words in title — catches same article via different URLs
 async function isTitleDuplicate(
   title: string,
@@ -263,11 +324,29 @@ export async function scrapeNews(ctx: JobContext): Promise<ScraperResult> {
         const modAction = aiClassification?.moduleAction ?? "";
         const classifiedBy = aiClassification?.provider ?? "keyword";
 
+        // Extract publisher from RSS description suffix + clean summary if
+        // it's just a title dupe (Google News pattern).
+        const { publisher, cleanedSummary } = extractPublisherAndClean(
+          item.summary,
+          item.headline,
+        );
+
+        // Check for near-duplicates (same district, same 40-char prefix,
+        // within 24h) already persisted.
+        const canonicalId = await findNearDuplicateCanonical(
+          item.headline,
+          ctx.districtId,
+          item.publishedAt,
+        );
+
         const saved = await prisma.newsItem.create({
           data: {
             districtId: ctx.districtId,
             title: item.headline,
-            summary: item.summary || null,
+            summary: cleanedSummary,
+            originalSummary: item.summary || null,
+            publisher,
+            duplicateOf: canonicalId,
             source: item.source,
             url: item.url,
             category: categorize(item.headline),
