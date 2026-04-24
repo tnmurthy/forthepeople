@@ -59,12 +59,8 @@ const RECORDS: SchemeRec[] = [
     category: "Housing",
     level: "CENTRAL",
     amount: 267000, // ₹2.67 lakh combined EWS subsidy + CLSS
-    eligibility: [
-      "Beneficiaries: EWS, LIG, MIG-I, MIG-II categories. Interest subsidies 6.5% (EWS/LIG), 4% (MIG-I), 3% (MIG-II). Ownership promoted in name of female members.",
-      "Pune district status: PMC FY 2026-27 budget allocates construction of 4,725 houses under PMAY in Hadapsar and Wadgaon. 32 merged villages (2017) and 23 merged villages (2021) are priority expansion zones. Angikaar 2025 campaign (launched Sept 17, 2025) fast-tracks verification and completion.",
-      "Secondary source: PMC FY 2026-27 Budget | https://www.thebridgechronicle.com/pune/pune-budget-2026-27-13995-crore-roads-water-infrastructure-merged-villages-agn97",
-      "Disclaimer: Launched June 25, 2015; extended via PMAY-U 2.0 (Aug 2024) targeting 1 crore urban houses through FY 2029. Pune district-level beneficiary counts vary monthly — refer to pmay-urban.gov.in state/district dashboard for real-time status.",
-    ].join(" // "),
+    eligibility:
+      "Urban EWS/LIG/MIG households — ₹2.67 lakh subsidy + interest-rate reduction for home purchase",
     applyUrl: "https://pmay-urban.gov.in/",
     source: "PMAY Urban Official | https://pmay-urban.gov.in/",
   },
@@ -75,12 +71,8 @@ const RECORDS: SchemeRec[] = [
     category: "Housing",
     level: "CENTRAL",
     amount: 120000, // ₹1.20 lakh plains area unit subsidy
-    eligibility: [
-      "Per-household grant: ₹1.20 lakh plains (₹1.30 lakh hilly/difficult). With converged schemes ₹2.39 lakh (₹2.00 lakh household + ₹12k SBM toilet + ₹27k MGNREGA 90/95 days wages). Additional ₹50,000 per GR 4 April 2025 (₹35k additional + ₹15k solar up to 1 kW).",
-      "Pune district status: Implemented by Pune Zilla Parishad across rural talukas. Maha Awas Abhiyan 2024-25 launched by Divisional Commissioner. Integrated with MGNREGA (labor wages), SBM-G (toilets), PMUY (LPG), PM Surya Ghar (solar).",
-      "Secondary source: PMAY-G Official | https://pmayg.nic.in/",
-      "Disclaimer: Launched 2016 (restructured from Indira Awaas Yojana). Extended March 2025 to 2029 with 2 crore additional houses (total outlay ₹3,06,137 crore FY 2024-29). Pune district beneficiary counts updated periodically; for taluka-level status, refer to Pune ZP Rural Development Department.",
-    ].join(" // "),
+    eligibility:
+      "Rural families without pukka house — ₹1.20 lakh (plains) / ₹1.30 lakh (hilly) construction grant",
     applyUrl: "https://pmayg.nic.in/",
     source: "Divisional Commissioner, Pune Division — Maha Awas Abhiyan | https://divcompune.maharashtra.gov.in/en/scheme/maha-awas-abhiyan-2024-25/",
   },
@@ -90,12 +82,8 @@ const RECORDS: SchemeRec[] = [
     name: "Jal Jeevan Mission (JJM) — Har Ghar Jal",
     category: "Water",
     level: "CENTRAL",
-    eligibility: [
-      "Eligibility: Every rural household entitled to a Functional Household Tap Connection (FHTC).",
-      "Pune district status: Implementation by Pune Zilla Parishad Water Supply & Sanitation Department. Coverage progressing across 14 talukas. Real-time household-level data available at ejalshakti.gov.in dashboard.",
-      "Secondary source: Pune Zilla Parishad Water Supply Department | https://www.punezp.gov.in/",
-      "Disclaimer: Launched August 15, 2019; originally targeted 2024 completion, continuing. Funding: 50:50 centre-state (90:10 NE/Himalayan states; 100% UTs). FHTC counts update monthly; for specific village status, query ejalshakti.gov.in.",
-    ].join(" // "),
+    eligibility:
+      "Every rural household — Functional Household Tap Connection with potable water",
     applyUrl: "https://ejalshakti.gov.in/jjmreport/",
     source: "Jal Jeevan Mission Dashboard | https://ejalshakti.gov.in/jjmreport/",
   },
@@ -105,12 +93,8 @@ const RECORDS: SchemeRec[] = [
     name: "Mahatma Gandhi National Rural Employment Guarantee Scheme (MGNREGS)",
     category: "Employment",
     level: "CENTRAL",
-    eligibility: [
-      "Eligibility: Every rural household whose adult members volunteer for unskilled manual work. Guarantees 100 days of wage employment per financial year. Daily wages notified by state (Maharashtra rates revised annually).",
-      "Pune district status: Active implementation across rural talukas (Ambegaon, Khed, Junnar, Maval, Mulshi, Purandar, Velhe, Bhor, Baramati, Indapur, Daund, Shirur). Convergence with PMAY-G for rural masonry wages (90/95 days). Real-time job card + muster roll data at nrega.nic.in.",
-      "Secondary source: Pune ZP | https://www.punezp.gov.in/",
-      "Disclaimer: Statutory scheme under MGNREG Act 2005. Focus areas: water conservation, land development, drought proofing. For real-time Pune data, query nrega.nic.in public dashboard filtered by Pune district.",
-    ].join(" // "),
+    eligibility:
+      "Rural households — 100 days guaranteed unskilled manual wage employment per year",
     applyUrl: "https://nrega.nic.in/",
     source: "MGNREGA Official | https://nrega.nic.in/",
   },
@@ -121,12 +105,8 @@ const RECORDS: SchemeRec[] = [
     category: "Health Insurance",
     level: "CENTRAL",
     amount: 500000, // ₹5 lakh coverage per family per year
-    eligibility: [
-      "Eligibility: Beneficiaries identified via SECC 2011 (rural) and occupational categories (urban). Extended to senior citizens 70+ regardless of income (via Ayushman Vay Vandana). ₹5 lakh coverage per family per year for secondary + tertiary hospitalisation.",
-      "Pune district status: Empanelled hospitals include Sassoon General (public) and multiple private hospitals. Card distribution ongoing through CSC centres, district collector's office, and hospital help desks. Mahatma Jyotirao Phule Jan Arogya Yojana (state scheme) integrated with PM-JAY for combined coverage.",
-      "Secondary source: Mahatma Phule Jan Arogya Yojana Maharashtra | https://www.jeevandayee.gov.in/",
-      "Disclaimer: For eligibility check visit pmjay.gov.in or nearest CSC. Coverage is per family per year; specific disease exclusions may apply. Cashless and paperless at empanelled public and private hospitals.",
-    ].join(" // "),
+    eligibility:
+      "SECC-identified families + seniors 70+ — ₹5 lakh/year cashless hospital coverage",
     applyUrl: "https://pmjay.gov.in/",
     source: "PM-JAY Official | https://pmjay.gov.in/",
   },
@@ -137,12 +117,8 @@ const RECORDS: SchemeRec[] = [
     category: "Education",
     level: "CENTRAL",
     beneficiaryCount: 238395,
-    eligibility: [
-      "Eligibility: Students in Classes 1-8 enrolled in government schools. Nutritious mid-day meal with supplementary food once a week.",
-      "Pune district status: Implemented across all 3,546 Pune ZP primary schools covering 2,38,395 students. PMC schools also participate. Focus on nutritional status improvement and school enrolment/attendance.",
-      "Secondary source: PM POSHAN Official | https://pmposhan.education.gov.in/",
-      "Disclaimer: Beneficiary count reflects Pune ZP primary schools only; PMC schools and aided schools add additional coverage. For complete district count, refer to District Education Office (Pune).",
-    ].join(" // "),
+    eligibility:
+      "Students Class 1-8 in government schools — free mid-day meal, supplementary food weekly",
     applyUrl: "https://pmposhan.education.gov.in/",
     source: "Pune Zilla Parishad Primary Education | https://www.punezp.gov.in/en/primary-education-2/",
   },
