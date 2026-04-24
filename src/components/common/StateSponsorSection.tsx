@@ -201,7 +201,7 @@ export default function StateSponsorSection({ locale, stateSlug, stateName }: Pr
           label={`${stateName} Champions`}
           sponsors={stateLine}
           viewAllHref={`/${locale}/contributors`}
-          emptyCta={{ text: `Be the first ${stateName} Champion → ₹1,999/mo`, href: `/${locale}/support?tier=state&state=${stateSlug}` }}
+          emptyCta={{ text: `Be the first ${stateName} Champion → ₹999/mo`, href: `/${locale}/support?tier=state&state=${stateSlug}` }}
         />
       </div>
 
@@ -219,7 +219,7 @@ export default function StateSponsorSection({ locale, stateSlug, stateName }: Pr
           textDecoration: "none",
         }}
       >
-        ❤️ Sponsor {stateName} — ₹1,999/mo →
+        ❤️ Sponsor {stateName} — ₹999/mo →
       </Link>
     </div>
   );

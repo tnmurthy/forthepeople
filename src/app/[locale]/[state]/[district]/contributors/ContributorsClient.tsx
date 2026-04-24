@@ -545,7 +545,7 @@ export default function ContributorsClient({
         ) : (
           <ScrollableRow
             contributors={stateChampions}
-            emptyState={<EmptyCTA text={`Sponsor all of ${stateName} → from ₹1,999/mo`} href={stateHref} accent="#7C3AED" />}
+            emptyState={<EmptyCTA text={`Sponsor all of ${stateName} → from ₹999/mo`} href={stateHref} accent="#7C3AED" />}
           />
         )}
       </div>

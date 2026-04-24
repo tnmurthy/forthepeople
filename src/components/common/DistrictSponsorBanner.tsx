@@ -291,7 +291,7 @@ export default function DistrictSponsorBanner({
           sponsors={stateLine}
           speed={90}
           viewAllHref={viewAllHref}
-          emptyCta={{ text: `Sponsor ${sName} — ₹1,999/mo`, href: `/${locale}/support?tier=state&state=${state}` }}
+          emptyCta={{ text: `Sponsor ${sName} — ₹999/mo`, href: `/${locale}/support?tier=state&state=${state}` }}
         />
         <ScrollRow
           icon="🏛️"

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Plus, X } from "lucide-react";
+import { validateContributorName } from "@/lib/validators/contributor-name";
 
 // Suggested visibility expiry (days from today) by donation amount.
 // These are SUGGESTIONS only — admin can override or leave blank for permanent.
@@ -39,7 +40,7 @@ interface Props {
 const TIERS = [
   { value: "custom",   label: "One-Time Contribution (₹50+)",       amount: 50,    isRecurring: false },
   { value: "district", label: "District Champion (₹99/mo)",          amount: 99,    isRecurring: true  },
-  { value: "state",    label: "State Champion (₹1,999/mo)",          amount: 1999,  isRecurring: true  },
+  { value: "state",    label: "State Champion (₹999/mo)",            amount: 999,   isRecurring: true  },
   { value: "patron",   label: "All-India Patron (₹9,999/mo)",        amount: 9999,  isRecurring: true  },
   { value: "founder",  label: "Founding Builder (₹50,000/mo)",       amount: 50000, isRecurring: true  },
 ];
@@ -130,8 +131,13 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !amount || amount <= 0) {
-      setError("Name and amount are required");
+    if (!amount || amount <= 0) {
+      setError("Amount is required");
+      return;
+    }
+    const nameResult = validateContributorName(name);
+    if (!nameResult.ok) {
+      setError(nameResult.reason);
       return;
     }
     setSaving(true);
@@ -257,10 +263,16 @@ export default function ManualSupporterForm({ districts, states, onCreated }: Pr
                 <input
                   type="text"
                   required
+                  maxLength={40}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={input}
                 />
+                {name.length > 0 && !validateContributorName(name).ok && (
+                  <div style={{ fontSize: 11, color: "#D4523A", marginTop: 4 }}>
+                    {(validateContributorName(name) as { reason: string }).reason}
+                  </div>
+                )}
               </Field>
               <Field label="Email">
                 <input

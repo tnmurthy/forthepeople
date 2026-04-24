@@ -48,7 +48,7 @@ export default function BadgeExplainer() {
           <div style={{ fontWeight: 700, color: "#1A1A1A", marginBottom: 6 }}>CONTRIBUTION TIERS:</div>
           <div>☕ <strong>Buy me a Chai</strong> — One-time from ₹50</div>
           <div>🏛️ <strong>District Champion</strong> — ₹200/month · Your name on the district page</div>
-          <div>🇮🇳 <strong>State Champion</strong> — ₹2,000/month · Your name on all districts in a state</div>
+          <div>🇮🇳 <strong>State Champion</strong> — ₹999/month · Your name on all districts in a state</div>
           <div>🌟 <strong>All-India Patron</strong> — ₹10,000/month · Your name on every page</div>
           <div>👑 <strong>Founding Builder</strong> — ₹50,000/month · Gold card everywhere, listed first, permanent feature</div>
 
