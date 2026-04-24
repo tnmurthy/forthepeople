@@ -96,7 +96,54 @@ export default function FeaturesPage() {
         </TabBtn>
       </div>
 
-      {activeTab === "vote" ? <VoteTab /> : <SuggestTab />}
+      {/* Tab panels — both mounted, crossfade between them.
+          motion-safe via @media (prefers-reduced-motion: reduce) at page level. */}
+      <div style={{ position: "relative" }}>
+        <FadePanel visible={activeTab === "vote"}>
+          <VoteTab />
+        </FadePanel>
+        <FadePanel visible={activeTab === "suggest"}>
+          <SuggestTab />
+        </FadePanel>
+      </div>
+    </div>
+  );
+}
+
+function usePrefersReducedMotion(): boolean {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduce(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduce(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduce;
+}
+
+function FadePanel({ visible, children }: { visible: boolean; children: React.ReactNode }) {
+  const reduceMotion = usePrefersReducedMotion();
+  const transition = reduceMotion
+    ? "none"
+    : "opacity 200ms ease-out, transform 200ms ease-out";
+  return (
+    <div
+      aria-hidden={!visible}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: reduceMotion
+          ? undefined
+          : (visible ? "translateY(0)" : "translateY(6px)"),
+        transition,
+        pointerEvents: visible ? "auto" : "none",
+        position: visible ? "relative" : "absolute",
+        inset: visible ? undefined : 0,
+        width: "100%",
+      }}
+    >
+      {children}
     </div>
   );
 }
