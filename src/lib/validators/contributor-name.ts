@@ -36,6 +36,12 @@ const SPAM_PATTERNS: Array<{ pattern: RegExp; note: string }> = [
   { pattern: /\+\d{2,3}/, note: "country-code" },
 ];
 
+// Business-name suffix rejection (added 2026-04-25).
+// Catches "SML Finance", "Globex Corp", "Apex Ventures" etc. in the name
+// field. Preserves false-positive-free matching on common first names by
+// requiring a word boundary + full-word match.
+const BUSINESS_SUFFIXES = /\b(finance|financials|ltd|limited|pvt|corp|corporation|inc|incorporated|llc|company|enterprises|services|solutions|technologies|industries|associates|agency|holdings|ventures|capital|bank|insurance|advisory|consultancy|consultants)\b/i;
+
 export type NameValidationResult =
   | { ok: true; cleaned: string }
   | { ok: false; reason: string };
@@ -56,6 +62,12 @@ export function validateContributorName(input: unknown): NameValidationResult {
     return {
       ok: false,
       reason: "Name can only contain letters, spaces, hyphens, apostrophes, and periods.",
+    };
+  }
+  if (BUSINESS_SUFFIXES.test(trimmed)) {
+    return {
+      ok: false,
+      reason: "Please enter a personal name (first + last), not a business name.",
     };
   }
   for (const { pattern } of SPAM_PATTERNS) {
