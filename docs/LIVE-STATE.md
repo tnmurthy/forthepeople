@@ -4,6 +4,41 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 1 pre-push fix pass (PRE-PUSH, local only)
+
+**Status:** 47 commits ahead of origin/main. Dev server on :3000, all schema migrations pushed via `prisma db push`.
+
+### Policies formalized this session
+- **Paid-supporter:** never delete paid records. SHORTEN names, CLEAR spam messages. Originals preserved.
+- **Failed-payment:** orphan rows deleted. No successful payment → no DB row.
+- **Motion-safe:** animations honor `prefers-reduced-motion`.
+
+### Schema additions (all pushed via db push)
+- `District.goLiveDate DateTime?` — drives NEW badge 45-day window
+- `Supporter.messageFlagged Boolean + originalMessage String?`
+- `NewsItem.publisher String? + duplicateOf String? + originalSummary String?` + index on duplicateOf
+
+### Data cleanups (Neon prod, all idempotent)
+- InfraProject: 3 cross-state Mumbai-Pune Expressway duplicates deleted; 2 anchors changed scope NATIONAL → STATE
+- LocalAlert: 1 irrelevant Pune alert deleted (Karnataka Express)
+- Supporter: 4 spam messages cleared + 3 business names shortened (e.g. "SML Finance" → "SML F.") — paid records intact
+- NewsItem: 453/461 items cleaned of title-dupe summaries + 453 publishers extracted + 2 near-duplicates marked
+- Supporter orphan sweep: 0 found (audit clean)
+
+### Row counts (active districts: 10)
+- Supporter: 70 (unchanged — no paid record deleted this session)
+- NewsItem: 461 (canonical; 2 marked as duplicates)
+- InfraProject (state-scope MH): 11 (10 from prior session + 2 Mumbai-Pune now STATE; 1 net change from 3 NATIONAL dupes deleted)
+- District.goLiveDate: populated on all 10 active districts
+
+### Webhook hardening
+`razorpay-webhook/route.ts` `payment.failed` branch no longer creates Supporter rows — instead deletes any non-success row matching paymentId. Keeps paid-supporter policy watertight.
+
+### Manual action pending
+Razorpay ₹999 monthly plan creation (Jayanth, dashboard + paste into `src/lib/razorpay/plans.ts`).
+
+---
+
 ## 2026-04-24 (late evening) — 3-Part Fix: Name Validation + State Price + Suggestions (PRE-PUSH)
 
 **Status:** Local-only; 34 commits ahead of origin/main. Awaiting Jayanth's review + Razorpay manual step before push conversation.
