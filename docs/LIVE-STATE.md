@@ -4,6 +4,45 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-24 (late evening) — 3-Part Fix: Name Validation + State Price + Suggestions (PRE-PUSH)
+
+**Status:** Local-only; 34 commits ahead of origin/main. Awaiting Jayanth's review + Razorpay manual step before push conversation.
+
+### Part A — Supporter name validation
+- Shared validator at `src/lib/validators/contributor-name.ts` (Unicode letters + spam-pattern rejection).
+- Applied server-side on `create-order`, `create-subscription`, `manual-supporter`, `api/suggestions`. Client-side inline errors on `SupportCheckout`, `ManualSupporterForm`, `SuggestionForm`.
+- Schema: `Supporter.nameFlagged` + `Supporter.originalName` + index. Pushed via `prisma db push`.
+- Cleanup ran: 70 rows → 58 clean + 12 flagged (11 salvaged, 1 anon; + 8 email-as-name subsequently re-anonymized).
+- Admin review tab at `/admin/contributors-flagged` (Edit / Approve / Restore / Delete per row).
+
+### Part B — State Champion ₹1,999 → ₹999
+- `TIER_CONFIG.state.amount` + `minAmount` dropped to 999; `district.maxAmount` dropped to 998 for clean band boundaries; `state.maxAmount` unchanged (9998).
+- Daily framing: "₹67/day auto ride" → "₹33/day cup of coffee".
+- Copy swapped on 8 surfaces (see Obsidian note 29 for full list).
+- `VISIBILITY_THRESHOLD.state` lowered 1999 → 999 so sponsor-wall inclusion tracks the new price.
+- New `src/lib/razorpay/plans.ts` documents grandfathering + placeholder for Jayanth's manual Razorpay dashboard step (creating the new ₹999 monthly plan).
+- Existing ₹1,999 subscribers grandfathered (they stay on the old dynamic plan ID; zero recurring-charge touches).
+
+### Part C — Community Suggestions
+- New Prisma model `Suggestion` + `SuggestionStatus` enum (PENDING / REVIEWED / ACCEPTED / REJECTED / SPAM / IMPLEMENTED). Pushed via `db push`.
+- Public `POST /api/suggestions` — validated, 3/hr IP rate limit, non-blocking Resend to `forthepeople1547@gmail.com`.
+- Public `GET /api/suggestions` — ACCEPTED + IMPLEMENTED only.
+- Admin CRUD at `/api/admin/suggestions` + `/api/admin/suggestions/[id]` with audit-log.
+- `/features` refactored into two tabs: Vote on Features (existing) + Share Your Idea (new).
+- Site-wide CTAs: floating 💬 FAB (locale layout), home banner, district sidebar footer, footer "Share an Idea" link.
+- Admin review at `/admin/suggestions` with status filter + inline notes + bulk SPAM+delete.
+
+### Verification
+- `tsc --noEmit`: clean.
+- Hardcoded `jayanthmbj@gmail.com` in `src/ prisma/ scripts/`: 0 hits.
+- Dev server restarted to pick up regenerated Prisma client.
+- Smoke tests: GET empty array, POST valid 200 ok, POST spam-name 400 with reason.
+
+### Manual action pending
+Jayanth to create ₹999 monthly plan in Razorpay dashboard and paste plan_id into `src/lib/razorpay/plans.ts` (replacing `REPLACE_WITH_NEW_999_PLAN_ID`).
+
+---
+
 ## 2026-04-24 — Pune full-audit fix + Maharashtra state infrastructure (take 3, PRE-PUSH)
 
 **Status:** Third autonomous pre-push pass. 7 new seeds executed against Neon production. No push yet — awaiting Jayanth review.
