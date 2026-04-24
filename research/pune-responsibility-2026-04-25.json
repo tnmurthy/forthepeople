@@ -1,0 +1,525 @@
+[
+  {
+    "section": "Water",
+    "icon": "💧",
+    "items": [
+      {
+        "action": "Call the PMC 24x7 water supply helpline to report no-water, low pressure, pipe bursts or contamination in your PMC-area society.",
+        "why_pune_specific": "PMC supplies the entire Pune city — including the 23 merged villages where water scarcity is acute — from the Khadakwasla dam complex (Khadakwasla, Panshet, Varasgaon, Temghar), and this line is the single point of contact for any issue along that network.",
+        "report_to": {
+          "name": "PMC Water Supply Department 24x7 Helpline",
+          "url": "https://www.pmc.gov.in/en/d/water",
+          "phone": "+91-20-25501383"
+        },
+        "source_notes": "PMC official Water Supply Department page (pmc.gov.in/en/d/water); helpline launched 1 March 2023 and corroborated by PMC-linked news (Pune Pulse, Feb–Mar 2023)."
+      },
+      {
+        "action": "Call the PCMC Sarathi helpline or the dedicated water-supply complaint cell for no-water, alternate-day supply, or leakage issues in Pimpri-Chinchwad.",
+        "why_pune_specific": "PCMC has run alternate-day supply drawn from Pavana dam since 25 November 2019 because of leakage and demand-supply gaps along the Pavana pipeline — so residents in Pimpri, Chinchwad, Nigdi, Wakad, Punawale and the newly built-up belt need a working escalation number.",
+        "report_to": {
+          "name": "PCMC Sarathi Helpline / PCMC Water Complaint Cell",
+          "url": "https://www.pcmcindia.gov.in/contact.php",
+          "phone": "8888006666"
+        },
+        "source_notes": "PCMC official contact page (pcmcindia.gov.in/contact.php) and india.gov.in-listed PCMC numbers (020-67333333 main, 8888006666 Sarathi WhatsApp)."
+      },
+      {
+        "action": "File a written/online pollution complaint with MPCB's Pune Regional Office when you see sewage, industrial effluent or chemical discharge entering the Mula, Mutha, Pavana, Indrayani, Ram Nadi, Devnadi, Ambil Odha or Bhairoba Nala.",
+        "why_pune_specific": "The Mula-Mutha is a designated polluted river stretch under the NGT-mandated River Management and Rejuvenation Committee for Pune, with MPCB as nodal agency; untreated sewage from Pune/PCMC STPs remains a documented problem, and MPCB's Pune office is the statutory complaint authority.",
+        "report_to": {
+          "name": "Maharashtra Pollution Control Board – Regional Office Pune",
+          "url": "https://www.mpcb.gov.in/about-us/offices/pune",
+          "phone": "verify_before_use"
+        },
+        "source_notes": "MPCB official website (mpcb.gov.in/about-us/offices/pune), email mpcbpune@mpcb.gov.in listed; phone omitted as the office-specific direct line is not published on MPCB's current page."
+      },
+      {
+        "action": "Report sewage discharge, encroachment or waste dumping into Pune's rivers through the NGT-constituted River Management and Rejuvenation Committee mechanism, copying PMC/PCMC and MPCB.",
+        "why_pune_specific": "Pune is one of the few Indian cities where an NGT order (Mula-Mutha case) created a formal committee chaired by the Divisional Commissioner specifically to protect riparian zones, stop untreated sewage, and monitor STP modification for the Mula, Mutha and their tributaries.",
+        "report_to": {
+          "name": "Divisional Commissioner, Pune Division (River Management & Rejuvenation Committee)",
+          "url": "https://pune.gov.in/",
+          "phone": "verify_before_use"
+        },
+        "source_notes": "India Water Portal interview with Shailaja Deshpande, Jeevitnadi Living River Foundation, documenting the NGT order and RMRC; Jeevitnadi and citizen groups are cross-referenced in government and Mongabay reporting (2022-2025)."
+      },
+      {
+        "action": "Use the PMC CARE portal / app to register a ward-specific water-quality complaint (turbid water, sewage backflow into taps) with geotagged photo evidence.",
+        "why_pune_specific": "PMC CARE routes complaints to the specific ward engineer's dashboard — essential in fringe areas like Wagholi, Kharadi, Baner-Balewadi and the 23 merged villages where tanker dependence and groundwater depletion are highest.",
+        "report_to": {
+          "name": "PMC CARE (Citizen Assistance Response Engagement)",
+          "url": "https://www.pmccare.in/",
+          "phone": "8888251001"
+        },
+        "source_notes": "PMC official Citizen Services page (pmc.gov.in / webadmin.pmc.gov.in) and PMC CARE portal (pmccare.in); WhatsApp chatbot number 8888251001 confirmed by PMC's own X post and pmc.gov.in text."
+      },
+      {
+        "action": "Check live reservoir levels of Khadakwasla, Panshet, Varasgaon, Temghar and Pavana on the Maharashtra Water Resources Department dam-storage dashboard before the monsoon and during heavy rain events.",
+        "why_pune_specific": "Pune city's entire drinking-water security and downstream flood risk along the Mutha depend on the Khadakwasla Project, while PCMC depends on Pavana; Irrigation Department discharges from Khadakwasla directly flood Ekta Nagar, Vitthalwadi, Sangamwadi and Mundhwa.",
+        "report_to": {
+          "name": "Water Resources Department, Government of Maharashtra",
+          "url": "https://wrd.maharashtra.gov.in/"
+        },
+        "source_notes": "wrd.maharashtra.gov.in is the official WRD portal; dam-wise storage is published daily during monsoon by the Pune Irrigation Circle under WRD."
+      }
+    ]
+  },
+  {
+    "section": "Traffic & Commute",
+    "icon": "🚗",
+    "items": [
+      {
+        "action": "Check and pay (or dispute) your Pune e-challan on the Maharashtra Traffic e-Challan portal using your vehicle number within 60 days of the notice.",
+        "why_pune_specific": "Pune has among the highest vehicle densities in India — Pune district is in the top-three Indian districts by vehicle stock, with Maharashtra (Thane, Pune, Mumbai) together projected at 15 million vehicles by 2050 — and Pune City Traffic Police operate CCTV-based e-challans across Chandni Chowk, Nashik Phata, Katraj-Kondhwa and other hotspots.",
+        "report_to": {
+          "name": "Maharashtra Traffic e-Challan Portal",
+          "url": "https://mahatrafficechallan.gov.in/",
+          "phone": "verify_before_use"
+        },
+        "source_notes": "Maharashtra Traffic Police portal (mahatrafficechallan.gov.in); CEEW 2024 study on vehicle ownership by district confirms Pune's top-three status. Secondary 844-844-8960 number appears in third-party sources only — verify on official site."
+      },
+      {
+        "action": "Report wrong-parking, pavement encroachment or missing road markings through the Pune City Traffic Police using their official site and email.",
+        "why_pune_specific": "Pune's peth-area road geometry, the FC Road–JM Road corridor, and the Shivajinagar–Deccan belt were never designed for present vehicle density; only the jurisdictional Pune City Traffic Branch (and Pimpri-Chinchwad Traffic Police for PCMC) can legally act on parking violations.",
+        "report_to": {
+          "name": "Pune City Traffic Police",
+          "url": "https://www.punepolice.gov.in/TRAFFICBRANCH"
+        },
+        "source_notes": "punepolice.gov.in/TRAFFICBRANCH is the official Pune City Police traffic branch page; email cctvtrafficpune@gmail.com is referenced in multiple aggregator guides — treat as secondary."
+      },
+      {
+        "action": "Use Pune Metro's Purple Line (PCMC to Swargate) and Aqua Line (Vanaz to Ramwadi) instead of driving through Shivajinagar, Deccan, Khadki or Nashik Phata, and report service issues to MahaMetro.",
+        "why_pune_specific": "The PCMC–Swargate Purple Line became fully operational on 29 September 2024 and the Ruby Hall–Ramwadi Aqua Line on 6 March 2024, directly substituting the most congested north-south (Old Mumbai–Pune Highway) and east-west (Deccan–Kalyani Nagar) corridors.",
+        "report_to": {
+          "name": "Maharashtra Metro Rail Corporation Ltd. (MahaMetro) – Pune Metro",
+          "url": "https://www.punemetrorail.org/"
+        },
+        "source_notes": "punemetrorail.org is MahaMetro's official Pune Metro site; opening dates confirmed by Wikipedia's Pune Metro entry and themetrorailguy.com, both citing MahaMetro press releases."
+      },
+      {
+        "action": "Report broken-down PMPML buses, missed schedules, rude conduct, or overcharging to the PMPML 24x7 helpline or its online citizen complaint panel.",
+        "why_pune_specific": "PMPML is the only public bus operator serving both PMC and PCMC jurisdictions and the rural merged villages, making its grievance channel the only route to accountability for city buses on routes like Hinjawadi–Shivajinagar, Katraj–Swargate and Wakad–Pune Station.",
+        "report_to": {
+          "name": "Pune Mahanagar Parivahan Mahamandal Ltd. (PMPML) Helpline",
+          "url": "https://www.pmpml.org/en/citizens-corner/faqs/",
+          "phone": "+91-20-24545454"
+        },
+        "source_notes": "pmpml.org official FAQ page; helpline timings 6am–10pm, WhatsApp/SMS 9881495589, email complaints@pmpml.org. Cross-verified on pmpml.org/contact."
+      },
+      {
+        "action": "Book intercity MSRTC (ST) buses for Pune–Mumbai, Pune–Nashik and Pune–Kolhapur routes, and log complaints through the MSRTC grievance channel instead of private aggregators.",
+        "why_pune_specific": "Pune's Swargate, Shivajinagar and Pune Station ST stands are the arrival points for lakhs of daily inter-district commuters from western Maharashtra, and MSRTC 'Shivneri' / 'Shivshahi' services remain the state-run backbone alongside the Mumbai-Pune Expressway bus services.",
+        "report_to": {
+          "name": "Maharashtra State Road Transport Corporation (MSRTC)",
+          "url": "https://msrtc.maharashtra.gov.in/"
+        },
+        "source_notes": "msrtc.maharashtra.gov.in is MSRTC's official portal under the Transport Department, Government of Maharashtra."
+      },
+      {
+        "action": "Raise a grievance with PMRDA (Pune Metropolitan Region Development Authority) or the relevant ward office about access-road and junction failures around the Hinjawadi IT corridor and Chandni Chowk.",
+        "why_pune_specific": "Rajiv Gandhi Infotech Park (Hinjawadi Phases 1/2/3) houses 2-3 lakh IT workers with a single inadequate access from the Mumbai-Pune Bypass at Wakad/Bhumkar Chowk; Line-3 Metro to Hinjawadi is being built by PMRDA, making PMRDA the correct escalation body alongside PCMC.",
+        "report_to": {
+          "name": "Pune Metropolitan Region Development Authority (PMRDA)",
+          "url": "https://pmrda.gov.in/"
+        },
+        "source_notes": "pmrda.gov.in is the official PMRDA portal; Line 3 (Hinjawadi-Civil Court) is executed by PMRDA per MahaMetro/Wikipedia entry on Pune Metro."
+      }
+    ]
+  },
+  {
+    "section": "Air Quality",
+    "icon": "🌫️",
+    "items": [
+      {
+        "action": "Check daily AQI from the CPCB CAAQMS dashboard for the Pune stations (including Karve Road, Bhosari, Hadapsar, Lohegaon, Shivajinagar, Katraj and others operated by MPCB/IITM) before outdoor exercise or school events in winter.",
+        "why_pune_specific": "Pune's saucer-shaped topography traps PM2.5 during October-February winter inversions, producing 'Poor' to 'Very Poor' AQI around Bhosari's MIDC belt, Lohegaon airport area and Karve Road — the real-time CPCB dashboard is the only central cross-city source.",
+        "report_to": {
+          "name": "CPCB Central Control Room for Air Quality Management (CAAQMS)",
+          "url": "https://airquality.cpcb.gov.in/ccr/"
+        },
+        "source_notes": "airquality.cpcb.gov.in/ccr is CPCB's live CAAQMS dashboard; PIB press release (PRID 1810655) confirms Maharashtra station list; exact Pune station count varies (typically 7-10 live stations) — users should refer to the dashboard for current operational status."
+      },
+      {
+        "action": "File an air-pollution complaint with MPCB's Pune Regional Office against specific industrial units, illegal hot-mix plants, or repeated garbage-burning locations.",
+        "why_pune_specific": "Bhosari, Chakan, Ranjangaon and Pirangut industrial belts around Pune are MPCB-regulated, and MPCB's Pune office — not PMC/PCMC — has statutory authority under the Air (Prevention and Control of Pollution) Act, 1981 for industrial emissions.",
+        "report_to": {
+          "name": "MPCB Regional Office, Pune",
+          "url": "https://www.mpcb.gov.in/about-us/offices/pune"
+        },
+        "source_notes": "MPCB official page (mpcb.gov.in/about-us/offices/pune); email mpcbpune@mpcb.gov.in listed on site."
+      },
+      {
+        "action": "Report non-compliant construction sites (no green-net curtains, no water sprinkling, uncovered trucks) through PMC CARE or PCMC Sarathi — both corporations enforce dust-control bye-laws.",
+        "why_pune_specific": "Pre-monsoon PM10 and dust spikes in Pune are driven largely by construction around Baner-Balewadi, Wakad, Kharadi, Hadapsar-Magarpatta and Hinjawadi; PMC/PCMC building bye-laws mandate green nets and sprinkling, and enforcement is via their respective grievance apps.",
+        "report_to": {
+          "name": "PMC CARE / PCMC Sarathi",
+          "url": "https://www.pmccare.in/",
+          "phone": "8888251001"
+        },
+        "source_notes": "pmccare.in (PMC), pcmcindia.gov.in/contact.php (PCMC Sarathi 8888006666). For PCMC area, use 8888006666 instead of the listed PMC number."
+      },
+      {
+        "action": "Use the Swachhata app (MoHUA) to geotag and report open waste burning — a major winter PM2.5 source around Kondhwa, Dhanori, and peri-urban belts — for ward-level action.",
+        "why_pune_specific": "Both PMC and PCMC are enrolled ULBs on the national Swachhata-MoHUA platform, and open burning of leaves and mixed waste is one of Pune's most common winter AQI-worsening events, particularly around hill edges and informal settlements.",
+        "report_to": {
+          "name": "Swachhata-MoHUA App (Ministry of Housing and Urban Affairs)",
+          "url": "https://www.swachh.city/",
+          "phone": "1969"
+        },
+        "source_notes": "Ministry of Housing and Urban Affairs (MoHUA) official app; 1969 helpline and sbmurban.org/support confirmed on Google Play app description; Vikaspedia (vikaspedia.in) government page also confirms."
+      },
+      {
+        "action": "Ensure your two- and four-wheeler carries a valid Pollution Under Control (PUC) certificate renewed every 6-12 months, via the Parivahan portal or any authorised PUC centre in Pune.",
+        "why_pune_specific": "Pune's two-wheeler density is documented as one of India's highest — the CEEW 2024 report places Pune among India's top three districts for vehicle stock — making vehicular NOx and PM a dominant urban source; RTO Pune enforces PUC at signals and check-posts.",
+        "report_to": {
+          "name": "Parivahan Sewa – Ministry of Road Transport & Highways",
+          "url": "https://parivahan.gov.in/"
+        },
+        "source_notes": "parivahan.gov.in (MoRTH official); CEEW 2024 (ceew.in) for Pune vehicle-stock ranking; vehicular density context corroborated by EMBARQ India working paper on Pune two-wheelers."
+      },
+      {
+        "action": "Reference the IITM/IMD air-quality forecast (formerly SAFAR-Pune) for Pune on the IITM Early Warning System portal for 24-72 hour AQI outlooks before planning outdoor activity.",
+        "why_pune_specific": "SAFAR-Pune was commissioned on 31 March 2015 at IITM Pune as a 10-station real-time network covering PMC and PCMC, and its portal now redirects to IITM's Early Warning System (ews.tropmet.res.in) — the Pune-dedicated national forecasting product.",
+        "report_to": {
+          "name": "IITM Early Warning System (SAFAR successor) – Ministry of Earth Sciences",
+          "url": "https://ews.tropmet.res.in/"
+        },
+        "source_notes": "safar.tropmet.res.in now redirects users to ews.tropmet.res.in; IITM/MoES official. SAFAR-Pune launch date (31 Mar 2015) from tropmet.res.in project page — pre-2020 source for programme origin but system operates on current IITM platform."
+      }
+    ]
+  },
+  {
+    "section": "Waste & Cleanliness",
+    "icon": "🗑️",
+    "items": [
+      {
+        "action": "Segregate household waste into wet, dry and hazardous/sanitary streams and hand it to your SWaCH waste-picker at the doorstep — paying the agreed user fee.",
+        "why_pune_specific": "SWaCH is PMC's official door-to-door waste-collection partner, a ~3,500-member cooperative of waste-pickers (mostly women from marginalised castes) formalised in 2008 and renewed in 2021, servicing over 6 lakh Pune households and diverting ~60+ MT/day from landfill.",
+        "report_to": {
+          "name": "SWaCH Cooperative – PMC partner",
+          "url": "https://swachcoop.com/"
+        },
+        "source_notes": "swachcoop.com and swachcoop.com/about/swach-pmc-partnership/ (official cooperative); UNEP 2021 feature and Mongabay India 2025 article corroborate current partnership with PMC. SWaCH also accepts e-waste at Kothrud Kachra Depot and Dhankawadi multipurpose complex."
+      },
+      {
+        "action": "Report missed garbage collection, uncollected construction debris, or dustbin overflow via the Swachhata-MoHUA app or PMC CARE.",
+        "why_pune_specific": "After the Urali Devachi–Phursungi dumpyard was scaled down following sustained citizen protests (major agitations in 2017; closure plans repeatedly promised), Pune's waste-handling chain now routes primarily through Ramtekdi, Hadapsar processing and ward-level transfer points — making real-time reporting essential.",
+        "report_to": {
+          "name": "Swachhata-MoHUA App / PMC CARE",
+          "url": "https://www.swachh.city/",
+          "phone": "8888251001"
+        },
+        "source_notes": "Ministry of Housing & Urban Affairs' Swachhata-MoHUA platform (swachh.city, 1969 helpline); PMC CARE chatbot 8888251001 confirmed by PMC X account and pmc.gov.in. Urali Devachi context from Indie Journal and Harvard Histecon archive (2019-2020)."
+      },
+      {
+        "action": "Drop off e-waste and hazardous household waste at the SWaCH e-waste collection points (Kothrud Kachra Depot, Dhankawadi multipurpose complex) or arrange a society-level collection drive.",
+        "why_pune_specific": "Since 2012 MPCB has authorised SWaCH to channelise e-waste under the E-Waste (Management) Rules — so Pune residents have a formal, city-partnered drop-off option that feeds certified recyclers rather than the informal scrap network around Bhavani Peth and Khadki.",
+        "report_to": {
+          "name": "SWaCH E-Waste Collection (PMC-MPCB authorised)",
+          "url": "https://swachcoop.com/"
+        },
+        "source_notes": "swachcoop.com/about/swach-pmc-partnership/ describes 2012 MPCB authorisation and drop-off points. Verify latest collection-point hours before visit."
+      },
+      {
+        "action": "For PCMC-area waste issues (Moshi dumping, fires in garbage piles, missed society pickup), report via PCMC Sarathi or the PCMC Smart Sarathi app.",
+        "why_pune_specific": "PCMC processes ~1,150 tonnes/day of waste at its sole Moshi depot, where MPCB issued conditional directions in January 2025 under NGT orders regarding methane emissions and biomining of legacy waste — making citizen reporting of fires and leachate especially important.",
+        "report_to": {
+          "name": "PCMC Sarathi",
+          "url": "https://www.pcmcindia.gov.in/contact.php",
+          "phone": "8888006666"
+        },
+        "source_notes": "pcmcindia.gov.in/contact.php (PCMC official); Moshi depot and MPCB direction details from Punekar News (2025) and Free Press Journal reporting on PCMC solid-waste management."
+      },
+      {
+        "action": "Ensure your RWA or builder disposes of construction & demolition (C&D) waste only through the PCMC Moshi 200-TPD C&D plant or PMC-authorised C&D handlers — never in a stream, nala, or hill slope.",
+        "why_pune_specific": "Dumping of C&D waste into Ambil Odha, Bhairoba Nala and tributary streams has been formally cited by Jeevitnadi and confirmed by PMC/Irrigation authorities as a flood-amplifying factor; PCMC operates a dedicated C&D processing plant at Moshi under SWM Rules 2016.",
+        "report_to": {
+          "name": "PCMC Environment / Solid Waste Department (Moshi C&D Plant)",
+          "url": "https://www.pcmcindia.gov.in/"
+        },
+        "source_notes": "Free Press Journal 2024/25 reports on PCMC Moshi 200 TPD C&D plant; Jeevitnadi's documented nala-dumping complaints to PMC Regional Office and Irrigation Department (jeevitnadi.org)."
+      },
+      {
+        "action": "Contact the PMC Assistant Commissioner (Tree Officer) / Sanitation Inspector at your ward office if garbage-burning or illegal open dumping persists in your neighbourhood after Swachhata-app escalation.",
+        "why_pune_specific": "PMC is divided into 15 ward committees under Maharashtra Municipal Corporation Act provisions, each with a dedicated sanitary inspector — essential for chronic spots like rail-line edges, hill slopes, and unserved pockets in the 23 merged villages.",
+        "report_to": {
+          "name": "PMC Ward Offices (Kshetriya Karyalay)",
+          "url": "https://www.pmc.gov.in/en/ward-offices"
+        },
+        "source_notes": "pmc.gov.in/en/ward-offices (PMC official); 15-ward-office structure confirmed by The Bridge Chronicle (April 2026) reporting on PMC ward-committee elections."
+      }
+    ]
+  },
+  {
+    "section": "Heritage & Green Spaces",
+    "icon": "🏛️",
+    "items": [
+      {
+        "action": "Report encroachment, vandalism, unauthorised construction within 100m (prohibited) or 300m (regulated) zones, or damage to ASI-protected monuments — Shaniwar Wada, Aga Khan Palace, Pataleshwar Caves, Karla-Bhaja Caves, Lohagad Fort — to the ASI Mumbai Circle, under which Pune falls.",
+        "why_pune_specific": "Pune's centrally-protected monuments fall under ASI's Mumbai Circle, not a separate Pune Circle; the CAG Report No. 10 of 2022 flagged encroachments around Mumbai-circle monuments, making citizen complaints critical.",
+        "report_to": {
+          "name": "Archaeological Survey of India – Mumbai Circle",
+          "url": "https://asi.nic.in/pages/Mumbai-Circle"
+        },
+        "source_notes": "asi.nic.in/pages/Mumbai-Circle (ASI official); Shaniwar Wada and 4 other Pune-district monuments confirmed under ASI's Adopt-a-Heritage list (2024-25). Direct phone for Mumbai Circle not published on ASI's current page."
+      },
+      {
+        "action": "Report illegal tree felling, unauthorised tree trimming, or destruction of heritage trees (>50 years old) to the PMC Tree Authority via the 24x7 toll-free number, WhatsApp, or SMS alert line.",
+        "why_pune_specific": "The Maharashtra (Urban Areas) Protection and Preservation of Trees Act, 1975 empowers PMC's Tree Authority; PMC lost an estimated ~27,000 trees over recent years per citizen audits, and the High Court ordered a full tree census in December 2023 — so every felling report matters.",
+        "report_to": {
+          "name": "PMC Tree Authority / Garden Department",
+          "url": "https://www.pmc.gov.in/en/garden",
+          "phone": "18001030222"
+        },
+        "source_notes": "PMC Pune Pulse notice (2025) with official tree-felling complaint channels — toll-free 18001030222, WhatsApp 9689900002, SMS alert 9223050607, portal complaint.punecorporation.org. Cross-verified with Save Pune Trees / Puneसंवाद citizen-group reporting."
+      },
+      {
+        "action": "Document and report illegal construction, excavation or quarrying on PMC-designated Biodiversity Park (BDP) hills — Vetal Tekdi, Taljai, Baner-Pashan, Pachgaon Parvati, Warje, Ramtekdi — to PMC's Building Department, forest department, and local police.",
+        "why_pune_specific": "BDP reservation covers ~1,646 hectares of hilltops and hill slopes across the 23 fringe villages merged into PMC and is the sole legal protection for Pune's Western Ghats foothill ecology; enforcement has been weak and citizen vigilance has repeatedly stopped excavations (e.g., Mahatma Tekdi, Nov 2024).",
+        "report_to": {
+          "name": "PMC Building Permission & Engineering Department / Local Forest Range Office",
+          "url": "https://www.pmc.gov.in/en/building-permission"
+        },
+        "source_notes": "PMC Development Plan – BDP reservation widely documented; enforcement actions at Mahatma Tekdi (Nov 2024) and Vetal Tekdi (Apr 2025) reported by Free Press Journal and Punekar News. Direct BDP helpline not published — use PMC CARE or ward office."
+      },
+      {
+        "action": "Participate in the statutory public hearing before any tree felling above the PMC/PCMC Tree Authority's permitted count — submit written objections during the gazette-notified 30-day window.",
+        "why_pune_specific": "PMC proposals to widen roads (Ganeshkhind, Balbharti-Paud Phata, HCMTR) have repeatedly proposed felling 3,500-10,000 old-growth trees; the Act makes public objections during the notification period legally material, and 1,500-tree projects along Mula-Mutha have been stayed via this route.",
+        "report_to": {
+          "name": "PMC Tree Authority (Garden Department, PMC)",
+          "url": "https://www.pmc.gov.in/en/garden"
+        },
+        "source_notes": "Maharashtra (Urban Areas) Protection and Preservation of Trees Act, 1975 public-objection process; Wire/Mongabay India (2022) documents tree-authority hearings and NGT interventions on Mula-Mutha RFD."
+      },
+      {
+        "action": "For PCMC-area heritage (e.g. forts in Dehu-Alandi belt, riverine ghats on Indrayani/Pavana) and PCMC Tree Authority matters, file complaints through PCMC Sarathi or the PCMC Environment Department.",
+        "why_pune_specific": "PCMC's Biodiversity Committee and Tree Authority are separately constituted from PMC's (PCMC covers 32 electoral wards across 8 administrative zones A-H), and the Indrayani-Pavana ghats at Dehu and Alandi see heavy religious footfall requiring a distinct reporting line.",
+        "report_to": {
+          "name": "PCMC Sarathi / PCMC Environment Department",
+          "url": "https://www.pcmcindia.gov.in/",
+          "phone": "8888006666"
+        },
+        "source_notes": "pcmcindia.gov.in/contact.php; PCMC zone and committee structure from Wikipedia entry sourced to PCMC's official Governing Body pages."
+      },
+      {
+        "action": "Support citizen-led riparian restoration on the Mula, Mutha, Ram Nadi and their tributaries by joining Adopt-a-Stretch programmes run by NGOs coordinating with PMC's Environment Cell.",
+        "why_pune_specific": "Jeevitnadi Living River Foundation's 'Adopt a River Stretch' model has been formally recognised in an NGT order, and PMC has committed to implement an 800-m ecological DPR of Ram Nadi prepared by Jeevitnadi — a rare citizen-government restoration pathway.",
+        "report_to": {
+          "name": "Jeevitnadi Living River Foundation (PMC-recognised NGO partner)",
+          "url": "https://www.jeevitnadi.org/"
+        },
+        "source_notes": "jeevitnadi.org (NGO, not a government portal — listed as citizen participation channel only, not as the regulatory body); NGT order and PMC acknowledgement confirmed by India Water Portal and Question of Cities (2024-2025)."
+      }
+    ]
+  },
+  {
+    "section": "Flood & Disaster Preparedness",
+    "icon": "🌊",
+    "items": [
+      {
+        "action": "Save and call the Pune District Disaster Management Cell toll-free 1077 (or landline 020-26123371) for floods, building collapse, landslides, chemical leaks and lightning emergencies in Pune district.",
+        "why_pune_specific": "Pune city's worst modern disaster — the 12 July 1961 Panshet dam burst that breached Khadakwasla — and the 25 September 2019 Ambil Odha flash flood (17+ killed along Sahakar Nagar, Dandekar Bridge, Katraj) both originated inside Pune district's catchment, making the district DM cell the first responder.",
+        "report_to": {
+          "name": "Pune District Disaster Management Cell",
+          "url": "https://pune.gov.in/en/disaster-management/",
+          "phone": "1077"
+        },
+        "source_notes": "pune.gov.in/en/disaster-management/ (Pune district official); 1077 is the national toll-free disaster helpline also listed on Pune district site. 2019 flood toll (17+) per Down to Earth (9 Oct 2019) and Wikipedia '2019 Pune flood'; user brief's '27+' figure could not be verified for the 25 Sept event specifically."
+      },
+      {
+        "action": "Call the PMC Disaster Management Cell numbers for floods, building collapses or tree falls inside PMC limits during monsoon.",
+        "why_pune_specific": "Recurring monsoon floods hit low-lying Ekta Nagar, Vitthalwadi, Sangamwadi, Mundhwa and Shivane whenever Irrigation Department releases Mutha water from Khadakwasla; PMC Disaster Management Cell coordinates ward-level evacuation and shelter.",
+        "report_to": {
+          "name": "PMC Disaster Management Cell",
+          "url": "https://www.pmc.gov.in/en/d/disaster",
+          "phone": "+91-20-26442101"
+        },
+        "source_notes": "pmc.gov.in/en/d/disaster (PMC official department page); additional PMC numbers 26450601 / 26451707 / 9689935556 / 9689935558 listed on pune.gov.in/en/disaster-management/."
+      },
+      {
+        "action": "Call the PCMC Disaster Management control numbers for Pavana-Indrayani overflow, building collapse, or industrial-area emergencies in Pimpri-Chinchwad.",
+        "why_pune_specific": "PCMC's Pavana and Indrayani riverbanks, and the Bhosari/Chakan industrial belt, carry distinct flood and chemical-incident risk profiles that are handled by PCMC's own cell, not PMC's.",
+        "report_to": {
+          "name": "PCMC Disaster Management / Control Room",
+          "url": "https://www.pcmcindia.gov.in/",
+          "phone": "+91-20-27423333"
+        },
+        "source_notes": "pune.gov.in/en/disaster-management/ lists PCMC disaster numbers 020-27423333 / 27422405 / 9222501475 / 7030908991."
+      },
+      {
+        "action": "In a major disaster (collapsed structure, large flood rescue, landslide in Katraj/Ambegaon ghats), contact NDRF 5th Battalion control room at Sudumbare, near Talegaon Dabhade.",
+        "why_pune_specific": "The 5th Battalion NDRF at Sudumbare (Maval taluka, ~40 km from Pune) has operational responsibility for Maharashtra and Goa and specialised training for landslides and CBRN emergencies — critical for Pune's hill-slope landslide risk and MIDC chemical emergencies.",
+        "report_to": {
+          "name": "5th Battalion NDRF – Sudumbare, Pune",
+          "url": "https://ndrf.gov.in/ndrf-units",
+          "phone": "9422315628"
+        },
+        "source_notes": "ndrf.gov.in/ndrf-units (NDRF official); Sudumbare/Maval location confirmed by Punekar News (2016) and NDRF news page on Amit Shah inauguration; control-room number 9422315628 listed on pune.gov.in/en/disaster-management-control-room/."
+      },
+      {
+        "action": "Track real-time dam storage and flood forecasts on the Central Water Commission Flood Forecasting portal and FloodWatch India app during the June–October monsoon.",
+        "why_pune_specific": "CWC issues inflow and discharge forecasts for the Khadakwasla reservoir on the Mutha; combined with IMD Mahavedh automatic weather stations, these are the authoritative data sources that drive PMC's pre-emptive flood warnings to riverside societies.",
+        "report_to": {
+          "name": "Central Water Commission – Flood Forecasting",
+          "url": "https://ffs.india-water.gov.in/"
+        },
+        "source_notes": "ffs.india-water.gov.in (CWC official); FloodWatch India app by CWC on Google Play confirmed; IMD Pune weather-station data via mausam.imd.gov.in."
+      },
+      {
+        "action": "For your housing society, prepare a pre-monsoon checklist — identify nearest shelter, keep NDRF/PMC/PCMC helplines saved, stock 72-hour essentials — and register with your ward-level disaster committee.",
+        "why_pune_specific": "Pune District Disaster Management Plan 2025-26 (DDMP) formally designates ward-level preparedness as the first response layer before state/NDRF deployment, especially for the 87mm-in-24-hour rain events that caused the 2019 Ambil Odha flood.",
+        "report_to": {
+          "name": "District Disaster Management Authority, Pune",
+          "url": "https://pune.gov.in/en/document/district-disaster-management-plan-pune-2025-26/"
+        },
+        "source_notes": "Pune DDMP 2025-26 PDF hosted on pune.gov.in via s3waas cdn; confirms ward-level structure and hazard profile. 1961 Panshet dam burst context widely documented (Bhima basin / Krishna basin historical record)."
+      }
+    ]
+  },
+  {
+    "section": "Civic Engagement",
+    "icon": "📋",
+    "items": [
+      {
+        "action": "File an online RTI for Maharashtra state departments, PMC, PCMC, MPCB, PMRDA or any Maharashtra public authority through the Maharashtra RTI portal; escalate delays to the Maharashtra State Information Commission.",
+        "why_pune_specific": "PMC, PCMC, PMRDA and MPCB all fall under Maharashtra jurisdiction and RTI applications for them must go through the state portal (not the central rtionline.gov.in), with fee Rs 10 and 30-day statutory reply window.",
+        "report_to": {
+          "name": "RTI Online Maharashtra",
+          "url": "https://rtionline.maharashtra.gov.in/",
+          "phone": "1800-120-8040"
+        },
+        "source_notes": "rtionline.maharashtra.gov.in (Government of Maharashtra official); 24x7 Citizen Contact Center 1800-120-8040 listed; support email rti.support@maharashtra.gov.in."
+      },
+      {
+        "action": "File day-to-day PMC grievances through PMC CARE (web/app/WhatsApp chatbot 8888251001) and note the token number for escalation.",
+        "why_pune_specific": "PMC CARE is PMC's official citizen-engagement platform with 1.7 crore+ recorded digital interactions and auto-routes to the relevant ward's deputy commissioner — the canonical first step before escalating to the Municipal Commissioner.",
+        "report_to": {
+          "name": "PMC CARE – Citizen Assistance Response Engagement",
+          "url": "https://www.pmccare.in/",
+          "phone": "8888251001"
+        },
+        "source_notes": "pmccare.in and webadmin.pmc.gov.in/en/citizen-services (PMC official); chatbot 8888251001 confirmed via PMC Pune X account."
+      },
+      {
+        "action": "For PCMC services — water bills, property tax, building permissions, road/garbage issues — use PCMC Sarathi (call 020-67333333, WhatsApp/SMS 8888006666 or 9922501450) or the Smart Sarathi app.",
+        "why_pune_specific": "PCMC Sarathi (meaning 'charioteer') is PCMC's unified helpline across 8 administrative zones (A-H) and 32 wards, positioned as the single window into PCMC's 24x7 complaint system.",
+        "report_to": {
+          "name": "PCMC Sarathi",
+          "url": "https://www.pcmcindia.gov.in/contact.php",
+          "phone": "8888006666"
+        },
+        "source_notes": "pcmcindia.gov.in/contact.php (PCMC official); main line 020-67333333 and WhatsApp 8888006666 confirmed via indiacustomercare.com (Govt of Maharashtra listing)."
+      },
+      {
+        "action": "Lodge grievances against any Maharashtra government department or the Pune district collectorate through the Aaple Sarkar Grievance Redressal portal, and track the 21-working-day resolution window.",
+        "why_pune_specific": "Aaple Sarkar is Maharashtra's unified CMO-run grievance platform — essential for complaints that span multiple agencies (e.g., a flooding issue that involves Irrigation Department, PMC and MPCB) and cannot be resolved by a single ULB.",
+        "report_to": {
+          "name": "Aaple Sarkar – Grievance Redressal Portal",
+          "url": "https://grievances.maharashtra.gov.in/"
+        },
+        "source_notes": "grievances.maharashtra.gov.in (Government of Maharashtra, CMO-driven); 21-working-day SLA confirmed on portal."
+      },
+      {
+        "action": "Apply for certificates (domicile, income, caste), licences and public services in Pune through the Aaple Sarkar services portal under the Right to Services Act.",
+        "why_pune_specific": "The Aaple Sarkar services portal is the statutory delivery mechanism under the Maharashtra Right to Public Services Act, 2015, and applies to all Pune district revenue services including Talathi/Tahsildar offices in rural Pune (Haveli, Mulshi, Maval, Khed).",
+        "report_to": {
+          "name": "Aaple Sarkar – Citizen Services Portal",
+          "url": "https://aaplesarkar.mahaonline.gov.in/",
+          "phone": "1800-120-8040"
+        },
+        "source_notes": "aaplesarkar.mahaonline.gov.in (Government of Maharashtra official, beta); 24x7 Citizen Call Center 1800-120-8040 confirmed."
+      },
+      {
+        "action": "File a MahaRERA complaint online against a Pune/PCMC builder for possession delay, promised-amenity failure or false advertising in any MahaRERA-registered project.",
+        "why_pune_specific": "Pune is among MahaRERA's highest-complaint jurisdictions given the huge Hinjawadi, Wakad, Kharadi, Hadapsar and Baner real-estate activity; MahaRERA provides online Form A filing, hearings, and recovery warrants routed through the Pune District Collector.",
+        "report_to": {
+          "name": "Maharashtra Real Estate Regulatory Authority (MahaRERA)",
+          "url": "https://maharera.maharashtra.gov.in/"
+        },
+        "source_notes": "maharera.maharashtra.gov.in (official); recovery-warrant-via-district-Collector process described on maharera.maharashtra.gov.in/complaint-filing-under-registered-project."
+      },
+      {
+        "action": "Verify your Pune electoral roll entry and apply/correct voter details on the Maharashtra CEO portal or ECI Voter Services portal before every election.",
+        "why_pune_specific": "Pune's 41-multi-member-ward PMC structure (165 corporators) and PCMC's 32-ward / 128-corporator structure mean civic election rolls need active maintenance — particularly for IT-workforce migrants in Hinjawadi, Kharadi and the 23 merged villages.",
+        "report_to": {
+          "name": "Chief Electoral Officer, Maharashtra",
+          "url": "https://ceo.maharashtra.gov.in/"
+        },
+        "source_notes": "ceo.maharashtra.gov.in (official CEO Maharashtra); complements ECI's voters.eci.gov.in. PMC ward count of 41 multi-member wards (165 corporators) per Wikipedia/PMC election-office records."
+      }
+    ]
+  },
+  {
+    "section": "Education & Healthcare Advocacy",
+    "icon": "🏥",
+    "items": [
+      {
+        "action": "Apply for the RTE 25% quota (free admission in private unaided schools) for your child on the Maharashtra RTE Admission Portal — the annual application window typically opens January–March.",
+        "why_pune_specific": "Pune district has hundreds of RTE-eligible private schools plus PMC's ~290 municipal schools, PCMC schools and Pune Zilla Parishad rural schools; the state portal is the single entry point for the 25% disadvantaged-group quota.",
+        "report_to": {
+          "name": "RTE 25% Admission Portal – Maharashtra School Education Department",
+          "url": "https://student.maharashtra.gov.in/adm_portal/"
+        },
+        "source_notes": "student.maharashtra.gov.in/adm_portal (Government of Maharashtra School Education Department official); 2026-27 cycle active per portal."
+      },
+      {
+        "action": "Join or stand for election to your child's School Management Committee (SMC) under the Right to Education Act; SMCs have statutory authority to approve the school development plan and review expenditure.",
+        "why_pune_specific": "Every government-aided and Zilla Parishad school in Pune district, plus PMC/PCMC schools, must constitute an SMC with 75% parent members under RTE Section 21 — it is the primary accountability body for Pune's ~1,000+ public schools.",
+        "report_to": {
+          "name": "Directorate of Education, Maharashtra (Primary & Secondary)",
+          "url": "https://education.maharashtra.gov.in/"
+        },
+        "source_notes": "education.maharashtra.gov.in (Maharashtra School Education Department official); RTE Act, 2009 Section 21 defines SMC constitution."
+      },
+      {
+        "action": "Enrol your family in Mahatma Jyotirao Phule Jan Arogya Yojana (MJPJAY) + Ayushman Bharat (AB-PMJAY) by visiting any empanelled hospital in Pune and meeting the Aarogyamitra — as of 1 July 2024 the scheme covers all Maharashtra families up to Rs 5 lakh/year.",
+        "why_pune_specific": "Major empanelled Pune hospitals include Sassoon General Hospital, YCM Hospital (PCMC), Aundh District Hospital and many more — meaning a Pune resident can access cashless care across PMC, PCMC and rural Pune without upfront payment.",
+        "report_to": {
+          "name": "MJPJAY – State Health Assurance Society",
+          "url": "https://www.jeevandayee.gov.in/",
+          "phone": "155388"
+        },
+        "source_notes": "jeevandayee.gov.in (official MJPJAY); toll-free 155388 / 1800-233-2200 widely cited across government and insurer pages; 1 July 2024 universal extension confirmed by multiple outlets citing the Maharashtra Public Health Department."
+      },
+      {
+        "action": "For public-hospital grievances at Sassoon General Hospital (Pune's largest public tertiary hospital, attached to B.J. Government Medical College), contact the Medical Superintendent's office or file through the Maharashtra Public Health Department grievance channel.",
+        "why_pune_specific": "Sassoon General Hospital (~1,296 beds) is the referral hospital for Pune district's ~9.4 million population under the Directorate of Medical Education & Research (DMER), making its grievance chain distinct from PMC-run hospitals.",
+        "report_to": {
+          "name": "B.J. Government Medical College & Sassoon General Hospital",
+          "url": "https://bjgmcpune.com/",
+          "phone": "+91-20-26128000"
+        },
+        "source_notes": "bjgmcpune.com (official BJGMC-SGH); phone listed on hospitals-info.in but verify via official site before use. Ambulance emergencies: national 108 helpline."
+      },
+      {
+        "action": "For YCM Hospital (Yashwantrao Chavan Memorial Hospital, Pimpri) — PCMC's flagship 750-bed multispecialty teaching hospital — raise service issues via its MRD / OPD in-charge numbers or via the PCMC Health Department.",
+        "why_pune_specific": "YCM is PCMC's primary public tertiary facility serving Pimpri-Chinchwad's industrial workforce and surrounding rural Maval/Khed belt, and is jointly governed by PCMC, MUHS Nashik and DMER — its feedback path differs from state-run Sassoon.",
+        "report_to": {
+          "name": "Y.C.M. Hospital, Pimpri (PCMC)",
+          "url": "https://www.ycmhpgi.org/",
+          "phone": "+91-20-67332222"
+        },
+        "source_notes": "ycmhpgi.org (PCMC-run official); exchange 020-67332222 and multiple departmental extensions confirmed on site. Note: ycmhpgi.org figures page carries '2019' highlighted figures — pre-2020 source for some statistics, verify currency."
+      },
+      {
+        "action": "For infectious-disease emergencies (dengue, H1N1, measles outbreaks) within PMC limits, contact Naidu Hospital (PMC's dedicated infectious-diseases hospital) or the PMC Health Department.",
+        "why_pune_specific": "Naidu Hospital is PMC's long-standing infectious-diseases facility and was the nodal COVID-19 hospital for Pune city; it remains the referral point for notifiable communicable disease cases inside PMC limits.",
+        "report_to": {
+          "name": "Naidu Infectious Diseases Hospital / PMC Health Department",
+          "url": "https://www.pmc.gov.in/en/health-department",
+          "phone": "+91-20-25506800"
+        },
+        "source_notes": "pmc.gov.in/en/health-department (PMC official); PMC DRM Cell numbers (+91-20-25506800 / 25506801 / 25506802 / 25506803) and Naidu Hospital line documented by PMC-linked reporting; Naidu address on pmc.gov.in. Verify current phone before use."
+      },
+      {
+        "action": "Raise hospital service-failure complaints (denied admission, overcharging in empanelled private hospitals, RTE admission denials) via the Aaple Sarkar grievance portal selecting Public Health Department or School Education Department as applicable.",
+        "why_pune_specific": "Aaple Sarkar's 21-working-day SLA applies to all Maharashtra government departments including Public Health and School Education — so a Pune resident denied MJPJAY cashless treatment, or an RTE quota seat, has a single state-wide escalation path.",
+        "report_to": {
+          "name": "Aaple Sarkar – Grievance Redressal Portal",
+          "url": "https://grievances.maharashtra.gov.in/"
+        },
+        "source_notes": "grievances.maharashtra.gov.in (Government of Maharashtra CMO official); 21-working-day resolution SLA stated on portal."
+      }
+    ]
+  }
+]
