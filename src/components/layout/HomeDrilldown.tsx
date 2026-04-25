@@ -13,18 +13,35 @@ import { Search, ArrowRight, MapPin } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
 
 // Districts activated within the last 45 days get a "NEW" badge.
-// Driven by District.goLiveDate (populated via backfill script + set on
-// district activation). See scripts/backfill-district-go-live-dates-2026-04-25.ts.
+// Driven primarily by District.goLiveDate (populated via backfill script
+// + set on activation). For SSR (when the React Query hasn't resolved
+// yet) we also fall back to a static lookup below — so the pill renders
+// in initial HTML, not just after hydration.
 const DAYS_NEW = 45;
 // Grace window: if goLiveDate is up to 1 day in the future (IST/UTC skew
 // around midnight — goLiveDate stored as UTC 00:00 reads as 05:30 IST on
 // launch day), still treat as NEW. Prevents the same-day activation from
 // silently failing the "ms >= 0" check on launch morning.
 const FUTURE_GRACE_MS = 24 * 60 * 60 * 1000;
+
+// Static SSR-time fallback for the NEW window. Keep aligned with the
+// District.goLiveDate values written by
+// scripts/backfill-district-go-live-dates-2026-04-25.ts. Older districts
+// (>45 days) need not be listed.
+const DISTRICT_LAUNCH_SSR_FALLBACK: Record<string, string> = {
+  pune: "2026-04-25",
+  lucknow: "2026-04-15",
+  hyderabad: "2026-04-10",
+};
+
 function isNewDistrict(goLiveDate: string | null | undefined): boolean {
   if (!goLiveDate) return false;
   const ms = Date.now() - new Date(goLiveDate).getTime();
   return ms >= -FUTURE_GRACE_MS && ms < DAYS_NEW * 24 * 60 * 60 * 1000;
+}
+
+function isNewDistrictBySlug(slug: string, apiGoLive?: string | null): boolean {
+  return isNewDistrict(apiGoLive ?? DISTRICT_LAUNCH_SSR_FALLBACK[slug]);
 }
 import dynamic from "next/dynamic";
 import HomepageStats from "@/components/home/HomepageStats";
@@ -91,17 +108,22 @@ interface PreviewResponse {
 interface HomeDrilldownProps {
   locale: string;
   tickerShown?: boolean;
+  /** When true (Session 4), the new HeroIndia component is rendered above
+   *  this component, so we suppress the legacy HomepageStats stat row. */
+  heroShown?: boolean;
 }
 
-function gradeColor(grade: string): { bg: string; text: string } {
-  if (grade === "A+" || grade === "A") return { bg: "#DCFCE7", text: "#15803D" };
-  if (grade === "B+" || grade === "B") return { bg: "#DBEAFE", text: "#1D4ED8" };
-  if (grade === "C+" || grade === "C") return { bg: "#FEF3C7", text: "#92400E" };
-  if (grade === "D") return { bg: "#FEE2E2", text: "#991B1B" };
-  return { bg: "#F3F4F6", text: "#6B7280" };
+function gradeColor(grade: string): { bg: string; text: string; border: string } {
+  // Tailwind-50 backgrounds + 700 text + 200 border for visible-but-subtle chips.
+  // emerald / blue / amber / rose — same family used by Phase 8 Coming Soon cards.
+  if (grade === "A+" || grade === "A") return { bg: "#ECFDF5", text: "#047857", border: "#A7F3D0" };
+  if (grade === "B+" || grade === "B") return { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" };
+  if (grade === "C+" || grade === "C") return { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" };
+  if (grade === "D") return { bg: "#FFF1F2", text: "#BE123C", border: "#FECACA" };
+  return { bg: "#F3F4F6", text: "#6B7280", border: "#E5E7EB" };
 }
 
-export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
+export default function HomeDrilldown({ locale, heroShown = false }: HomeDrilldownProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: previewData } = useQuery<PreviewResponse>({
@@ -132,8 +154,8 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
 
   return (
     <main style={{ background: "#FAFAF8", paddingBottom: 40 }}>
-      {/* Hero Stats */}
-      <HomepageStats />
+      {/* Hero Stats — suppressed when /en mounts the new HeroIndia above. */}
+      {!heroShown && <HomepageStats />}
 
       {/* Map + District cards: 2-col on desktop, stacked on mobile */}
       <div>
@@ -208,7 +230,7 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
                           {district.nameLocal}
                         </span>
                       )}
-                      {isNewDistrict(goLiveBySlug.get(district.slug)) && (
+                      {isNewDistrictBySlug(district.slug, goLiveBySlug.get(district.slug)) && (
                         <span style={{ fontSize: 9, fontWeight: 500, padding: "1px 6px", background: "#D1FAE5", color: "#065F46", borderRadius: 10, marginLeft: 5 }}>NEW</span>
                       )}
                       <span style={{ fontSize: 12, color: "#9B9B9B", marginLeft: "auto" }}>{state.name}</span>
@@ -233,6 +255,27 @@ export default function HomeDrilldown({ locale }: HomeDrilldownProps) {
 
       {/* Remaining sections — full width, stacked */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+        {/* LIVE PULSE OF INDIA — section header above existing live tiles */}
+        <div style={{ padding: "12px 16px 0", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.07em",
+              textTransform: "uppercase",
+              color: "#9B9B9B",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span aria-hidden="true">📡</span> Live pulse of India
+          </div>
+          <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 2 }}>
+            What&apos;s happening across all live districts right now.
+          </div>
+        </div>
+
         {/* Live Data Preview cards */}
         <LiveDataPreview locale={locale} />
 
@@ -295,17 +338,21 @@ function ActiveDistrictsCard({
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 15, fontWeight: 600, color: "#1A1A1A" }}>{d.name}</span>
-                  {preview?.healthGrade && (
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, padding: "2px 6px",
-                      background: gradeColor(preview.healthGrade).bg,
-                      color: gradeColor(preview.healthGrade).text,
-                      borderRadius: 4,
-                    }}>
-                      {preview.healthGrade}
-                    </span>
-                  )}
-                  {isNewDistrict(preview?.goLiveDate) && (
+                  {preview?.healthGrade && (() => {
+                    const gc = gradeColor(preview.healthGrade);
+                    return (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, padding: "2px 6px",
+                        background: gc.bg,
+                        color: gc.text,
+                        border: `1px solid ${gc.border}`,
+                        borderRadius: 4,
+                      }}>
+                        {preview.healthGrade}
+                      </span>
+                    );
+                  })()}
+                  {isNewDistrictBySlug(d.slug, preview?.goLiveDate) && (
                     <span style={{
                       fontSize: 10, fontWeight: 500, padding: "2px 8px",
                       background: "#D1FAE5", color: "#065F46",
