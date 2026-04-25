@@ -9,7 +9,6 @@ import Link from "next/link";
 import HomeDrilldown from "@/components/layout/HomeDrilldown";
 import MarketTickerClient from "@/components/layout/MarketTickerClient";
 import CompactContributorWallClient from "@/components/support/CompactContributorWallClient";
-import TopTierShowcase from "@/components/support/TopTierShowcase";
 import { NewPill } from "@/components/ui/NewPill";
 import { RequestScrollMount } from "@/components/home/request/RequestScrollMount";
 import { RequestCTALink } from "@/components/home/request/RequestCTALink";
@@ -88,7 +87,6 @@ export default async function HomePage({
       </h1>
       <RequestScrollMount />
       <MarketTickerClient />
-      <TopTierShowcase locale={locale} />
 
       {/* Session 5 kicker + India-detail CTA — single subtle line above
           the existing HomepageStats hero (which lives inside HomeDrilldown).

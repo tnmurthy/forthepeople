@@ -45,6 +45,7 @@ function isNewDistrictBySlug(slug: string, apiGoLive?: string | null): boolean {
 }
 import dynamic from "next/dynamic";
 import HomepageStats from "@/components/home/HomepageStats";
+import TopTierShowcase from "@/components/support/TopTierShowcase";
 import LiveDataPreview from "@/components/home/LiveDataPreview";
 import HowItWorks from "@/components/home/HowItWorks";
 import DistrictRequestSection from "@/components/home/DistrictRequestSection";
@@ -156,6 +157,12 @@ export default function HomeDrilldown({ locale, heroShown = false }: HomeDrilldo
     <main style={{ background: "#FAFAF8", paddingBottom: 40 }}>
       {/* Hero Stats — suppressed when /en mounts the new HeroIndia above. */}
       {!heroShown && <HomepageStats />}
+
+      {/* Session 8: BACKED BY supporter strip. Moved here from above-kicker
+          (page.tsx) so the kicker → CTAs → stats funnel runs uninterrupted,
+          and supporters appear in a contextual "after the value, before
+          the product" position. */}
+      <TopTierShowcase locale={locale} />
 
       {/* Map + District cards: 2-col on desktop, stacked on mobile */}
       <div>
