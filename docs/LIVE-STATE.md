@@ -4,6 +4,51 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 7.5: onClick scroll handlers (corrective) (PRE-PUSH)
+
+**Status:** 101 commits ahead of origin/main. 6 code commits this session — pure UI, zero backend.
+
+### Why
+Session 7's CSS + inline `<Script>` approach didn't fire scroll in Chrome MCP runtime. Manual `el.scrollIntoView({behavior:'smooth'})` from console SILENTLY FAILED — some scroll-restoration / re-render canceled the smooth animation. Manual `behavior:'instant'` worked. Replaced approach: direct `window.scrollTo({top, behavior:'smooth'})` with precomputed Y, wired via onClick handlers + sessionStorage flag for cross-page nav.
+
+### What changed
+- **NEW** `src/lib/utils/scroll-to-request.ts` — `scrollToRequestSection()` (same-page handles scroll directly; cross-page sets sessionStorage flag) + `scrollOnMountIfRequested()` (mount handler reads flag or `#request` hash, scrolls after 150ms).
+- **NEW** `src/components/home/request/RequestScrollMount.tsx` — renders nothing, fires `scrollOnMountIfRequested()` on mount. Mounted at top of `/<locale>/page.tsx`.
+- **NEW** `src/components/home/request/RequestCTALink.tsx` — `<Link>` wrapper with onClick. Same `style`/`children` pass-through so it visually matches existing pills/links.
+- **`NextDistrictLeaderboard.tsx`** marked `"use client"`, onClick added on 3 row Links + bottom CTA Link. Handler only fires when `seeAllHref` ends with `#request`.
+- **`/en/page.tsx`** — both `/en#request` `<Link>`s replaced with `<RequestCTALink>`. `<RequestScrollMount />` mounted at top.
+- **REMOVED** Session 7's `<Script id="hash-scroll">` from root `layout.tsx` (dead code per browser test).
+
+### What's preserved
+- `id="request"` anchor + `scrollMarginTop:80` on DistrictRequestSection (Session 6)
+- `href` attribute on every Link (right-click open in new tab, keyboard tab+Enter, no-JS fallback)
+- `html { scroll-behavior: smooth }` + `prefers-reduced-motion` guard in globals.css (still useful for any other anchor links)
+- All Session 1-7 wins on /en, /en/india-detail, sourcing language, Coming Soon research cards, INDIA AT A GLANCE, color grades, NEW pill SSR fallback, GitHub footer link
+- Backend: zero changes
+
+### Files touched (5)
+- `src/lib/utils/scroll-to-request.ts` (NEW)
+- `src/components/home/request/RequestScrollMount.tsx` (NEW)
+- `src/components/home/request/RequestCTALink.tsx` (NEW)
+- `src/components/home/NextDistrictLeaderboard.tsx` (added `'use client'` + onClick)
+- `src/app/[locale]/page.tsx` (RequestCTALink × 2 + RequestScrollMount mount)
+- `src/app/layout.tsx` (removed dead Script)
+
+### Reversibility (4 layers)
+- Tag `pre-session-7.5-onclick-scroll-2026-04-25` at commit `acb0395`
+- Branch `ui-backup-7.5-2026-04-25`
+- 4 file snapshots: `page.v6.tsx`, `NextDistrictLeaderboard.v2.tsx`, `india-detail/page.v3.tsx`, `layout.v3.tsx`
+- 5-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+### Pending verification
+Antigravity cannot directly verify browser scroll runtime. Jayanth Chrome MCP test required for:
+- /en → click "📍 Find your district →" pill → smooth scroll to district section
+- /en/india-detail → click "Request your district →" → cross-page nav + smooth scroll
+- Direct URL `/en#request` → page loads + smooth scroll on mount
+- Mobile 375px: all of above
+
+---
+
 ## 2026-04-25 — Session 7: proper scroll fix + Find Your District pill (PRE-PUSH)
 
 **Status:** 94 commits ahead of origin/main. 5 code commits this session — pure UI, zero backend.
