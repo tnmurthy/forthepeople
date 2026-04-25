@@ -255,27 +255,6 @@ export default function HomeDrilldown({ locale, heroShown = false }: HomeDrilldo
 
       {/* Remaining sections — full width, stacked */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
-        {/* LIVE PULSE OF INDIA — section header above existing live tiles */}
-        <div style={{ padding: "12px 16px 0", maxWidth: 1100, margin: "0 auto", width: "100%" }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.07em",
-              textTransform: "uppercase",
-              color: "#9B9B9B",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <span aria-hidden="true">📡</span> Live pulse of India
-          </div>
-          <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 2 }}>
-            What&apos;s happening across all live districts right now.
-          </div>
-        </div>
-
         {/* Live Data Preview cards */}
         <LiveDataPreview locale={locale} />
 
