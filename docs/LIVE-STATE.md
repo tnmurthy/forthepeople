@@ -4,6 +4,40 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 5: /en restraint pass (PRE-PUSH)
+
+**Status:** 84 commits ahead of origin/main. 3 code commits this session — pure UI, zero backend.
+
+### What changed
+- /en restored to pre-Session-4 layout (HomeDrilldown's HomepageStats stat row is the visual lead again; map at ~1% from top of visible text vs Session 4's ~30%).
+- Three small additions on /en:
+  1. Single-line kicker above stats: "Your district. (gray) Your data. (lighter gray) Your right. (blue)" — 13/15px all-caps, 0.14em tracking.
+  2. Pastel-blue CTA pill below kicker: "🇮🇳 View India in one page →" + NewPill (auto-expires 30 days post-launch via module-launches.ts).
+  3. Two bottom inline summaries above the suggestion banner: 🆕 Recently launched (Pune · Lucknow · Hyderabad → View India) and 🗳️ Vote next (Ahmedabad 29 · Ernakulam 28 · Thiruvananthapuram 26 → See all). Server-fetched via direct Prisma in page.tsx.
+- HomeDrilldown surgical edit: removed Session 4's LIVE PULSE OF INDIA wrapper. Kept Session 4's color-grade chip palette + Pune NEW pill SSR fallback (isNewDistrictBySlug + DISTRICT_LAUNCH_SSR_FALLBACK).
+
+### What's preserved from Session 4 (non-/en wins)
+- Sourcing language ("accredited research institutions") in DisclaimerBar/Footer/RefreshIndicator/about/root layout
+- Pune NEW pill on /en district tiles (SSR works)
+- Color-coded grade chips
+- /en/india-detail entirely untouched (8 sections including Coming Soon research-backed cards)
+- GitHub footer link (Session 3)
+
+### Components on disk but not currently used by /en
+- HeroIndia, AnimatedCounter, NewDistrictsBand, VoteNextDistrictBand — all 4 stay reusable. NewDistrictsBand + VoteNextDistrictBand are still mounted on /en/india-detail.
+
+### Reversibility (5 layers)
+- Tag `pre-session-5-restraint-2026-04-25` at commit `f3684f6`
+- Branch `ui-backup-restraint-2026-04-25`
+- `page.v3.tsx` + `HomeDrilldown.v2.tsx` (post-Session-4 snapshots)
+- All earlier session backups intact
+- Rollback addendum in `32-Session3-UI-Rollback-Guide.md` with 6 options (least invasive: remove bottom strips only; nuclear: reset to pre-session-3 tag)
+
+### Email scan
+0 hits for `jayanthmbj@gmail.com` in src/prisma/scripts.
+
+---
+
 ## 2026-04-25 — Session 4: /en hero refresh + restructure + sourcing language (PRE-PUSH)
 
 **Status:** 77 commits ahead of origin/main. 10 code/data commits this session — UI + research file, zero backend.
