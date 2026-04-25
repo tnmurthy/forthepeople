@@ -65,7 +65,11 @@ export default async function IndiaDetailPage({
   const activeCount = getTotalActiveDistrictCount();
 
   // ── Data fetches (parallel) ──────────────────────────────────
-  const [activeDistricts, districtRequests, topNews, healthScores] = await Promise.all([
+  // healthScores fetch removed in Session 6 along with the District Health
+  // Ranking section (insufficient score spread to be meaningful). The NEW
+  // DISTRICTS card still renders grade chips per district via the inline
+  // healthScore relation included in the District query above.
+  const [activeDistricts, districtRequests, topNews] = await Promise.all([
     prisma.district.findMany({
       where: { active: true },
       select: {
@@ -86,7 +90,6 @@ export default async function IndiaDetailPage({
       take: 5,
       include: { district: { select: { slug: true, name: true, state: { select: { slug: true } } } } },
     }),
-    prisma.districtHealthScore.findMany(),
   ]);
 
   // ── Derive: "NEW this month" districts (up to 3) ──────────────
@@ -105,16 +108,6 @@ export default async function IndiaDetailPage({
       stateName: r.stateName,
       requestCount: r.requestCount,
     }));
-
-  // ── Derive: full health-ranking sort ─────────────────────────
-  const scoreByDistrict = new Map(healthScores.map((h) => [h.districtId, h]));
-  const healthRanking = activeDistricts
-    .map((d) => ({
-      ...d,
-      score: scoreByDistrict.get(d.id)?.overallScore ?? null,
-      grade: scoreByDistrict.get(d.id)?.grade ?? null,
-    }))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
 
   return (
     <main style={{ background: "#FAFAF8", minHeight: "100vh", paddingBottom: 48 }}>
@@ -306,7 +299,7 @@ export default async function IndiaDetailPage({
             <NextDistrictLeaderboard
               locale={locale}
               items={leaderboard}
-              seeAllHref={`/${locale}/features?tab=vote`}
+              seeAllHref={`/${locale}#request`}
             />
           </section>
         )}
@@ -353,92 +346,14 @@ export default async function IndiaDetailPage({
         )}
 
         {/* ═══════════════════════════════════════════════════════
-            Section 6 · District health ranking
+            Section 6 · India at a glance — today (Session 6)
+            Replaces the previous District Health Ranking, which had
+            insufficient score spread across the 10 active districts
+            to be a meaningful comparative ranking. Five cited national
+            indicators serve a citizen better here. Source URLs and
+            retrieval dates are surfaced on every card.
            ═══════════════════════════════════════════════════════ */}
-        <section style={{ marginBottom: 40 }}>
-          <SectionLabel icon="📊">District health ranking</SectionLabel>
-          <div
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid #E8E8E4",
-              borderRadius: 14,
-              overflow: "hidden",
-            }}
-          >
-            {healthRanking.map((d, idx) => {
-              const gc = gradeColor(d.grade);
-              return (
-                <Link
-                  key={d.id}
-                  href={`/${locale}/${d.state.slug}/${d.slug}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    textDecoration: "none",
-                    color: "#1A1A1A",
-                    borderBottom: idx === healthRanking.length - 1 ? "none" : "1px solid #F0F0EC",
-                    minHeight: 48,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#9B9B9B",
-                      fontFamily: "var(--font-mono, monospace)",
-                      width: 24,
-                      flexShrink: 0,
-                    }}
-                  >
-                    #{idx + 1}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A" }}>
-                      {d.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 1 }}>
-                      {d.state.name}
-                    </div>
-                  </div>
-                  {d.grade && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        padding: "3px 8px",
-                        borderRadius: 4,
-                        background: gc.bg,
-                        color: gc.text,
-                        border: `1px solid ${gc.border}`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {d.grade}
-                    </span>
-                  )}
-                  <span
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#1A1A1A",
-                      fontFamily: "var(--font-mono, monospace)",
-                      minWidth: 46,
-                      textAlign: "right",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {d.score !== null ? d.score.toFixed(1) : "—"}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-          <p style={{ fontSize: 11, color: "#9B9B9B", marginTop: 8, textAlign: "center" }}>
-            Grades from governance, education, health, infrastructure, water, economy, safety, agriculture, digital access, welfare.
-          </p>
-        </section>
+        <IndiaAtAGlance />
 
         {/* ═══════════════════════════════════════════════════════
             Section 7 · Coming Soon
@@ -539,6 +454,169 @@ export default async function IndiaDetailPage({
 }
 
 // ── Sub-components ─────────────────────────────────────────────
+
+/**
+ * India at a glance — five cited national indicators.
+ *
+ * Every value is verbatim from
+ * `research/india-modules-coming-soon-sources-2026-04-25.md`. The CPI Jan
+ * 2026 row was deliberately omitted — the research file documents the
+ * methodology change (base updated to 2024=100) but does not cite a
+ * specific value, and Hard Rule #4 of Session 6 says "5 honest rows beat
+ * 6 fabricated ones."
+ *
+ * Live tracking arrives with the National Economy module (Session 8 per
+ * the build-order recommendation in the research file).
+ */
+type Indicator = {
+  label: string;
+  value: string;
+  source: string;
+  sourceUrl: string;
+  asOf: string;
+};
+
+const INDIA_GLANCE_INDICATORS: Indicator[] = [
+  {
+    label: "Real GDP Growth (Q3 FY26, Y-o-Y)",
+    value: "7.8%",
+    source: "MoSPI press note",
+    sourceUrl: "https://www.mospi.gov.in/press-release",
+    asOf: "Released 27 Feb 2026",
+  },
+  {
+    label: "Unemployment Rate (CWS)",
+    value: "4.8%",
+    source: "MoSPI · PLFS Monthly",
+    sourceUrl: "https://www.mospi.gov.in/press-release",
+    asOf: "Jan 2026",
+  },
+  {
+    label: "RBI Repo Rate",
+    value: "5.25%",
+    source: "RBI Monetary Policy",
+    sourceUrl: "https://www.rbi.org.in/",
+    asOf: "MPC 5 Dec 2025",
+  },
+  {
+    label: "Mandi Markets Live (AGMARKNET 2.0)",
+    value: "4,367",
+    source: "Ministry of Agriculture · AGMARKNET",
+    sourceUrl: "https://agmarknet.gov.in/",
+    asOf: "Nov 2025",
+  },
+  {
+    label: "U-WIN Beneficiaries Registered",
+    value: "7.43 cr",
+    source: "MoHFW · U-WIN",
+    sourceUrl: "https://uwin.mohfw.gov.in/home",
+    asOf: "As of 25 Nov 2024",
+  },
+];
+
+function IndiaAtAGlance() {
+  return (
+    <section
+      style={{
+        marginBottom: 40,
+      }}
+    >
+      <SectionLabel icon="📊">India at a glance — today</SectionLabel>
+      <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 14, marginTop: -6 }}>
+        Selected national indicators from public government releases.
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: 10,
+        }}
+      >
+        {INDIA_GLANCE_INDICATORS.map((ind) => (
+          <IndicatorCard key={ind.label} ind={ind} />
+        ))}
+      </div>
+
+      <div
+        style={{
+          marginTop: 14,
+          padding: "10px 14px",
+          fontSize: 12,
+          color: "#6B6B6B",
+          background: "#FAFAF8",
+          borderTop: "1px solid #F0F0EC",
+          borderRadius: 6,
+          fontStyle: "italic",
+          lineHeight: 1.55,
+        }}
+      >
+        These are static snapshots from the most recent official government
+        releases as of late April 2026. Live tracking arrives with the
+        National Economy module — see Coming Soon below.
+      </div>
+    </section>
+  );
+}
+
+function IndicatorCard({ ind }: { ind: Indicator }) {
+  return (
+    <div
+      style={{
+        padding: "14px 16px",
+        background: "#FFFFFF",
+        border: "1px solid #F0F0EC",
+        borderRadius: 10,
+      }}
+    >
+      <div style={{ fontSize: 11, color: "#9B9B9B", marginBottom: 4 }}>
+        {ind.label}
+      </div>
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#1F2937",
+          fontVariantNumeric: "tabular-nums",
+          letterSpacing: "-0.01em",
+          lineHeight: 1.1,
+          fontFamily: "var(--font-mono, ui-monospace, monospace)",
+        }}
+      >
+        {ind.value}
+      </div>
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 11,
+          color: "#6B6B6B",
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 6,
+          justifyContent: "space-between",
+        }}
+      >
+        <a
+          href={ind.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "#2563EB",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            minHeight: 28,
+            padding: "2px 0",
+          }}
+        >
+          {ind.source}
+        </a>
+        <span style={{ color: "#9CA3AF" }}>{ind.asOf}</span>
+      </div>
+    </div>
+  );
+}
 
 function SectionLabel({ icon, children }: { icon: string; children: React.ReactNode }) {
   return (
