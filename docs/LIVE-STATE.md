@@ -4,6 +4,49 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 6: /en/india-detail cleanup (PRE-PUSH)
+
+**Status:** 87 commits ahead of origin/main. 3 code commits this session — pure UI, zero backend.
+
+### What changed
+- **/en/india-detail District Health Ranking REMOVED.** All 10 active districts cluster at C/C+ (40-59 score range); a "ranked" presentation implied a meaningful spread that doesn't exist. Per-district grade chips remain visible everywhere else (NEW DISTRICTS cards + /en homepage tiles).
+- **/en/india-detail INDIA AT A GLANCE section ADDED** in the same vertical slot. Five cited national indicators with source URL + retrieval date on each card:
+  - Real GDP Growth (Q3 FY26) — 7.8% (MoSPI)
+  - Unemployment Rate (CWS Jan 2026) — 4.8% (PLFS)
+  - RBI Repo Rate — 5.25% (RBI MPC 5 Dec 2025)
+  - Mandi Markets Live (AGMARKNET 2.0) — 4,367 (Nov 2025)
+  - U-WIN Beneficiaries — 7.43 cr (MoHFW, 25 Nov 2024)
+  - CPI row dropped (research file lacks specific cited value — Hard Rule #4 honesty over completeness)
+- Italic disclaimer makes static-snapshot status explicit; references the Coming Soon National Economy module as live-tracking destination.
+- **Vote leaderboard CTAs rewired** from `/en/features?tab=vote` (dead-end) to `/en#request` (existing district-search/request flow).
+  - Single change point in `NextDistrictLeaderboard.tsx` (href prop drives both row links + button).
+  - `DistrictRequestSection.tsx` gained `id="request"` + `scrollMarginTop:80` for the anchor target.
+  - CTA labels changed "See all requests →" → "Request your district →" (verb-honest).
+  - Affected: 3 leaderboard rows + 1 button on india-detail + 1 button on /en bottom strip = 5 sites.
+
+### Files touched (4)
+- `src/app/[locale]/india-detail/page.tsx` (Phase 3+4)
+- `src/app/[locale]/page.tsx` (Phase 5)
+- `src/components/home/NextDistrictLeaderboard.tsx` (Phase 5)
+- `src/components/home/DistrictRequestSection.tsx` (Phase 5)
+
+### Backend untouched / Session 4-5 wins preserved
+- Sourcing language unchanged (DisclaimerBar, Footer, RefreshIndicator, about, layout)
+- Pune NEW pill SSR fallback unchanged
+- Color-coded grade chips on NEW DISTRICTS cards + /en active districts unchanged
+- Session 5 kicker / CTA pill / Recently launched strip unchanged
+- Session 4 Coming Soon research-backed cards on /en/india-detail unchanged
+- Session 3 GitHub footer link unchanged
+- Email scan: 0 hits for `jayanthmbj@gmail.com` in src/prisma/scripts
+
+### Reversibility (4 layers verified)
+- Tag `pre-session-6-india-detail-cleanup-2026-04-25` at commit `be910c1`
+- Branch `ui-backup-india-detail-2026-04-25`
+- 4 file snapshots: `india-detail/page.v2.tsx`, `[locale]/page.v4.tsx`, `NextDistrictLeaderboard.v1.tsx`, `DistrictRequestSection.v1.tsx`
+- Rollback addendum in `32-Session3-UI-Rollback-Guide.md` with 6 options
+
+---
+
 ## 2026-04-25 — Session 5: /en restraint pass (PRE-PUSH)
 
 **Status:** 84 commits ahead of origin/main. 3 code commits this session — pure UI, zero backend.
