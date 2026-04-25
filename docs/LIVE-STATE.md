@@ -4,6 +4,30 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 6.5: scroll-to-anchor micro-fix (PRE-PUSH)
+
+**Status:** 88 commits ahead of origin/main. 2 commits this session — single 25-line useEffect, zero backend.
+
+### Bug fixed
+Session 6 wired all "Request your district →" CTAs to `/en#request` and added the matching `id="request"` anchor on `DistrictRequestSection`. But Next.js's `<Link>` cross-page navigation resets `scrollY=0` before render, so the fragment never auto-scrolled — users landed on /en at the top and had to manually scroll ~2,300px to find what they were trying to do. That defeated Session 6's link-fix work because the destination was functionally invisible.
+
+### Fix
+`useEffect` in `DistrictRequestSection.tsx` that runs on mount AND on `hashchange`. If `window.location.hash === "#request"`, calls `el.scrollIntoView({ behavior: "smooth", block: "start" })` after a 100ms delay (lets React hydration finish). `behavior: "smooth"` respects `prefers-reduced-motion` via the browser default.
+
+### Verified
+- TSC clean
+- Compiled chunks (server + client) contain the `scrollToRequest` function
+- Component still renders with `id="request"` anchor on /en
+- 9 cross-page + backend routes return 200 (no regression)
+- Manual browser scroll behavior pending Jayanth's Chrome MCP confirmation
+
+### Reversibility (3 layers)
+- Tag `pre-session-6.5-scroll-fix-2026-04-25` at commit `a74db72`
+- `DistrictRequestSection.v2.tsx` snapshot (post-Session-6 / pre-6.5)
+- 4-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+---
+
 ## 2026-04-25 — Session 6: /en/india-detail cleanup (PRE-PUSH)
 
 **Status:** 87 commits ahead of origin/main. 3 code commits this session — pure UI, zero backend.
