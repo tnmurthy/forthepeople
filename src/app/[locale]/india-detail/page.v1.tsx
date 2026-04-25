@@ -30,14 +30,13 @@ function isNewDistrict(goLiveDate: Date | null | undefined): boolean {
   return ms >= -FUTURE_GRACE_MS && ms < DAYS_NEW * 24 * 60 * 60 * 1000;
 }
 
-function gradeColor(grade: string | null): { bg: string; text: string; border: string } {
-  // Tailwind-50 backgrounds + 700 text + 200 border, matching HomeDrilldown.
-  if (!grade) return { bg: "#F3F4F6", text: "#6B7280", border: "#E5E7EB" };
-  if (grade.startsWith("A")) return { bg: "#ECFDF5", text: "#047857", border: "#A7F3D0" };
-  if (grade.startsWith("B")) return { bg: "#EFF6FF", text: "#1D4ED8", border: "#BFDBFE" };
-  if (grade.startsWith("C")) return { bg: "#FFFBEB", text: "#B45309", border: "#FDE68A" };
-  if (grade.startsWith("D")) return { bg: "#FFF1F2", text: "#BE123C", border: "#FECACA" };
-  return { bg: "#F3F4F6", text: "#6B7280", border: "#E5E7EB" };
+function gradeColor(grade: string | null): { bg: string; text: string } {
+  if (!grade) return { bg: "#F3F4F6", text: "#6B7280" };
+  if (grade.startsWith("A")) return { bg: "#DCFCE7", text: "#15803D" };
+  if (grade.startsWith("B")) return { bg: "#DBEAFE", text: "#1D4ED8" };
+  if (grade.startsWith("C")) return { bg: "#FEF3C7", text: "#92400E" };
+  if (grade.startsWith("D")) return { bg: "#FEE2E2", text: "#991B1B" };
+  return { bg: "#F3F4F6", text: "#6B7280" };
 }
 
 export async function generateMetadata({
@@ -259,7 +258,6 @@ export default async function IndiaDetailPage({
                             borderRadius: 4,
                             background: gc.bg,
                             color: gc.text,
-                            border: `1px solid ${gc.border}`,
                           }}
                         >
                           {d.healthScore.grade}
@@ -411,7 +409,6 @@ export default async function IndiaDetailPage({
                         borderRadius: 4,
                         background: gc.bg,
                         color: gc.text,
-                        border: `1px solid ${gc.border}`,
                         flexShrink: 0,
                       }}
                     >
@@ -456,26 +453,22 @@ export default async function IndiaDetailPage({
             <ComingSoonCard
               emoji="💰"
               title="National economy"
-              blurb="GDP growth, CPI inflation, PLFS unemployment, monthly trade balance, fiscal deficit, RBI repo rate."
-              sources="MoSPI · RBI · CGA · Ministry of Commerce"
+              blurb="GDP, inflation, unemployment, import/export trends."
             />
             <ComingSoonCard
               emoji="🏛️"
               title="Parliament & budget"
-              blurb="MP attendance, questions asked, bills introduced/passed, Union Budget allocations, CAG audit findings, ECI election results."
-              sources="Sansad.in · indiabudget.gov.in · cag.gov.in · eci.gov.in"
+              blurb="Lok Sabha, Rajya Sabha, Union Budget, CAG reports."
             />
             <ComingSoonCard
               emoji="🌾"
               title="Agriculture"
-              blurb="Daily mandi prices (4,367 markets), MSP for 22 crops, monsoon rainfall, crop production estimates, PM-KISAN beneficiaries, fertilizer subsidy."
-              sources="AGMARKNET · IMD · CACP · DA&FW"
+              blurb="All-India mandi prices, fertiliser, MSP data."
             />
             <ComingSoonCard
               emoji="🏥"
               title="Health"
-              blurb="Ayushman cards, hospital empanelment, U-WIN immunisation, IDSP disease outbreaks, NFHS-5 outcomes, NPPA drug ceiling prices."
-              sources="National Health Authority · MoHFW · IIPS · NPPA"
+              blurb="Ayushman Bharat coverage, epidemic surveillance."
             />
           </div>
         </section>
@@ -562,18 +555,18 @@ function SectionLabel({ icon, children }: { icon: string; children: React.ReactN
 }
 
 function ComingSoonCard({
-  emoji, title, blurb, sources,
+  emoji, title, blurb,
 }: {
-  emoji: string; title: string; blurb: string; sources?: string;
+  emoji: string; title: string; blurb: string;
 }) {
   return (
     <div
       style={{
         background: "#FFFFFF",
-        border: "1px dashed #D1D5DB",
+        border: "1px dashed #E0E0DA",
         borderRadius: 12,
         padding: "14px 16px",
-        opacity: 0.78,
+        opacity: 0.75,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -595,22 +588,7 @@ function ComingSoonCard({
           Coming soon
         </span>
       </div>
-      <p style={{ margin: 0, fontSize: 12, color: "#6B6B6B", lineHeight: 1.55 }}>{blurb}</p>
-      {sources && (
-        <p
-          style={{
-            margin: "8px 0 0",
-            fontSize: 11,
-            color: "#9B9B9B",
-            lineHeight: 1.5,
-            paddingTop: 8,
-            borderTop: "1px dashed #E5E7EB",
-            fontFamily: "var(--font-mono, ui-monospace, monospace)",
-          }}
-        >
-          Sources: {sources}
-        </p>
-      )}
+      <p style={{ margin: 0, fontSize: 12, color: "#6B6B6B", lineHeight: 1.5 }}>{blurb}</p>
     </div>
   );
 }
