@@ -43,8 +43,9 @@ export default function DisclaimerBar() {
       <span style={{ flexShrink: 0 }}>⚠️</span>
       <span style={{ flex: 1 }}>
         <strong>ForThePeople.in is NOT an official government website.</strong>{" "}
-        Data is sourced from publicly available government portals under India&apos;s Open Data Policy (NDSAP).
-        Always verify critical information at the original government portal.
+        Data is aggregated from official government portals (NDSAP), accredited
+        research institutions, and verified public sources. Always verify critical
+        information at the original source.
       </span>
       <button
         onClick={dismiss}

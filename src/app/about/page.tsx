@@ -115,10 +115,15 @@ export default function AboutPage() {
       {/* Data sources */}
       <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A", marginBottom: 12 }}>Data Sources & Methodology</h2>
       <p style={{ fontSize: 14, color: "#4B4B4B", lineHeight: 1.7, marginBottom: 16 }}>
-        ForThePeople.in aggregates data exclusively from official Indian government portals under the{" "}
-        <strong>National Data Sharing and Accessibility Policy (NDSAP) 2012</strong>, which requires
-        government departments to proactively publish non-sensitive data in open, machine-readable formats.
-        No data is collected from unofficial sources or estimated.
+        ForThePeople.in is an independent citizen transparency platform built on India&apos;s
+        Right to Information principles (Article 19(1)(a) of the Constitution). Data is
+        aggregated from official Government of India portals released under the{" "}
+        <strong>National Data Sharing and Accessibility Policy (NDSAP) 2012</strong>,
+        accredited research institutions (IIPS for NFHS, ICMR, IMD), and publicly accessible
+        verified sources (weather APIs, news headlines under fair use). We do not claim
+        affiliation with any government body. Every numeric value is traceable to its
+        original public source — please verify critical information at the source portal
+        before acting on it.
       </p>
       <div style={{ display: "grid", gap: 8, marginBottom: 40 }}>
         {DATA_SOURCES.map((s) => (

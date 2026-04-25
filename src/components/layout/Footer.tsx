@@ -54,7 +54,7 @@ export default function Footer() {
         }}
       >
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          Data sourced under NDSAP Open Data Policy &nbsp;·&nbsp; Built for the citizens of India
+          Independent citizen transparency platform &nbsp;·&nbsp; Data from official government portals (NDSAP), accredited research institutions, and verified public sources &nbsp;·&nbsp; Built for the citizens of India
         </span>
         <span
           style={{

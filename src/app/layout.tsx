@@ -83,7 +83,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ForThePeople.in — Your District. Your Data. Your Right.",
-    description: "India's citizen transparency platform. Free district-level government data.",
+    description: "Independent citizen transparency platform aggregating government data, research institution datasets, and verified public sources for Indian districts. NOT an official government service.",
     images: ["/og-image.png"],
   },
   robots: {

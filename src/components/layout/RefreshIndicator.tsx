@@ -52,7 +52,7 @@ export default function RefreshIndicator() {
     >
       {/* Left: data source note */}
       <span>
-        Data sourced under NDSAP Open Data Policy &nbsp;·&nbsp; Built for the citizens of India
+        Data from official government portals (NDSAP), accredited research institutions, and verified public sources &nbsp;·&nbsp; Built for the citizens of India
       </span>
 
       {/* Right: live clock + refresh status */}
