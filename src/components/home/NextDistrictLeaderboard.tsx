@@ -20,7 +20,6 @@
 
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { scrollToRequestSection } from "@/lib/utils/scroll-to-request";
 
@@ -45,10 +44,13 @@ export function NextDistrictLeaderboard({
   const isRequestHref = href.endsWith("#request");
 
   // Only intercept clicks when the href is the #request anchor — for any
-  // other seeAllHref (e.g. a future dedicated voting page), let normal
-  // Link navigation proceed without our scroll fanciness.
+  // other seeAllHref (e.g. a future dedicated voting page), let the
+  // default <a> navigation proceed without our scroll fanciness.
+  // Skip cmd/ctrl/shift-click (open in new tab/window) and non-primary
+  // button — let the browser handle those natively.
   const handleRequestClick = isRequestHref
-    ? (e: React.MouseEvent) => {
+    ? (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
         const handled = scrollToRequestSection(pathname, locale);
         if (handled) e.preventDefault();
       }
@@ -81,7 +83,7 @@ export function NextDistrictLeaderboard({
         }}
       >
         {items.slice(0, 3).map((row, idx) => (
-          <Link
+          <a
             key={`${row.stateName}-${row.districtName}`}
             href={href}
             onClick={handleRequestClick}
@@ -128,12 +130,12 @@ export function NextDistrictLeaderboard({
               {row.requestCount.toLocaleString("en-IN")}
               <span style={{ color: "#9B9B9B", fontWeight: 400, marginLeft: 3 }}>votes</span>
             </div>
-          </Link>
+          </a>
         ))}
       </div>
 
       <div style={{ marginTop: 10, textAlign: "center" }}>
-        <Link
+        <a
           href={href}
           onClick={handleRequestClick}
           style={{
@@ -144,7 +146,7 @@ export function NextDistrictLeaderboard({
           }}
         >
           Request your district →
-        </Link>
+        </a>
       </div>
     </div>
   );
