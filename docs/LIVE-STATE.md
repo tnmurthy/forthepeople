@@ -4,6 +4,70 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 7.7: final scroll fix + two-layer fallback (corrective) (PRE-PUSH)
+
+**Status:** 111 commits ahead of origin/main. 4 code commits (1 backup, 1 plain-a rewrite, 1 polyfill, 1 SupportCheckout) — pure UI, zero backend.
+
+### Why
+Session 7.6 cleaned globals.css source but Chrome MCP found `scroll-behavior:smooth` STILL in the served Turbopack chunk. Phase 1 grep proved the source file was clean — it was a stale compiled chunk. Forced a full rebuild (`pkill next dev` + `rm -rf .next .turbo` + restart), then verified the freshly emitted chunk had zero `scroll-behavior` occurrences. Layered two more defenses to make the fix bulletproof regardless of any future runtime weirdness.
+
+### What changed
+- **CSS chunk** — verified clean post-rebuild. Source file unchanged this session (Session 7.6 already removed the rule).
+- **`src/components/home/request/RequestCTALink.tsx`** — full rewrite. Was `next/link <Link>` wrapper, now plain `<a>` wrapper. Suspected: Next.js soft-route was canceling the rAF tween. Modifier-key guard added (cmd/ctrl/shift-click + middle-click bypass the handler so browser can open new tabs natively).
+- **`src/components/home/NextDistrictLeaderboard.tsx`** — 4 `<Link>` → plain `<a>` (3 leaderboard rows + 1 bottom CTA), removed unused `next/link` import, modifier-key guard added.
+- **`src/lib/utils/scroll-to-request.ts`** — replaced with two-layer polyfill:
+  - Layer 1: rAF cubic ease-out, 500ms, calls positional `window.scrollTo(0, easedY)` per frame
+  - Layer 2: After 700ms, if `Math.abs(window.scrollY - target) > 100px`, force `el.scrollIntoView({block:'start'})` (the only API confirmed working in EVERY Chrome MCP test across 4 sessions)
+  - Honors `prefers-reduced-motion` via JS `matchMedia` (skips Layer 1)
+  - Diagnostic `[FTP scroll]` console.log gated behind `DEBUG_LOG = true` flag — flip in future cleanup
+- **`src/components/support/SupportCheckout.tsx:130`** — dropped `behavior:'smooth'` from `containerRef.current?.scrollIntoView()`. Same root-cause as the /<locale>#request bug. Kept `block:'center'` positioning.
+
+### What's preserved
+- `id="request"` anchor + `scroll-margin-top:80px` on DistrictRequestSection (Session 6)
+- 80px header offset, `Math.max(0, ...)` clamp, sessionStorage cross-page handoff, post-mount delay (bumped 150→200ms), `replaceState` URL update
+- All Session 1-7.6 wins on /en, /en/india-detail, sourcing, INDIA AT A GLANCE, color grades, NEW pill SSR fallback
+- href attribute on every link (right-click + keyboard tab+Enter + no-JS fallback)
+- Public API of scroll-to-request.ts unchanged — `RequestScrollMount` and the rest needed no edits
+- Backend: zero changes
+
+### Files touched (4 + 4 backups)
+- `src/components/home/request/RequestCTALink.tsx` (Link → a)
+- `src/components/home/NextDistrictLeaderboard.tsx` (4× Link → a, removed import)
+- `src/lib/utils/scroll-to-request.ts` (two-layer polyfill)
+- `src/components/support/SupportCheckout.tsx` (drop behavior:smooth)
+- `src/app/globals.v3.css` (pre-edit snapshot)
+- `src/lib/utils/scroll-to-request.v3.ts` (pre-edit snapshot)
+- `src/components/home/request/RequestCTALink.v1.tsx` (pre-edit snapshot)
+- `src/components/support/SupportCheckout.v1.tsx` (pre-edit snapshot)
+
+### Reversibility (4 layers)
+- Tag `pre-session-7.7-final-scroll-2026-04-25` at commit `802aeb1`
+- Branch `ui-backup-7.7-2026-04-25`
+- 4 file snapshots: `globals.v3.css`, `scroll-to-request.v3.ts`, `RequestCTALink.v1.tsx`, `SupportCheckout.v1.tsx`
+- 5-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+### Verification done from terminal
+- ✅ `npx tsc --noEmit` clean
+- ✅ Source: 0 `<Link href={...#request}>` references in src/ (excluding .v backups)
+- ✅ Compiled CSS chunk: 0 `scroll-behavior` occurrences
+- ✅ /en HTML: "Find your district" pill, "View India" pill, `id="request"` anchor present
+- ✅ /en/india-detail HTML: "Request your district" CTA present
+- ✅ All 4 backend APIs HTTP 200; all 7 page routes HTTP 200
+- ✅ All 4 backups exist on disk
+
+### Pending Jayanth Chrome MCP confirmation
+- /en click "📍 Find your district →" → smooth (or instant) scroll, URL `#request`
+- /en/india-detail click "Request your district" → cross-page nav + scroll on mount
+- Direct URL `/en#request` → loads + scroll
+- Mobile 375px: all of above
+- Reduce-motion ON: instant jump (no animation)
+- DevTools console: `[FTP scroll]` logs showing which layer landed (rAF vs fallback)
+
+### NEW [LOW] in BUG-TRACKER
+- Diagnostic `console.log("[FTP scroll]", ...)` logs live in scroll-to-request.ts. Cosmetic — flip `DEBUG_LOG = false` once bug confirmed fixed in the wild.
+
+---
+
 ## 2026-04-25 — Session 7.6: rAF smooth-scroll polyfill (corrective) (PRE-PUSH)
 
 **Status:** 106 commits ahead of origin/main. 3 code commits this session (1 backup, 1 css, 1 utility) — pure UI, zero backend.
