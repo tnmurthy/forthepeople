@@ -4,6 +4,58 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 8: move BACKED BY supporter strip below stats row (PRE-PUSH)
+
+**Status:** 113 commits ahead of origin/main. 2 code commits (1 backup, 1 move) — pure UI, zero backend.
+
+### Why
+Jayanth's annotated screenshot review: 🏆 BACKED BY strip was sitting between the market ticker and the kicker, interrupting the kicker → CTAs → stats reading flow. Moved to between the stats row and the map section so the kicker hits immediately and supporters appear contextually after the value (stats) and before the product (map).
+
+### What changed
+- **`src/app/[locale]/page.tsx`** — removed `<TopTierShowcase locale={locale} />` from line 91 (between MarketTickerClient and the kicker block) + dropped the now-unused import.
+- **`src/components/layout/HomeDrilldown.tsx`** — imported `TopTierShowcase`, mounted `<TopTierShowcase locale={locale} />` between `<HomepageStats />` (line 159) and the click-a-state map header (line 178). HomeDrilldown is the only consumer of HomepageStats and the map, so this single insert positions BACKED BY correctly without leaking into other pages.
+
+### Architecture note
+Both `<HomepageStats />` and the map render INSIDE `<HomeDrilldown>`, not as sequential children of page.tsx. Two-file change required (rather than the single-file move the prompt initially anticipated). `<HomeDrilldown>` has exactly one consumer (`/en/page.tsx`), confirmed via `grep -rn HomeDrilldown src/`.
+
+### What's preserved
+- `<MarketTickerClient />` stays at top of page.tsx
+- Kicker, 2 CTA pills, bottom strips, RequestScrollMount, scroll fix from Session 7.7
+- TopTierShowcase component itself untouched (same `locale` prop, same `useQuery` against `/api/data/contributors?type=top-tier&limit=20`, same loading/empty states)
+- Backend: zero changes
+
+### Files touched (2 + 2 backups)
+- `src/app/[locale]/page.tsx` (remove import + JSX)
+- `src/components/layout/HomeDrilldown.tsx` (import + JSX between stats and map)
+- `src/app/[locale]/page.v7.tsx` (pre-edit snapshot)
+- `src/components/layout/HomeDrilldown.v3.tsx` (pre-edit snapshot)
+
+### Reversibility (4 layers)
+- Tag `pre-session-8-move-backedby-2026-04-25` at commit `9da7f32`
+- Branch `ui-backup-8-2026-04-25`
+- 2 file snapshots: `page.v7.tsx`, `HomeDrilldown.v3.tsx`
+- 4-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+### Verification done from terminal
+- ✅ `npx tsc --noEmit` clean
+- ✅ Source: 0 `TopTierShowcase` references in page.tsx
+- ✅ HomeDrilldown render order: HomepageStats(159) → TopTierShowcase(165) → "click a state"(178)
+- ✅ /en HTML byte-order grep: kicker(24729) < stats(26379) < map(28358)
+- ✅ /api/data/contributors?type=top-tier returns Micah Alex (the founder backer)
+- ✅ All 4 backend APIs HTTP 200; all 7 page routes HTTP 200
+
+### SSR limitation noted
+TopTierShowcase is `"use client"` with `if (isLoading) return null;` — renders nothing on SSR. Visual position only materializes after client hydration + React Query fetch. The React-tree position is what matters; verified via source-tree inspection above.
+
+### Pending Jayanth Chrome MCP confirmation
+- Desktop 1280px: ticker → kicker → 2 pills → stats → 🏆 BACKED BY → map
+- Mobile 375px: same order, BACKED BY column-stacks per existing media query
+- Click "Support ForThePeople.in →" still opens Razorpay
+- Click "Your name here" still opens Razorpay
+- Session 7.7 scroll fix still works (click 📍 Find your district → scrolls)
+
+---
+
 ## 2026-04-25 — Session 7.7: final scroll fix + two-layer fallback (corrective) (PRE-PUSH)
 
 **Status:** 111 commits ahead of origin/main. 4 code commits (1 backup, 1 plain-a rewrite, 1 polyfill, 1 SupportCheckout) — pure UI, zero backend.
