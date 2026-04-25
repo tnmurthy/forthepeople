@@ -107,7 +107,17 @@ export default async function HomePage({
           <span style={{ color: "#9CA3AF" }}>Your data.</span>{" "}
           <span style={{ color: "#2563EB" }}>Your right.</span>
         </h2>
-        <div style={{ marginTop: 10 }}>
+        <div
+          style={{
+            marginTop: 10,
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {/* India view (existing) */}
           <Link
             href={`/${locale}/india-detail`}
             style={{
@@ -128,6 +138,31 @@ export default async function HomePage({
             <span aria-hidden="true">🇮🇳</span>
             View India in one page →
             <NewPill slug="india-detail" />
+          </Link>
+
+          {/* Find your district (Session 7) — emerald palette to distinguish
+              from the blue India pill; routes to /en#request which scrolls
+              to the existing district search/request flow via the global
+              hash-scroll Script in src/app/layout.tsx. */}
+          <Link
+            href={`/${locale}#request`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 12px",
+              borderRadius: 999,
+              background: "#F0FDF4",
+              border: "1px solid #BBF7D0",
+              color: "#15803D",
+              fontSize: 12,
+              fontWeight: 500,
+              textDecoration: "none",
+              minHeight: 28,
+            }}
+          >
+            <span aria-hidden="true">📍</span>
+            Find your district →
           </Link>
         </div>
       </div>
