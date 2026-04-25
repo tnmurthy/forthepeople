@@ -4,6 +4,43 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 4: /en hero refresh + restructure + sourcing language (PRE-PUSH)
+
+**Status:** 77 commits ahead of origin/main. 10 code/data commits this session — UI + research file, zero backend.
+
+### Reversibility (4 layers verified)
+- Tag `pre-session-4-en-refresh-2026-04-25` at commit `d78b9a4` (Session 3 end)
+- Branch `ui-backup-en-refresh-2026-04-25`
+- `.v` backups for every touched file (`page.v2.tsx`, `Footer.v3.tsx`, `HomeDrilldown.v1.tsx`, `DisclaimerBar.v1.tsx`, `RefreshIndicator.v1.tsx`, `about/page.v1.tsx`, `layout.v1.tsx`, `india-detail/page.v1.tsx`)
+- Rollback addendum in `32-Session3-UI-Rollback-Guide.md` with 4 options
+
+### /en restructure
+- New section order: Ticker → **HeroIndia** → **NewDistrictsBand** → HomeDrilldown (with **LIVE PULSE OF INDIA** header above LiveDataPreview, HomepageStats suppressed via `heroShown`) → **VoteNextDistrictBand** → TopTierShowcase (DEMOTED from position 3 → position 6) → suggest banner → contributor wall.
+- New components: `HeroIndia.tsx`, `AnimatedCounter.tsx`, `NewDistrictsBand.tsx`, `VoteNextDistrictBand.tsx`.
+- HomeDrilldown gains `heroShown` prop + LIVE PULSE OF INDIA section header.
+
+### Pune NEW pill regression — root cause + fix
+- Session 3 fix to `isNewDistrict` was correct math; SSR `preview?.goLiveDate` was undefined because React Query hadn't fired.
+- Fix: `DISTRICT_LAUNCH_SSR_FALLBACK` static map keyed by slug; new `isNewDistrictBySlug` helper. NEW pill count in `/en` SSR HTML jumped from 1 to 4.
+
+### Sourcing language site-wide
+- Old: "publicly available government portals under India's Open Data Policy"
+- New: "official government portals (NDSAP), accredited research institutions, and verified public sources"
+- Updated in DisclaimerBar (yellow strip), Footer (row 1 + meta description), RefreshIndicator (small grey footer line), About page (Methodology paragraph), root `layout.tsx` (Twitter card description). Disclaimer/Privacy/Terms pages NOT touched.
+
+### Health-grade chip colors
+- `gradeColor()` updated to Tailwind 50/700/200 family in both HomeDrilldown and india-detail. Border added to chip render. Same emerald/blue/amber/rose family used by Coming Soon cards.
+
+### `/en/india-detail` Coming Soon cards
+- Replaced vague blurbs with specific MVP data points + first-party source names from `research/india-modules-coming-soon-sources-2026-04-25.md` (444 lines, 160 verified URLs).
+- ComingSoonCard component extended with optional `sources` slot (mono font, dashed divider). Cards retain dashed border + 0.78 opacity.
+
+### Backend untouched policy
+- Zero Prisma schema changes. Zero API route edits. Zero seed scripts. All edits in `.tsx` files + 1 research markdown.
+- Email scan: 0 hits for `jayanthmbj@gmail.com` in src/prisma/scripts.
+
+---
+
 ## 2026-04-25 — Session 3: India aggregate page + mobile/visual fixes (PRE-PUSH)
 
 **Status:** 66 commits ahead of origin/main. 10 code commits this session — all UI, zero backend.
