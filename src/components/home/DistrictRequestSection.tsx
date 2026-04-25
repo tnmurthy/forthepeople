@@ -57,7 +57,10 @@ export default function DistrictRequestSection() {
   const topRequest = data?.top?.[0];
 
   return (
-    <div style={{ padding: "0 16px 16px" }}>
+    // id="request" is the canonical anchor for "Request your district"
+    // CTAs across the site (india-detail leaderboard, /en bottom strip).
+    // Added in Session 6 — replaces dead-ending links to /features?tab=vote.
+    <div id="request" style={{ padding: "0 16px 16px", scrollMarginTop: 80 }}>
       {/* Progress bar */}
       <div
         style={{

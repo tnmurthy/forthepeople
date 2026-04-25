@@ -5,8 +5,11 @@
  * "Unlock Your District" flow). Active districts are filtered out
  * upstream — this component is dumb: it just renders what it's given.
  *
- * Anchors to /en/features?tab=vote so clicking any row lands the user on
- * the full voting UI.
+ * Each row + the bottom CTA route to whatever `seeAllHref` resolves to.
+ * As of Session 6 the canonical destination is /en#request — anchors to
+ * the existing district-search/request flow on the home page (there is
+ * no public listing of pending requests yet, and the prior
+ * /en/features?tab=vote target is a dead-end).
  */
 
 import Link from "next/link";
@@ -116,7 +119,7 @@ export function NextDistrictLeaderboard({
             fontWeight: 500,
           }}
         >
-          See all requests →
+          Request your district →
         </Link>
       </div>
     </div>

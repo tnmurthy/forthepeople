@@ -192,10 +192,10 @@ export default async function HomePage({
                   </span>
                 ))}
                 <Link
-                  href={`/${locale}/features?tab=vote`}
+                  href={`/${locale}#request`}
                   style={{ marginLeft: "auto", color: "#6B7280", textDecoration: "none", fontSize: 12 }}
                 >
-                  See all →
+                  Request your district →
                 </Link>
               </div>
             )}
