@@ -127,7 +127,7 @@ export default function SupportCheckout({ tier }: Props) {
     if (paramTier === tier.tierKey) {
       setStep("form");
       setTimeout(() => {
-        containerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        containerRef.current?.scrollIntoView({ block: "center" });
       }, 300);
     }
   }, [paramTier, tier.tierKey]);
