@@ -10,7 +10,10 @@ import HomeDrilldown from "@/components/layout/HomeDrilldown";
 import MarketTickerClient from "@/components/layout/MarketTickerClient";
 import CompactContributorWallClient from "@/components/support/CompactContributorWallClient";
 import TopTierShowcase from "@/components/support/TopTierShowcase";
-import { NewPill } from "@/components/ui/NewPill";
+import { HeroIndia } from "@/components/home/HeroIndia";
+import { NewDistrictsBand } from "@/components/home/NewDistrictsBand";
+import { VoteNextDistrictBand } from "@/components/home/VoteNextDistrictBand";
+import { getTotalActiveDistrictCount } from "@/lib/constants/districts";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -40,6 +43,7 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const activeCount = getTotalActiveDistrictCount();
   return (
     <>
       {/* SEO H1 — visually hidden, essential for page identity */}
@@ -47,24 +51,11 @@ export default async function HomePage({
         ForThePeople.in — India&apos;s Citizen Transparency Platform. District-level government data: crop prices, dam levels, schemes, budget, and more.
       </h1>
       <MarketTickerClient />
+      <HeroIndia locale={locale} activeDistricts={activeCount} />
+      <NewDistrictsBand locale={locale} />
+      <HomeDrilldown locale={locale} tickerShown heroShown />
+      <VoteNextDistrictBand locale={locale} />
       <TopTierShowcase locale={locale} />
-      <HomeDrilldown locale={locale} tickerShown />
-      <div style={{ textAlign: "center", margin: "4px auto 16px", padding: "0 16px" }}>
-        <Link
-          href={`/${locale}/india-detail`}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            fontSize: 13,
-            color: "#2563EB",
-            textDecoration: "none",
-            fontWeight: 500,
-          }}
-        >
-          View India in one page →<NewPill slug="india-detail" />
-        </Link>
-      </div>
       <div style={{
         maxWidth: 720,
         margin: "4px auto 12px",
