@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { INDIA_STATES } from "@/lib/constants/districts";
@@ -19,29 +19,13 @@ interface TopRequest {
 }
 
 export default function DistrictRequestSection() {
-  // Scroll to this section when /en#request is loaded or when the
-  // hash changes while already on the page. Session 6 added id="request"
-  // + scrollMarginTop here, but Next.js's <Link> cross-page nav resets
-  // scroll to 0 before render — fragments don't auto-scroll on this app's
-  // setup, so we wire it manually. 100ms delay lets React hydration finish
-  // before scrollIntoView fires. behavior:'smooth' respects
-  // prefers-reduced-motion via the browser default.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const scrollToRequest = () => {
-      if (window.location.hash === "#request") {
-        setTimeout(() => {
-          const el = document.getElementById("request");
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }
-    };
-
-    scrollToRequest();
-    window.addEventListener("hashchange", scrollToRequest);
-    return () => window.removeEventListener("hashchange", scrollToRequest);
-  }, []);
+  // Note: hash-scroll for /en#request is handled by the global Script
+  // tag in src/app/layout.tsx (added Session 7) — runs at document
+  // root, independent of this component's React mount lifecycle.
+  // Session 6.5 attempted a useEffect here but it didn't fire reliably
+  // in browser tests; that approach was reverted in Session 7.
+  // The id="request" anchor + scrollMarginTop:80 on the root div below
+  // remain — they're the scroll TARGET, not the trigger.
 
   const queryClient = useQueryClient();
   const [selectedState, setSelectedState] = useState("");
