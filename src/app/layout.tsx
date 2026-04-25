@@ -261,6 +261,12 @@ export default function RootLayout({
             __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }`,
           }}
         />
+        {/* Hash-scroll handler (Session 7) — runs at root, independent of
+            React component lifecycle. Handles cross-page <Link> nav that
+            arrives with #request, in-page hash changes, and initial load. */}
+        <Script id="hash-scroll" strategy="afterInteractive">
+          {`(function(){function s(){try{var h=window.location.hash;if(!h||h==='#')return;var el=document.querySelector(h);if(el){requestAnimationFrame(function(){el.scrollIntoView({behavior:'smooth',block:'start'})})}}catch(e){}}window.addEventListener('hashchange',s);try{var o=new MutationObserver(function(){if(window.location.hash)s();});o.observe(document.body,{childList:true,subtree:false})}catch(e){}if(document.readyState==='complete'){s()}else{window.addEventListener('load',s)}})();`}
+        </Script>
       </body>
     </html>
   );
