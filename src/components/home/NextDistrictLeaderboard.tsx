@@ -6,13 +6,23 @@
  * upstream — this component is dumb: it just renders what it's given.
  *
  * Each row + the bottom CTA route to whatever `seeAllHref` resolves to.
- * As of Session 6 the canonical destination is /en#request — anchors to
- * the existing district-search/request flow on the home page (there is
- * no public listing of pending requests yet, and the prior
- * /en/features?tab=vote target is a dead-end).
+ * As of Session 6 the canonical destination is /<locale>#request —
+ * anchors to the existing district-search/request flow on the home page
+ * (no public listing of pending requests yet, and the prior
+ * /en/features?tab=vote target was a dead-end).
+ *
+ * Session 7.5: marked 'use client' so we can attach onClick handlers
+ * that call scrollToRequestSection — same-page click handles its own
+ * smooth scroll, cross-page click sets a sessionStorage flag picked up
+ * by the destination /<locale> mount handler. Avoids the broken
+ * scrollIntoView({smooth}) path Session 7's inline Script tried.
  */
 
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { scrollToRequestSection } from "@/lib/utils/scroll-to-request";
 
 export type LeaderboardRow = {
   districtName: string;
@@ -29,8 +39,20 @@ export function NextDistrictLeaderboard({
   items: LeaderboardRow[];
   seeAllHref?: string;
 }) {
+  const pathname = usePathname();
   if (items.length === 0) return null;
   const href = seeAllHref ?? `/${locale}/features`;
+  const isRequestHref = href.endsWith("#request");
+
+  // Only intercept clicks when the href is the #request anchor — for any
+  // other seeAllHref (e.g. a future dedicated voting page), let normal
+  // Link navigation proceed without our scroll fanciness.
+  const handleRequestClick = isRequestHref
+    ? (e: React.MouseEvent) => {
+        const handled = scrollToRequestSection(pathname, locale);
+        if (handled) e.preventDefault();
+      }
+    : undefined;
 
   return (
     <div>
@@ -62,6 +84,7 @@ export function NextDistrictLeaderboard({
           <Link
             key={`${row.stateName}-${row.districtName}`}
             href={href}
+            onClick={handleRequestClick}
             style={{
               display: "flex",
               alignItems: "center",
@@ -112,6 +135,7 @@ export function NextDistrictLeaderboard({
       <div style={{ marginTop: 10, textAlign: "center" }}>
         <Link
           href={href}
+          onClick={handleRequestClick}
           style={{
             fontSize: 12,
             color: "#2563EB",
