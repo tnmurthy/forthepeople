@@ -11,6 +11,8 @@ import MarketTickerClient from "@/components/layout/MarketTickerClient";
 import CompactContributorWallClient from "@/components/support/CompactContributorWallClient";
 import TopTierShowcase from "@/components/support/TopTierShowcase";
 import { NewPill } from "@/components/ui/NewPill";
+import { RequestScrollMount } from "@/components/home/request/RequestScrollMount";
+import { RequestCTALink } from "@/components/home/request/RequestCTALink";
 import { prisma } from "@/lib/db";
 
 const NEW_DISTRICT_DAYS = 45;
@@ -84,6 +86,7 @@ export default async function HomePage({
       <h1 className="sr-only">
         ForThePeople.in — India&apos;s Citizen Transparency Platform. District-level government data: crop prices, dam levels, schemes, budget, and more.
       </h1>
+      <RequestScrollMount />
       <MarketTickerClient />
       <TopTierShowcase locale={locale} />
 
@@ -140,12 +143,12 @@ export default async function HomePage({
             <NewPill slug="india-detail" />
           </Link>
 
-          {/* Find your district (Session 7) — emerald palette to distinguish
-              from the blue India pill; routes to /en#request which scrolls
-              to the existing district search/request flow via the global
-              hash-scroll Script in src/app/layout.tsx. */}
-          <Link
-            href={`/${locale}#request`}
+          {/* Find your district (Session 7 visual; Session 7.5 wires the
+              onClick scroll). Routes to /<locale>#request — same-page
+              click scrolls smoothly via window.scrollTo; cross-page click
+              sets sessionStorage flag and lets default Link nav proceed. */}
+          <RequestCTALink
+            locale={locale}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -163,7 +166,7 @@ export default async function HomePage({
           >
             <span aria-hidden="true">📍</span>
             Find your district →
-          </Link>
+          </RequestCTALink>
         </div>
       </div>
 
@@ -226,12 +229,12 @@ export default async function HomePage({
                     )}
                   </span>
                 ))}
-                <Link
-                  href={`/${locale}#request`}
+                <RequestCTALink
+                  locale={locale}
                   style={{ marginLeft: "auto", color: "#6B7280", textDecoration: "none", fontSize: 12 }}
                 >
                   Request your district →
-                </Link>
+                </RequestCTALink>
               </div>
             )}
           </div>
