@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { INDIA_STATES } from "@/lib/constants/districts";
@@ -19,6 +19,30 @@ interface TopRequest {
 }
 
 export default function DistrictRequestSection() {
+  // Scroll to this section when /en#request is loaded or when the
+  // hash changes while already on the page. Session 6 added id="request"
+  // + scrollMarginTop here, but Next.js's <Link> cross-page nav resets
+  // scroll to 0 before render — fragments don't auto-scroll on this app's
+  // setup, so we wire it manually. 100ms delay lets React hydration finish
+  // before scrollIntoView fires. behavior:'smooth' respects
+  // prefers-reduced-motion via the browser default.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollToRequest = () => {
+      if (window.location.hash === "#request") {
+        setTimeout(() => {
+          const el = document.getElementById("request");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }
+    };
+
+    scrollToRequest();
+    window.addEventListener("hashchange", scrollToRequest);
+    return () => window.removeEventListener("hashchange", scrollToRequest);
+  }, []);
+
   const queryClient = useQueryClient();
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
