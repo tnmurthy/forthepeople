@@ -4,6 +4,45 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 7: proper scroll fix + Find Your District pill (PRE-PUSH)
+
+**Status:** 94 commits ahead of origin/main. 5 code commits this session — pure UI, zero backend.
+
+### What changed
+- **Reverted Session 6.5's useEffect** in `DistrictRequestSection`. Browser test confirmed it didn't fire scroll behavior despite landing in compiled bundles. Approach moved to global level.
+- **`prefers-reduced-motion` guard added** to existing `html { scroll-behavior: smooth }` in `globals.css` — WCAG 2.2 SC 2.3.3 compliance.
+- **Inline `<Script id="hash-scroll">` added at root layout** (`src/app/layout.tsx`, before `</body>`). Runs unconditionally at document root, listens for `hashchange` + `MutationObserver` on body children + `load` event. Fires `el.scrollIntoView({behavior:'smooth'})` after `requestAnimationFrame` defer. Wrapped in try/catch.
+- **Two pills on /en kicker now**:
+  - 🇮🇳 View India in one page → (existing, blue, `/en/india-detail`)
+  - 📍 Find your district → (NEW, emerald, `/en#request`)
+  - Wrapped in flex+flexWrap so they stack on mobile naturally
+  - Matches the kicker's "Your district. Your data. Your right." framing
+
+### Files touched (4)
+- `src/app/[locale]/page.tsx` (added pill)
+- `src/app/layout.tsx` (added inline Script)
+- `src/app/globals.css` (added reduced-motion guard)
+- `src/components/home/DistrictRequestSection.tsx` (reverted useEffect; KEPT `id="request"` + `scrollMarginTop:80`)
+
+### What's preserved
+- `id="request"` anchor on DistrictRequestSection (Session 6 work)
+- All Session 1-6 wins on /en, /en/india-detail, sourcing language, Coming Soon research cards, INDIA AT A GLANCE indicators, color grades, NEW pill SSR fallback, GitHub footer link, kicker eyebrow, bottom inline summaries
+- Backend: zero changes
+
+### Reversibility (4 layers)
+- Tag `pre-session-7-scroll-and-pill-2026-04-25` at commit `460bcdd`
+- Branch `ui-backup-session-7-2026-04-25`
+- 4 file snapshots: `page.v5.tsx`, `layout.v2.tsx`, `globals.v1.css`, `DistrictRequestSection.v3.tsx`
+- 6-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+### Pending verification
+Antigravity cannot directly verify browser scroll runtime. Jayanth Chrome MCP test required for:
+- /en/india-detail → click "Request your district" → smooth scroll lands on district section
+- /en → click "📍 Find your district →" → smooth scroll lands on district section
+- Mobile 375px: pills wrap, both tappable, scroll works
+
+---
+
 ## 2026-04-25 — Session 6.5: scroll-to-anchor micro-fix (PRE-PUSH)
 
 **Status:** 88 commits ahead of origin/main. 2 commits this session — single 25-line useEffect, zero backend.
