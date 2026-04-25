@@ -4,6 +4,52 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-25 — Session 7.6: rAF smooth-scroll polyfill (corrective) (PRE-PUSH)
+
+**Status:** 106 commits ahead of origin/main. 3 code commits this session (1 backup, 1 css, 1 utility) — pure UI, zero backend.
+
+### Why
+Session 7.5's `window.scrollTo({behavior:'smooth'})` ALSO didn't fire in Chrome MCP runtime. Probe found:
+- `el.scrollIntoView({behavior:'smooth'})` and `window.scrollTo({behavior:'smooth'})` both silently no-op in Next.js 16 + Turbopack.
+- `window.scrollTo(0, N)` (positional, two-arg) — the only working form — was being intercepted by the global CSS `html { scroll-behavior: smooth }` rule from Session 7. The CSS turns positional scrolls into smooth scrolls, which then cancel for the same reason as the API form.
+Removing that one CSS rule unlocks the positional API. Session 7.6 removes it AND replaces native smooth-scroll calls with a manual rAF cubic-ease-out tween (~500ms, ~30 frames, calls `window.scrollTo(0, easedY)` per frame).
+
+### What changed
+- **`src/app/globals.css`** — REMOVED `html { scroll-behavior: smooth }` block + its paired `@media (prefers-reduced-motion) { html { scroll-behavior: auto } }`. The unrelated `prefers-reduced-motion` block at line 240 (profile-ring animation) is preserved.
+- **`src/lib/utils/scroll-to-request.ts`** — added `smoothScrollTo(targetY)` helper using rAF + cubic ease-out + positional `window.scrollTo(0, easedY)`. Honors `prefers-reduced-motion` via `window.matchMedia` (jumps directly). Both `scrollToRequestSection()` and `scrollOnMountIfRequested()` now route through it. Public API surface unchanged.
+
+### What's preserved
+- `id="request"` anchor + `scrollMarginTop:80` on DistrictRequestSection (Session 6)
+- 80 px header offset, `Math.max(0, ...)` clamp, sessionStorage cross-page handoff, 150 ms post-mount delay, `replaceState` URL update
+- `prefers-reduced-motion` honored (now via JS instead of CSS)
+- All Session 1-7.5 wins on /en, /en/india-detail, sourcing, INDIA AT A GLANCE, color grades, NEW pill SSR fallback
+- Backend: zero changes
+
+### Files touched (2 + 2 backups)
+- `src/app/globals.css` (CSS removal)
+- `src/lib/utils/scroll-to-request.ts` (rAF polyfill)
+- `src/app/globals.v2.css` (pre-edit snapshot)
+- `src/lib/utils/scroll-to-request.v2.ts` (pre-edit snapshot)
+
+### Reversibility (4 layers)
+- Tag `pre-session-7.6-rAF-smooth-2026-04-25` at commit `ad73628`
+- Branch `ui-backup-7.6-2026-04-25`
+- 2 file snapshots: `globals.v2.css`, `scroll-to-request.v2.ts`
+- 4-option rollback addendum in `32-Session3-UI-Rollback-Guide.md`
+
+### Pending verification
+Antigravity cannot directly verify browser scroll runtime. Jayanth Chrome MCP test required for:
+- /en → click "📍 Find your district →" pill → smooth scroll to district section, URL updates to `#request`
+- /en/india-detail → click "Request your district →" → cross-page nav + smooth scroll on mount
+- Direct URL `/en#request` → page loads + smooth scroll
+- Mobile 375 px: all of above
+- Reduce-motion ON → instant jump (no animation), still lands at section
+
+### NEW [LOW] in BUG-TRACKER
+- `src/components/support/SupportCheckout.tsx:130` still uses `el.scrollIntoView({behavior:'smooth'})`. Out of scope for /en#request but possibly broken at runtime. Worth a Chrome MCP probe in a future session.
+
+---
+
 ## 2026-04-25 — Session 7.5: onClick scroll handlers (corrective) (PRE-PUSH)
 
 **Status:** 101 commits ahead of origin/main. 6 code commits this session — pure UI, zero backend.
