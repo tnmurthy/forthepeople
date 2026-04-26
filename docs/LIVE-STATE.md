@@ -4,6 +4,52 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-26 — Session 10 Unified: cross-platform audit + homepage-stats fix (PRE-PUSH)
+
+**Status:** 116 commits ahead of origin/main. 3 code commits this session (1 snapshot, 1 fix, 1 docs) + Phase 1 instrumentation reverted cleanly. Pure presentation-layer fix; backend untouched.
+
+### Backend health (post Session 10 audit, 2026-04-26 ~08:00 UTC)
+
+#### ✅ Healthy
+- **Vercel Pro** (zurvoapp account): all 5 crons firing on schedule, 0% error rate over 6h
+- **Neon "Launch"** paid plan: org "For The People", AWS Singapore, DB hot every few minutes
+- **Upstash Redis** `forthepeople-production`: Pay-As-You-Go with $50 budget cap, $0.29 used this month, endpoint `allowing-kid` matches Vercel `REDIS_URL` (no drift)
+- **News scraper:** 8 of 10 districts updated within last hour at audit time
+- **News-intelligence cron** (every 4h): healthy, last write 1.7h before audit
+- **Generate-insights cron** (every 12h): healthy, AIInsight last 1.7h before audit
+
+#### 🟠 Stale-upstream (NOT a code bug, NOT a budget issue)
+- **AGMARKNET (data.gov.in) crops:** API returns 200 with records, but data hasn't been updated since 2026-04-21. Verified via Phase 4 `[scrape-debug]` instrumentation across all 10 districts: every record returned has `arrival_date="21/04/2026"`, identical to existing rows → dedup correctly skips.
+- **Mandya / Bengaluru-urban RSS:** sparse, 24-72h cycle (genuinely low publication frequency).
+
+#### 🚨 External issues (manual action required — see docs/41-Session10-Manual-Actions-Required.md)
+- **Railway scraper container:** trial expires in 2 days. Last successful deploy Apr 22. Causes weather/dam/traffic frozen since Apr 21. Upgrade to Hobby ($5/mo) — one click.
+- **Sentry SDK:** `@sentry/nextjs ^10.48.0` installed and `Sentry.captureException` used in 7+ places, BUT `instrumentation.ts` is missing → SDK never initialized → 0 events received in console. Also: `next.config.ts` `org/project` (`forthepeople/forthepeople-web`) doesn't match Jayanth's dashboard (`forthepeoplein/javascript-nextjs`). Both need clarification before fix.
+- **RESEND_API_KEY:** key is valid + restricted-scope (send-only). Vercel "Needs Attention" badge most likely about domain verification — Jayanth must visually check resend.com/domains.
+
+### What changed this session
+- **`src/app/api/data/homepage-stats/route.ts`** — `mostRecentAt` now reads `newsItem.fetchedAt` + `infraUpdate.createdAt` + `localAlert.createdAt` instead of the two upstream-stale sources (`cropPrice.fetchedAt`, `weatherReading.recordedAt`). `CACHE_KEY` bumped `v2 → v3` to force Redis cache eviction on next deploy.
+- **`src/app/api/data/homepage-stats/route.v2.ts`** — pre-edit snapshot.
+- **`docs/41-Session10-Manual-Actions-Required.md`** — Railway, Razorpay, RESEND, Sentry handoff.
+
+### Phase 1 cleanup
+The Session-10-FIX Phase 3 `[scrape-debug]` instrumentation in `crops.ts`/`news.ts` was reverted via `git checkout HEAD -- ...` before any new work. Zero refs remain in src/.
+
+### Verification
+- ✅ `npx tsc --noEmit` clean
+- ✅ `/api/data/homepage-stats` pre-fix `2026-04-24T03:30:43Z` → post-fix `2026-04-26T06:03:47Z` (~1h ago)
+- ✅ `fromCache:false` in response confirms v3 cache-key took effect
+- ✅ Email-rule grep clean (0 hits in src/prisma/scripts)
+- ✅ Git author: jayanthmbj@gmail.com only
+
+### Reversibility (4 layers, intact from Session-10-FIX setup)
+- Tag `pre-session-10-fix-scraper-skip-2026-04-26` at commit `6d045d3`
+- Branch `backend-backup-10-2026-04-26`
+- Snapshot `src/app/api/data/homepage-stats/route.v2.ts`
+- Rollback addendum: revert via `cp route.v2.ts route.ts` or `git checkout pre-session-10-fix-scraper-skip-2026-04-26 -- src/app/api/data/homepage-stats/route.ts`
+
+---
+
 ## 2026-04-25 — Session 8: move BACKED BY supporter strip below stats row (PRE-PUSH)
 
 **Status:** 113 commits ahead of origin/main. 2 code commits (1 backup, 1 move) — pure UI, zero backend.
