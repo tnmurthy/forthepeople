@@ -211,30 +211,36 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-hero-districts-all:hover { color: #2563EB; }
 
+        /* Session 14 v8.1 Phase F (Fix #10): outlined rows, more padding, all 3 tags, all 10 visible */
         .ftp-hero-districts-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          overflow-y: auto;
-          max-height: 360px;
-          scrollbar-width: thin;
+          gap: 6px;
+          /* No max-height / overflow — all 10 rows visible; page scrolls naturally if needed. */
         }
         .ftp-district-row {
           display: flex;
           align-items: center;
-          gap: 8px;
-          padding: 8px 10px;
-          border-radius: 6px;
+          gap: 10px;
+          padding: 10px 14px;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
           text-decoration: none;
           color: #1A1A1A;
-          transition: background 150ms ease;
+          transition: background 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 200ms ease;
           min-height: 44px;
         }
-        .ftp-district-row:hover { background: #FAFAF8; }
+        .ftp-district-row:hover {
+          background: #FAFAF8;
+          border-color: #2563EB;
+          transform: translateX(2px);
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+        }
         .ftp-district-row-main { flex: 1; min-width: 0; }
         .ftp-district-row-name {
           font-size: 13px;
-          font-weight: 500;
+          font-weight: 600;
           display: flex;
           align-items: center;
           gap: 6px;
@@ -245,22 +251,25 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           color: #FFFFFF;
           font-size: 8px;
           font-weight: 700;
-          padding: 1px 4px;
-          border-radius: 2px;
-          letter-spacing: 0.3px;
+          padding: 1px 5px;
+          border-radius: 3px;
+          letter-spacing: 0.4px;
         }
         .ftp-district-row-tags {
           font-size: 11px;
           color: #6B7280;
-          margin-top: 1px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          margin-top: 2px;
+          white-space: normal;
+          line-height: 1.4;
         }
         .ftp-district-row-arrow {
           font-size: 12px;
           color: #9B9B9B;
           flex-shrink: 0;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-district-row { transition: none; }
+          .ftp-district-row:hover { transform: none; box-shadow: none; }
         }
 
         @media (max-width: 767px) {
@@ -274,7 +283,6 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-hero-map-large { min-height: 320px; max-height: 400px; }
           .ftp-hero-right { padding: 0; }
           .ftp-hero-h1 { font-size: 22px; white-space: normal; }
-          .ftp-hero-districts-list { max-height: none; }
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-hero-cta-explore { transition: none; }
@@ -330,7 +338,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
             {districts.map((d) => {
               const intro = DISTRICT_INTROS[d.slug];
               const isNew = newSlugs.has(d.slug);
-              const tags = (intro?.tags ?? []).slice(0, 2).join(" · ");
+              const tags = (intro?.tags ?? []).join(" · ");
               return (
                 <Link
                   key={d.slug}
