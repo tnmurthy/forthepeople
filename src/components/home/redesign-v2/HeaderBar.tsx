@@ -282,13 +282,17 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         zIndex: 30,
         background: "#FFFFFF",
         borderBottom: "1px solid #E8E8E4",
-        padding: "8px 24px",
+        padding: "10px 32px",
         display: "flex",
         alignItems: "center",
         gap: 12,
       }}
     >
       <style>{`
+        /* Session 15 v9 Phase E (Fix #7): tighten on narrow viewports so 32px doesn't crowd the edges. */
+        @media (max-width: 1280px) {
+          .ftp-header-bar { padding: 10px 20px !important; }
+        }
         @media (max-width: 767px) {
           .ftp-header-bar { padding: 8px 12px !important; gap: 8px !important; }
           .ftp-header-bar .ftp-desktop-only { display: none !important; }
@@ -419,11 +423,13 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         .ftp-mobile-panel a:hover, .ftp-mobile-panel button:hover { background: #F5F5F0; }
 
         /* Session 14 v8.1 Phase B: outlined header items + yellow GitHub star */
+        /* Session 15 v9 Phase E (Fix #7): margin-left:auto pushes the right group to the corner. */
         .ftp-github-link {
           display: inline-flex;
           align-items: center;
           gap: 6px;
           padding: 6px 12px;
+          margin-left: auto;
           background: #FFFFFF;
           border: 1px solid #E8E8E4;
           border-radius: 6px;
@@ -548,6 +554,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             whiteSpace: "nowrap",
           }}
         >
+          <Users size={18} aria-hidden="true" style={{ color: "#2563EB", flexShrink: 0 }} />
           <span className="ftp-logo-full">
             ForThePeople<span style={{ color: "#2563EB" }}>.in</span>
           </span>
