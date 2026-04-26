@@ -162,8 +162,8 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
                 )}
               </div>
 
-              <Link href={`/${locale}/support`} className="ftp-contributors-cta">
-                View all supporters &amp; contribute →
+              <Link href={`/${locale}/contributors`} className="ftp-contributors-cta">
+                View all supporters &amp; how to join →
               </Link>
             </>
           )}
