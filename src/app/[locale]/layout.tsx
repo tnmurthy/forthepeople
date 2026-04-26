@@ -7,6 +7,7 @@
 import QueryProvider from "@/components/providers/QueryProvider";
 import MigrationBanner from "@/components/layout/MigrationBanner";
 import SuggestionFloatingButton from "@/components/common/SuggestionFloatingButton";
+import PageProgressBar from "@/components/common/PageProgressBar";
 
 // Session 11.1 — chrome swapped to redesign-v2 site-wide.
 // Legacy components (Header.tsx 938 LOC, Footer.tsx 144 LOC,
@@ -29,6 +30,7 @@ export default async function LocaleLayout({
 
   return (
     <QueryProvider>
+      <PageProgressBar />
       <MigrationBanner />
       <DisclaimerBanner />
       <HeaderBar locale={locale} />
