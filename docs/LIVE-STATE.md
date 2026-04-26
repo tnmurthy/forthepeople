@@ -4,6 +4,57 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-26 — Session 11: Homepage redesign-v2 (slim core) (PRE-PUSH)
+
+**Status:** ~138 commits ahead of origin/main (was 125 → +13 this session). 12 component commits + 1 page.tsx snapshot + 1 page.tsx swap + 1 docs commit. Pure presentation layer; zero schema, API, Razorpay-write, or env-var changes. No new npm dependencies.
+
+### What landed
+**11 new components** in `src/components/home/redesign-v2/`:
+1. `DisclaimerBanner.tsx` — sessionStorage dismiss, amber palette, prefers-reduced-motion slide-in
+2. `HeaderBar.tsx` — sticky header with product dropdown (.in/.connect/.jobs), Updated-pill polling homepage-stats, search, theme toggle (reuses existing ThemeToggle), language menu (10 entries), GitHub link with hardcoded ★ 149 fallback, ♥ Support button, mobile collapse to logo + search + ♥ + ☰
+3. `FinancialTicker.tsx` — 60s left-right marquee from `/api/data/market-ticker`, dedup fix (renders ONCE)
+4. `LiveActivityRibbon.tsx` — 90s marquee with pulsing LIVE indicator, derives from `homepage-stats` + `homepage-preview`
+5. `HeroSection.tsx` — 60/40 grid, 5-stat row (no count-up; static values), 🇮🇳 in tagline, India map placeholder
+6. `DistrictExplorer.tsx` — single "By tier" tab + disabled "By region" tooltip, sections: Recently launched · Metro · Tier 2 · Tier 3 · Coming next vote
+7. `LiveDataShowcase.tsx` — district chip tabs + 4 module cards (Crops · Infra · News · Weather) with `/public/districts/<slug>.svg` slot + generic location-pin fallback
+8. `FoundingPatronCard.tsx` — founder treatment for top supporter (Micah Alex), gold glow pulse
+9. `SupporterMarquee.tsx` — 50s marquee with 3-tier badges (patron red / state violet / district emerald)
+10. `PricingTiers.tsx` — 3 cards ₹99/₹999/₹9,999 with auto-select deep links to /<locale>/support; State Champion middle highlighted with violet glow pulse
+11. `Footer.tsx` — 3 rows (warning · links · social) with brand IG `@forthepeople_in` finally added (was missing on legacy footer)
+
+**Page swap** ([locale]/page.tsx commit `3dd7570`): server-fetches `prisma.district.findMany` + `prisma.districtRequest.findMany` once and feeds the body components. Layout-level chrome (legacy DisclaimerBar + Header + Footer) intentionally preserved to keep district pages stable. The new chrome components are TSC-clean and ready for a future layout-level elevation.
+
+### Verified
+- `npx tsc --noEmit` clean throughout (verified after each commit)
+- `GET http://localhost:3000/en` returns HTTP 200 after swap
+- All 4 backend APIs untouched
+- All animations use raw CSS keyframes (no framer-motion); all respect `prefers-reduced-motion`
+- Mobile breakpoint: single 768px threshold, components declare scoped media queries inline
+- Email-rule grep: 0 hits in src/prisma/scripts
+- Git author: jayanthmbj@gmail.com only
+
+### Reversibility (4 layers)
+- Tag `pre-session-11-homepage-redesign-2026-04-26` at commit `1c50966`
+- Branch `backend-backup-11-2026-04-26`
+- Snapshot `src/app/[locale]/page.v8.tsx` (pre-swap)
+- All 11 legacy components remain on disk + still wired in `[locale]/layout.tsx`
+
+### Deferred to future session
+- Interactive 780-district SVG choropleth (`react-simple-maps` IS installed; deferred for scope)
+- Count-up animations on hero stats
+- GitHub stars live API fetch (`swr` not installed)
+- react-window virtualization for district list
+- Per-district SVG illustrations (slot at `public/districts/` ready)
+- `/coming-soon` page (for ProductDropdown links)
+- `/en/india-detail` page content
+- Layout-level swap to redesign-v2 chrome (after district pages redesigned)
+- Hindi + other non-en/kn locales
+
+### In-repo reference
+`docs/HOMEPAGE-REDESIGN-V5-SLIM.md` — full layout map · tier color reference · animation table · mobile breakpoints · endpoint inventory · `/public/districts/` SVG slot pattern · deferred backlog.
+
+---
+
 ## 2026-04-26 — Session 10.6: Razorpay reconciliation + GitHub PR triage + README sync (PRE-PUSH)
 
 **Status:** 125 commits ahead of origin/main. 3 code commits (plans.ts amount alignment + README sync + this docs commit). 8 reply drafts staged in `/tmp/pr-replies/` for Jayanth to post.
