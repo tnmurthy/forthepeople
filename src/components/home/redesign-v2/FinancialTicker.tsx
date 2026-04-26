@@ -53,7 +53,8 @@ export default function FinancialTicker() {
   const [items, setItems] = useState<TickerItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [mostRecentAt, setMostRecentAt] = useState<string | null>(null);
-  const [nowMs, setNowMs] = useState<number | null>(null);
+  // Lazy initializer reads Date.now() once on mount (no set-state-in-effect needed).
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   useEffect(() => {
     let cancelled = false;
@@ -86,7 +87,6 @@ export default function FinancialTicker() {
     }
     fetchTicker();
     fetchUpdated();
-    setNowMs(Date.now());
     // Re-evaluate market status every minute (cheap, no fetch).
     const tick = setInterval(() => setNowMs(Date.now()), 60_000);
     return () => {
@@ -99,7 +99,7 @@ export default function FinancialTicker() {
 
   const loop = items.length > 0 ? [...items, ...items] : [];
   const updated = timeAgoLabel(mostRecentAt);
-  const market = getMarketStatus(nowMs ?? Date.now());
+  const market = getMarketStatus(nowMs);
 
   return (
     <div
