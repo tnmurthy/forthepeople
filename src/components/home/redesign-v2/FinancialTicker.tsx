@@ -108,6 +108,7 @@ export default function FinancialTicker() {
       aria-label="Live financial ticker"
     >
       <style>{`
+        /* Session 16 v10 Phase C (Fix #2): margin-bottom adds visible gap before StatsBar */
         .ftp-financial-ticker {
           display: flex;
           align-items: center;
@@ -117,6 +118,7 @@ export default function FinancialTicker() {
           border-bottom: 0.5px solid #E5E7EB;
           font-size: 12px;
           height: 36px;
+          margin-bottom: 16px;
         }
         /* Session 13 v8 Fix #3: Market Open/Closed status pill (replaces LIVE) */
         .ftp-market-pill {

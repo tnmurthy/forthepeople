@@ -13,7 +13,7 @@
 import { NextResponse } from "next/server";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const CACHE_KEY = "ftp:market-ticker:v3";
+const CACHE_KEY = "ftp:market-ticker:v4"; // bump: added Bank Nifty + BTC/ETH + EUR/INR
 // Fuel prices removed — not universal across districts
 
 export interface TickerItem {
@@ -234,6 +234,65 @@ export async function GET() {
     });
   }
 
+  // Session 16 v10 Phase C (Fix #2): Nifty Bank, BTC/INR, ETH/INR, EUR/INR
+  const niftyBank = await fetchYahooQuote("^NSEBANK");
+  if (niftyBank) {
+    fetchedAny = true;
+    items.push({
+      symbol: "NIFTYBANK",
+      label: "Nifty Bank",
+      value: fmt(Math.round(niftyBank.price)),
+      change: `${niftyBank.change >= 0 ? "+" : ""}${fmt(Math.round(niftyBank.change))}`,
+      changePct: niftyBank.changePct,
+      direction: niftyBank.change > 0 ? "up" : niftyBank.change < 0 ? "down" : "flat",
+      unit: "",
+    });
+  }
+
+  const btc = await fetchYahooQuote("BTC-INR");
+  if (btc) {
+    fetchedAny = true;
+    items.push({
+      symbol: "BTC_INR",
+      label: "Bitcoin",
+      value: `₹${fmt(Math.round(btc.price))}`,
+      change: `${btc.change >= 0 ? "+" : ""}${fmt(Math.round(btc.change))}`,
+      changePct: btc.changePct,
+      direction: btc.change > 0 ? "up" : btc.change < 0 ? "down" : "flat",
+      unit: "",
+    });
+  }
+
+  const eth = await fetchYahooQuote("ETH-INR");
+  if (eth) {
+    fetchedAny = true;
+    items.push({
+      symbol: "ETH_INR",
+      label: "Ethereum",
+      value: `₹${fmt(Math.round(eth.price))}`,
+      change: `${eth.change >= 0 ? "+" : ""}${fmt(Math.round(eth.change))}`,
+      changePct: eth.changePct,
+      direction: eth.change > 0 ? "up" : eth.change < 0 ? "down" : "flat",
+      unit: "",
+    });
+  }
+
+  const eurInr = await fetchYahooQuote("EURINR=X");
+  if (eurInr) {
+    fetchedAny = true;
+    items.push({
+      symbol: "EUR_INR",
+      label: "EUR/INR",
+      value: `₹${fmt(eurInr.price, 2)}`,
+      change: eurInr.change !== 0
+        ? `${eurInr.change >= 0 ? "+" : ""}${fmt(eurInr.change, 2)}`
+        : "–",
+      changePct: eurInr.changePct,
+      direction: eurInr.change > 0 ? "up" : eurInr.change < 0 ? "down" : "flat",
+      unit: "",
+    });
+  }
+
   // USD/INR — try Yahoo Finance first (real-time), fall back to open.er-api
   const usdYahoo = await fetchYahooQuote("USDINR=X");
   if (usdYahoo) {
@@ -338,16 +397,21 @@ export async function GET() {
     unit: "/L",
   });
 
-  // Order: Gold, Silver, Petrol, Diesel, USD/INR, Sensex, Nifty, Crude
+  // Order: indices first (Sensex/Nifty/Bank), then commodities (Gold/Silver/Crude),
+  // then fuel + currencies + crypto. Session 16 v10 Phase C.
   const ordered: TickerItem[] = [
+    items.find((i) => i.symbol === "SENSEX"),
+    items.find((i) => i.symbol === "NIFTY50"),
+    items.find((i) => i.symbol === "NIFTYBANK"),
     items.find((i) => i.symbol === "GOLD"),
     items.find((i) => i.symbol === "SILVER"),
+    items.find((i) => i.symbol === "CRUDE"),
     items.find((i) => i.symbol === "PETROL"),
     items.find((i) => i.symbol === "DIESEL"),
     items.find((i) => i.symbol === "USD_INR"),
-    items.find((i) => i.symbol === "SENSEX"),
-    items.find((i) => i.symbol === "NIFTY50"),
-    items.find((i) => i.symbol === "CRUDE"),
+    items.find((i) => i.symbol === "EUR_INR"),
+    items.find((i) => i.symbol === "BTC_INR"),
+    items.find((i) => i.symbol === "ETH_INR"),
   ].filter(Boolean) as TickerItem[];
 
   // Use fallback if nothing fetched
