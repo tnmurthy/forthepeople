@@ -22,7 +22,26 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+
+// Reuse the existing DrillDownMap (legacy HomeDrilldown wired the same way).
+// SSR off because react-simple-maps internals + useRouter are browser-only.
+const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      aria-hidden="true"
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 260,
+        background: "#FAFAF8",
+        borderRadius: 16,
+      }}
+    />
+  ),
+});
 
 const DASHBOARDS_PER_DISTRICT = 32; // Slim copy from "29" → actual "32" per Session 11 spec
 const PLANNED_DISTRICTS = 780;
@@ -225,45 +244,21 @@ export default function HeroSection({ locale }: HeroSectionProps) {
         </div>
       </div>
 
-      {/* ── RIGHT: India map placeholder ── */}
+      {/* ── RIGHT: India map (DrillDownMap, dynamic SSR-off) ── */}
       <div
         className="ftp-hero-map"
-        aria-label="India map showing 10 active districts"
+        aria-label={`India map showing ${activeDistricts} active states`}
         role="img"
         style={{
-          minHeight: 260,
+          minHeight: 320,
           background: "#FAFAF8",
           border: "1px solid #E8E8E4",
           borderRadius: 16,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-          textAlign: "center",
+          overflow: "hidden",
           position: "relative",
         }}
       >
-        {/* TODO(Session-11-followup): replace with interactive react-simple-maps
-            India choropleth (package is installed). Click on emerald state →
-            scroll-to-explorer + filter. Coming-soon states → district request modal. */}
-        <span style={{ fontSize: 56, lineHeight: 1 }} aria-hidden="true">🇮🇳</span>
-        <div
-          style={{
-            marginTop: 16,
-            fontSize: 13,
-            color: "#6B7280",
-            maxWidth: 280,
-            lineHeight: 1.5,
-          }}
-        >
-          <strong style={{ color: "#1A1A1A" }}>{activeDistricts} districts live</strong>{" "}
-          across {Math.min(7, activeDistricts)} states. {comingSoon} more coming.
-          <br />
-          <span style={{ color: "#9B9B9B", fontSize: 12 }}>
-            Click any district below to explore →
-          </span>
-        </div>
+        <DrillDownMap locale={locale} />
       </div>
     </section>
   );

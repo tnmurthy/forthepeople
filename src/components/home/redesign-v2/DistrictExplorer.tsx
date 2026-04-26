@@ -23,7 +23,26 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
+
+// Reuse the existing DrillDownMap (legacy HomeDrilldown wired the same way).
+// SSR off because react-simple-maps internals + useRouter are browser-only.
+const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      aria-hidden="true"
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 420,
+        background: "#FAFAF8",
+        borderRadius: 16,
+      }}
+    />
+  ),
+});
 
 // ── Tier classification (hardcoded fallback; see TODO above) ──
 const TIER_HARDCODE: Record<string, "metro" | "tier2" | "emerging"> = {
@@ -181,42 +200,19 @@ export default function DistrictExplorer({
           }
         `}</style>
 
-        {/* MAP placeholder (left) */}
+        {/* MAP (left) — DrillDownMap (dynamic, SSR off, react-simple-maps) */}
         <div
           className="ftp-explorer-map"
-          aria-label="India map placeholder — interactive map deferred"
+          aria-label="India map — click an active state to explore"
           style={{
-            minHeight: 360,
+            minHeight: 480,
             background: "#FAFAF8",
             border: "1px solid #E8E8E4",
             borderRadius: 16,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 24,
-            textAlign: "center",
+            overflow: "hidden",
           }}
         >
-          {/* TODO(Session-11-followup): render react-simple-maps India choropleth here.
-              Hovering a state highlights its districts on the right. Clicking a coming-soon
-              state opens the request flow. */}
-          <span style={{ fontSize: 64, lineHeight: 1 }} aria-hidden="true">🗺️</span>
-          <div
-            style={{
-              marginTop: 16,
-              fontSize: 13,
-              color: "#6B7280",
-              maxWidth: 320,
-              lineHeight: 1.5,
-            }}
-          >
-            Interactive 780-district map is in the next sprint.
-            <br />
-            <span style={{ color: "#9B9B9B", fontSize: 12 }}>
-              For now, browse the list →
-            </span>
-          </div>
+          <DrillDownMap locale={locale} />
         </div>
 
         {/* LIST (right) */}
