@@ -13,7 +13,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const CACHE_KEY = "ftp:homepage-stats:v2";
+const CACHE_KEY = "ftp:homepage-stats:v3";
 
 export async function GET() {
   const cached = await cacheGet<object>(CACHE_KEY);
@@ -30,8 +30,9 @@ export async function GET() {
       leaderCount,
       schoolCount,
       activeDistricts,
-      latestCrop,
-      latestWeather,
+      latestNews,
+      latestInfraUpdate,
+      latestLocalAlert,
     ] = await Promise.all([
       prisma.cropPrice.count(),
       prisma.damReading.count(),
@@ -40,14 +41,23 @@ export async function GET() {
       prisma.leader.count(),
       prisma.school.count(),
       prisma.district.count({ where: { active: true } }),
-      prisma.cropPrice.findFirst({ orderBy: { fetchedAt: "desc" }, select: { fetchedAt: true } }),
-      prisma.weatherReading.findFirst({ orderBy: { recordedAt: "desc" }, select: { recordedAt: true } }),
+      prisma.newsItem.findFirst({ orderBy: { fetchedAt: "desc" }, select: { fetchedAt: true } }),
+      prisma.infraUpdate.findFirst({ orderBy: { createdAt: "desc" }, select: { createdAt: true } }).catch(() => null),
+      prisma.localAlert.findFirst({ orderBy: { createdAt: "desc" }, select: { createdAt: true } }).catch(() => null),
     ]);
 
     const totalDataPoints = cropCount + damCount + weatherCount + newsCount + leaderCount + schoolCount;
 
-    // Most recent update across key tables
-    const times = [latestCrop?.fetchedAt, latestWeather?.recordedAt].filter(Boolean) as Date[];
+    // mostRecentAt now reflects healthy data sources, not stale upstream APIs.
+    // AGMARKNET (cropPrice.fetchedAt) hasn't published since 2026-04-21 — verified
+    // via Phase 4 [scrape-debug] logs across all 10 districts.
+    // Railway weather scraper (weatherReading.recordedAt) offline since trial
+    // credit constraints around 2026-04-21.
+    const times = [
+      latestNews?.fetchedAt,
+      latestInfraUpdate?.createdAt,
+      latestLocalAlert?.createdAt,
+    ].filter(Boolean) as Date[];
     const mostRecentAt = times.length ? new Date(Math.max(...times.map((t) => t.getTime()))) : null;
 
     const result = {
