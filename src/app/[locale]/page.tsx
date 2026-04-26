@@ -3,24 +3,26 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 11 — homepage redesign-v2 swap.
+ * Session 11.6 — v6 simplification.
  *
- * IMPORTANT — chrome strategy:
- *   The layout-level chrome (DisclaimerBar + Header + Footer) in
- *   src/app/[locale]/layout.tsx is INTENTIONALLY PRESERVED. The
- *   redesign-v2 DisclaimerBanner / HeaderBar / Footer are built and
- *   ready to swap into the layout, but doing so here would either (a)
- *   double-render banners on this page or (b) regress district pages
- *   that depend on the legacy Header. A future cleanup commit elevates
- *   them to the layout once district pages are also re-themed.
+ * Body sections (chrome handled by [locale]/layout.tsx — see Session 11.1):
+ *   1. FinancialTicker
+ *   2. LiveActivityRibbon
+ *   3. HeroSection           — map LEFT (55%), text RIGHT (45%), 3-stat row
+ *   4. LiveDistrictsList     — flat 10-district grid, NEW badge on 3 newest
+ *   5. UpcomingDistricts     — top 2 voted + "Vote for the next district"
+ *   6. ContributorsStrip     — flat names + "View all supporters & contribute"
+ *   7. VoteFeaturesCTA       — top 3 features + "Vote on features"
  *
- *   So this swap replaces only the BODY of the homepage. Visitors to /en
- *   see: legacy DisclaimerBar + legacy Header + new redesign-v2 body
- *   (FinancialTicker → LiveActivityRibbon → Hero → Explorer →
- *    LiveDataShowcase → FoundingPatron → SupporterMarquee → Pricing →
- *    RequestAndVote) + legacy Footer.
+ * Six v5 components retired from the homepage but kept on disk for rollback:
+ *   DistrictExplorer · LiveDataShowcase · FoundingPatronCard ·
+ *   SupporterMarquee · PricingTiers · RequestAndVoteCards
  *
- * Pre-edit snapshot: src/app/[locale]/page.v8.tsx
+ * Pricing tiers continue to render on /support page from the same
+ * source-of-truth (src/lib/razorpay/plans.ts) — homepage just no
+ * longer competes with that flow.
+ *
+ * Pre-edit snapshots: page.v8.tsx
  */
 
 import type { Metadata } from "next";
@@ -29,12 +31,10 @@ import { prisma } from "@/lib/db";
 import FinancialTicker from "@/components/home/redesign-v2/FinancialTicker";
 import LiveActivityRibbon from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
-import DistrictExplorer from "@/components/home/redesign-v2/DistrictExplorer";
-import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
-import FoundingPatronCard from "@/components/home/redesign-v2/FoundingPatronCard";
-import SupporterMarquee from "@/components/home/redesign-v2/SupporterMarquee";
-import PricingTiers from "@/components/home/redesign-v2/PricingTiers";
-import RequestAndVoteCards from "@/components/home/redesign-v2/RequestAndVoteCards";
+import LiveDistrictsList from "@/components/home/redesign-v2/LiveDistrictsList";
+import UpcomingDistricts from "@/components/home/redesign-v2/UpcomingDistricts";
+import ContributorsStrip from "@/components/home/redesign-v2/ContributorsStrip";
+import VoteFeaturesCTA from "@/components/home/redesign-v2/VoteFeaturesCTA";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -72,8 +72,6 @@ export default async function HomePage({
       select: {
         slug: true,
         name: true,
-        nameLocal: true,
-        tagline: true,
         goLiveDate: true,
         state: { select: { slug: true, name: true } },
       },
@@ -88,8 +86,6 @@ export default async function HomePage({
   const activeDistricts = activeRows.map((d) => ({
     slug: d.slug,
     name: d.name,
-    nameLocal: d.nameLocal,
-    tagline: d.tagline,
     stateSlug: d.state.slug,
     stateName: d.state.name,
     goLiveDate: d.goLiveDate ? d.goLiveDate.toISOString() : null,
@@ -99,25 +95,16 @@ export default async function HomePage({
     activeDistricts.map((d) => d.name.toLowerCase()),
   );
 
-  // Vote requests for the explorer — exclude districts already active.
-  const voteForExplorer = voteRequests
+  // Top vote requests, excluding districts already active.
+  const voteForUpcoming = voteRequests
     .filter((r) => !activeNamesLower.has(r.districtName.toLowerCase()))
-    .slice(0, 3)
+    .slice(0, 2)
     .map((r) => ({
       id: r.id,
       stateName: r.stateName,
       districtName: r.districtName,
       requestCount: r.requestCount,
     }));
-
-  // LiveDataShowcase wants a stable order — most-recently launched first.
-  const showcaseDistricts = [...activeDistricts]
-    .sort((a, b) => {
-      const ax = a.goLiveDate ? new Date(a.goLiveDate).getTime() : 0;
-      const bx = b.goLiveDate ? new Date(b.goLiveDate).getTime() : 0;
-      return bx - ax;
-    })
-    .slice(0, 8);
 
   return (
     <>
@@ -133,16 +120,10 @@ export default async function HomePage({
         <FinancialTicker />
         <LiveActivityRibbon />
         <HeroSection locale={locale} />
-        <DistrictExplorer
-          locale={locale}
-          activeDistricts={activeDistricts}
-          voteRequests={voteForExplorer}
-        />
-        <LiveDataShowcase locale={locale} districts={showcaseDistricts} />
-        <FoundingPatronCard />
-        <SupporterMarquee locale={locale} />
-        <PricingTiers locale={locale} />
-        <RequestAndVoteCards locale={locale} />
+        <LiveDistrictsList locale={locale} activeDistricts={activeDistricts} />
+        <UpcomingDistricts locale={locale} voteRequests={voteForUpcoming} />
+        <ContributorsStrip locale={locale} />
+        <VoteFeaturesCTA locale={locale} />
       </main>
     </>
   );
