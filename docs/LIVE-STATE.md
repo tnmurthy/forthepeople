@@ -4,6 +4,55 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-26 — Session 10.6: Razorpay reconciliation + GitHub PR triage + README sync (PRE-PUSH)
+
+**Status:** 125 commits ahead of origin/main. 3 code commits (plans.ts amount alignment + README sync + this docs commit). 8 reply drafts staged in `/tmp/pr-replies/` for Jayanth to post.
+
+### Phase 1 verdict — ✓ NO BILLING HARM
+Read-only Razorpay live-mode audit (per Jayanth's explicit consent) confirmed:
+- 4 env-var plan_ids (FOUNDER/PATRON/STATE/DISTRICT) point to plans whose Razorpay-side amounts differ from current UI labels (PATRON 5×, STATE 10×, DISTRICT 10× higher than UI shows)
+- BUT: zero active paying subscribers on any of those plans. The 2 'created'-status subs that exist are TEST DATA from Apr 10 (names "dd"/"ff", paid_count=0, never charged)
+- Real subscribers are on either:
+  - Older legacy static plans `plan_SbraA*` (Apr 11-13 cohort — paid what their UI showed at that time)
+  - Per-subscriber dynamic plans `plan_S{xxxxx}` (Apr 14+ cohort — generated at chosen amount via `create-subscription/route.ts`)
+- DB `Supporter.amount` matches actual Razorpay charge in every case verified (Abhishek ₹2K, Jaspreet ₹200, Anupam ₹99, Agraja ₹99, SML Finance ₹99, etc.)
+
+Full evidence saved to `/tmp/billing-recon.json`.
+
+### What changed (this session)
+- **`src/lib/razorpay/plans.ts`** — top JSDoc rewritten with the audit findings + reconciliation snapshot table; `state_champion_monthly_legacy.amount` `199900 → 1000000` (₹1,999 → ₹10,000); `district_champion_monthly.amount` `9900 → 200000` (₹99 → ₹2,000); labels updated to flag both as "vestigial". planId / interval unchanged (no behavioral diff).
+- **`README.md`** — districts list rewritten as bullet-by-state (10/7), AI tech-stack row corrected (Anthropic/Gemini → OpenRouter), "Currently at 9" → "Currently at 10", new "Active Contributors" section recognizing 5 external contributors + CodeRabbit.
+
+### GitHub PR triage (7 PRs)
+- ALL 6 external PRs (#14, #16, #24, #25, #32, #34): MERGEABLE-AFTER-REBASE — all touched files either untouched locally or trivially conflicting. Reply drafts in `/tmp/pr-replies/pr-XX-reply.md` ready to paste.
+- PR #31 (Jayanth's own migration banner): OBSOLETE — superseded by direct commits Apr 20. Reply draft instructs to close.
+- Issue #13 (@tiwarikaran — Ahmedabad): ENCOURAGE — reply points at Pune (#10) as freshest reference template + lists Gujarat data sources.
+- STATUS pinned issue draft at `/tmp/pr-replies/status-pinned-issue.md`.
+
+### Reversibility (4 layers, intact)
+- Tag `pre-session-10.6-recon-triage-2026-04-26` at commit `817f468`
+- Branch `backend-backup-10.6-2026-04-26`
+- All edits are minimal-scope (3 files: plans.ts, README.md, this LIVE-STATE)
+- `/tmp/pr-replies/` is throwaway scratch (no git tracking)
+
+### Verified locally
+- `npx tsc --noEmit` clean throughout
+- Razorpay GET-only API calls succeeded (5 plans + 5 subscriptions + 6 sub-detail queries — no writes)
+- DB Supporter cross-check ran against production Neon (read-only)
+- Email-rule grep clean (0 hits)
+- Git author: jayanthmbj@gmail.com only
+
+### Pending Jayanth manual (after this session)
+- ⏳ Post 8 PR/issue replies from `/tmp/pr-replies/` (edit drafts to your voice first)
+- ⏳ Close PR #31 with the prepared comment
+- ⏳ Post STATUS pinned issue
+- ⏳ Hostinger DNS records for Resend
+- ⏳ Railway Hobby upgrade ($5/mo, in 2 days)
+- ⏳ Neon spending limit toggle
+- ⏳ Final unified `git push origin main` (~125 commits)
+
+---
+
 ## 2026-04-26 — Session 10.5: Full delegation (Razorpay + Sentry + audits) (PRE-PUSH)
 
 **Status:** 122 commits ahead of origin/main. 3 code commits this session

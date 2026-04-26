@@ -134,7 +134,14 @@ events flow into Sentry within 5 min.
 
 ---
 
-### 4c. Razorpay webhook is DISABLED (NEW — found in Session 10.5)
+### 4c. Razorpay webhook — ✓ RESOLVED (re-enabled by Jayanth 26 Apr 03:30:39 PM IST)
+
+Webhook re-enabled per Jayanth's confirmation. The 7-day silent window
+(Apr 19 → Apr 26) is acknowledged — those events are unrecoverable per
+Razorpay's retry policy. Future events from Apr 26 onwards will be
+delivered to `forthepeople.in/api/webhooks/razorpay` as configured.
+
+### 4c. (Original) Razorpay webhook DISABLED — ARCHIVED
 
 **Phase 8 of Session 10.5** — `GET /v1/webhooks` returned:
 ```
