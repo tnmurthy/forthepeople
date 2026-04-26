@@ -78,6 +78,7 @@ export default function HowItWorks() {
           position: relative;
         }
         /* Connecting line behind the cards (desktop only) */
+        /* Session 14 v8.1 Phase I (Fix #16): line tinted blue to match site theme. */
         .ftp-how-grid::before {
           content: "";
           position: absolute;
@@ -85,7 +86,7 @@ export default function HowItWorks() {
           left: 12.5%;
           right: 12.5%;
           height: 1px;
-          background: linear-gradient(to right, transparent, #E5E7EB 10%, #E5E7EB 90%, transparent);
+          background: linear-gradient(to right, transparent, #DBEAFE 10%, #DBEAFE 90%, transparent);
           z-index: 0;
         }
         .ftp-how-step {
@@ -104,15 +105,15 @@ export default function HowItWorks() {
           transition: transform 200ms ease, border-color 150ms ease, box-shadow 200ms ease;
         }
         .ftp-how-step:hover {
-          border-color: #10B981;
+          border-color: #2563EB;
           transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.08);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
         }
         .ftp-how-num-circle {
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #10B981, #059669);
+          background: linear-gradient(135deg, #2563EB, #1D4ED8);
           color: #FFFFFF;
           display: flex;
           align-items: center;
@@ -121,7 +122,7 @@ export default function HowItWorks() {
           font-weight: 700;
           font-variant-numeric: tabular-nums;
           align-self: flex-start;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
           animation: ftp-num-pop 0.5s ease-out;
         }
         @keyframes ftp-num-pop {
