@@ -24,20 +24,27 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Briefcase,
   ChevronDown,
   Github,
   Heart,
   Lock,
   Menu,
+  Network,
   Search,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
 import { timeAgoLabel, type TimeAgoResult } from "@/lib/utils/timeAgo";
 
 // ── Product dropdown items ────────────────────────────────
+// Session 13 v8 Fix #12, #13: Lucide icons in brand colors (no apple emoji),
+// .jobs uses yellow (was amber/orange).
 type Product = {
   key: "in" | "connect" | "jobs";
-  emoji: string;
+  Icon: LucideIcon;
+  iconColor: string;
   name: string;
   suffix: string;
   suffixColor: string;
@@ -46,10 +53,56 @@ type Product = {
 };
 
 const PRODUCTS: Product[] = [
-  { key: "in",      emoji: "👥", name: "ForThePeople", suffix: ".in",      suffixColor: "#2563EB", href: "/",            status: "live" },
-  { key: "connect", emoji: "🤝", name: "ForThePeople", suffix: ".connect", suffixColor: "#7C3AED", href: "/coming-soon", status: "soon" },
-  { key: "jobs",    emoji: "💼", name: "ForThePeople", suffix: ".jobs",    suffixColor: "#BA7517", href: "/coming-soon", status: "soon" },
+  { key: "in",      Icon: Users,     iconColor: "#2563EB", name: "ForThePeople", suffix: ".in",      suffixColor: "#2563EB", href: "/",            status: "live" },
+  { key: "connect", Icon: Network,   iconColor: "#7C3AED", name: "ForThePeople", suffix: ".connect", suffixColor: "#7C3AED", href: "/coming-soon", status: "soon" },
+  { key: "jobs",    Icon: Briefcase, iconColor: "#EAB308", name: "ForThePeople", suffix: ".jobs",    suffixColor: "#EAB308", href: "/coming-soon", status: "soon" },
 ];
+
+// ── GitHub star tier ──────────────────────────────────────
+// Color shifts as community grows (scalable per Jayanth's spec).
+function githubTier(stars: number): "bronze" | "silver" | "gold" | "platinum" | "diamond" {
+  if (stars >= 5000) return "diamond";
+  if (stars >= 1000) return "platinum";
+  if (stars >= 500) return "gold";
+  if (stars >= 100) return "silver";
+  return "bronze";
+}
+
+const GITHUB_STARS_FALLBACK = 149;
+const GITHUB_STARS_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function useGithubStars(): number {
+  const [stars, setStars] = useState<number>(GITHUB_STARS_FALLBACK);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const cached = sessionStorage.getItem("ftp_gh_stars");
+        const cachedAt = sessionStorage.getItem("ftp_gh_stars_at");
+        if (cached && cachedAt && Date.now() - parseInt(cachedAt, 10) < GITHUB_STARS_CACHE_TTL_MS) {
+          if (!cancelled) setStars(parseInt(cached, 10));
+          return;
+        }
+        const res = await fetch("https://api.github.com/repos/jayanthmb14/forthepeople", {
+          headers: { Accept: "application/vnd.github.v3+json" },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { stargazers_count?: number };
+        const count = data.stargazers_count ?? GITHUB_STARS_FALLBACK;
+        sessionStorage.setItem("ftp_gh_stars", String(count));
+        sessionStorage.setItem("ftp_gh_stars_at", String(Date.now()));
+        if (!cancelled) setStars(count);
+      } catch {
+        /* swallow — fallback already in state */
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return stars;
+}
 
 // ── Languages (en active, others production-style "Soon") ──
 type Lang = { code: string; name: string; nameLocal: string; active: boolean };
@@ -146,6 +199,8 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const updated = useUpdatedPill();
+  const githubStars = useGithubStars();
+  const githubStarsTier = githubTier(githubStars);
 
   const [productOpen, setProductOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -354,6 +409,57 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           min-height: 44px;
         }
         .ftp-mobile-panel a:hover, .ftp-mobile-panel button:hover { background: #F5F5F0; }
+
+        /* Session 13 v8 Fix #2: GitHub link with star count + tier color */
+        .ftp-github-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 6px;
+          color: #4B5563;
+          text-decoration: none;
+          font-size: 12px;
+          transition: background 150ms ease, color 150ms ease;
+        }
+        .ftp-github-link:hover { background: #F5F5F0; color: #1A1A1A; }
+        .ftp-github-icon { width: 16px; height: 16px; }
+        .ftp-github-stars {
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+        }
+        .ftp-github-stars[data-tier="bronze"]   { color: #B45309; }
+        .ftp-github-stars[data-tier="silver"]   { color: #6B7280; }
+        .ftp-github-stars[data-tier="gold"]     { color: #CA8A04; }
+        .ftp-github-stars[data-tier="platinum"] { color: #7C3AED; }
+        .ftp-github-stars[data-tier="diamond"]  { color: #2563EB; }
+
+        /* Session 13 v8 Fix #18: Support button — layered red */
+        .ftp-support-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 12px;
+          background: #FFF1F2;
+          color: #E11D48;
+          border: 1px solid #FECDD3;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+        }
+        .ftp-support-btn:hover {
+          background: #FFE4E6;
+          border-color: #FDA4AF;
+          transform: translateY(-1px);
+        }
+        .ftp-support-btn-heart {
+          color: #E11D48;
+          width: 14px;
+          height: 14px;
+        }
       `}</style>
 
       {/* ── Logo + product dropdown trigger ── */}
@@ -381,7 +487,6 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             whiteSpace: "nowrap",
           }}
         >
-          <span aria-hidden="true">👥</span>
           <span className="ftp-logo-full">
             ForThePeople<span style={{ color: "#2563EB" }}>.in</span>
           </span>
@@ -420,6 +525,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             {PRODUCTS.map((p) => {
               const isLive = p.status === "live";
               const targetHref = isLive ? `/${locale}` : "/coming-soon";
+              const ProductIcon = p.Icon;
               return (
                 <li key={p.key} role="none">
                   <Link
@@ -439,7 +545,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
                       textDecoration: "none",
                     }}
                   >
-                    <span aria-hidden="true" style={{ fontSize: 14 }}>{p.emoji}</span>
+                    <ProductIcon size={16} aria-hidden="true" style={{ color: p.iconColor, flexShrink: 0 }} />
                     <span style={{ flex: 1 }}>
                       {p.name}
                       <span style={{ color: p.suffixColor, fontWeight: 600 }}>{p.suffix}</span>
@@ -566,14 +672,20 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         )}
       </div>
 
-      {/* ── Desktop nav: Support text link, Vote on features text link ── */}
-      <Link
-        href={`/${locale}/support`}
-        className="ftp-link-btn ftp-desktop-only"
-        style={{ fontSize: 13 }}
+      {/* ── Desktop nav: GitHub stars + Vote on features text link ── */}
+      {/* Session 13 v8 Fix #2: drop redundant Support text link, add GitHub w/ dynamic stars. */}
+      <a
+        href="https://github.com/jayanthmb14/forthepeople"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="ftp-github-link ftp-desktop-only"
+        aria-label={`GitHub repository (${githubStars.toLocaleString("en-IN")} stars)`}
       >
-        Support
-      </Link>
+        <Github className="ftp-github-icon" aria-hidden="true" />
+        <span className="ftp-github-stars" data-tier={githubStarsTier}>
+          ★ {githubStars.toLocaleString("en-IN")}
+        </span>
+      </a>
       <Link
         href={`/${locale}/features`}
         className="ftp-link-btn ftp-desktop-only"
@@ -692,25 +804,14 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         <span className="ftp-lock-overlay" aria-hidden="true">🔒</span>
       </button>
 
-      {/* ── Support button (♥) ── */}
+      {/* ── Support button — layered red (rose-50/600/200) ── */}
+      {/* Session 13 v8 Fix #18: production-pattern layered red, not solid red. */}
       <Link
         href={`/${locale}/support`}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "7px 12px",
-          borderRadius: 999,
-          background: "#DC2626",
-          color: "#FFFFFF",
-          fontSize: 13,
-          fontWeight: 600,
-          textDecoration: "none",
-          whiteSpace: "nowrap",
-        }}
+        className="ftp-support-btn"
         aria-label="Support — financial contribution"
       >
-        <Heart size={14} aria-hidden="true" fill="currentColor" />
+        <Heart className="ftp-support-btn-heart" aria-hidden="true" fill="currentColor" />
         <span className="ftp-desktop-only">Support</span>
       </Link>
 
