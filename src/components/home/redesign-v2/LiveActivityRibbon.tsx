@@ -3,15 +3,15 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 12 v7 — StatsBar (filename retained as LiveActivityRibbon.tsx
- * for import-path stability; the export is now `StatsBar`).
+ * Session 13 v8 Phase E (Fix #4) — StatsBar dashboard-style redesign
+ * (filename retained as LiveActivityRibbon.tsx for import-path stability;
+ * the export is still `StatsBar`).
  *
- * Single horizontal line:
- *   [🟢 LIVE pill] · [N districts live] · [N dashboards/district]
- *   · [N data points] · [N coming] · [Updated Xm ago]
+ * 5-tile dashboard grid with vertical dividers, hover states, count-up:
+ *   [Districts live] | [Dashboards/district] | [Data points] | [Coming] | [Last updated]
  *
- * Each numeric stat animates 0 → final via useCountUp on first
- * scroll-into-view (cubic ease-out, ~1.2s). Respects prefers-reduced-motion.
+ * Bigger numbers, real visual presence — not a thin one-line strip.
+ * Drops the LIVE pill prefix entirely (last-updated tile carries that signal).
  *
  * Stats are passed in as props (server-fetched in [locale]/page.tsx)
  * to avoid a client roundtrip on first paint.
@@ -32,11 +32,14 @@ export interface StatsBarProps {
 }
 
 function StatTile({ target, label }: { target: number; label: string }) {
-  const { value, ref } = useCountUp<HTMLSpanElement>(target);
+  const { value, ref } = useCountUp<HTMLDivElement>(target);
   return (
-    <span className="ftp-stat-item" ref={ref}>
-      <strong>{value.toLocaleString("en-IN")}</strong> {label}
-    </span>
+    <div className="ftp-stat-tile">
+      <div className="ftp-stat-num" ref={ref}>
+        {value.toLocaleString("en-IN")}
+      </div>
+      <div className="ftp-stat-label">{label}</div>
+    </div>
   );
 }
 
@@ -48,95 +51,79 @@ export default function StatsBar({
   mostRecentAt,
 }: StatsBarProps) {
   const updated = timeAgoLabel(mostRecentAt ?? null);
+  const updatedDisplay = updated.isLive ? "Live" : updated.label;
 
   return (
     <div className="ftp-stats-bar" role="status" aria-live="polite">
       <style>{`
         .ftp-stats-bar {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 10px 24px;
-          background: #F0FDF4;
-          border-bottom: 0.5px solid #E5E7EB;
-          font-size: 12px;
-          color: #1A1A1A;
-        }
-        .ftp-stats-live-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: #10B981;
-          color: #FFFFFF;
-          padding: 2px 8px;
-          border-radius: 3px;
-          font-size: 9px;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          flex-shrink: 0;
-        }
-        .ftp-stats-live-pill .ftp-pulse-dot {
-          width: 5px; height: 5px;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 0;
           background: #FFFFFF;
-          border-radius: 50%;
-          animation: ftp-stats-pulse 2s ease-in-out infinite;
+          border-top: 0.5px solid #E5E7EB;
+          border-bottom: 0.5px solid #E5E7EB;
         }
-        @keyframes ftp-stats-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%      { opacity: 0.5; transform: scale(0.8); }
+        .ftp-stat-tile {
+          padding: 18px 24px;
+          text-align: center;
+          border-right: 0.5px solid #E5E7EB;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          transition: background 150ms ease;
         }
-        .ftp-stat-item {
-          font-variant-numeric: tabular-nums;
-          white-space: nowrap;
-          color: #4B5563;
-        }
-        .ftp-stat-item strong {
+        .ftp-stat-tile:last-child { border-right: none; }
+        .ftp-stat-tile:hover { background: #FAFAF8; }
+        .ftp-stat-num {
+          font-size: 24px;
           font-weight: 600;
+          line-height: 1;
           color: #1A1A1A;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.02em;
         }
-        .ftp-stat-divider {
-          width: 1px; height: 14px;
-          background: #D1D5DB;
+        .ftp-stat-num-updated {
+          font-size: 14px;
+          font-weight: 500;
+          color: #16A34A;
+          line-height: 1.2;
         }
-        .ftp-stat-spacer { flex: 1; }
-        .ftp-stat-updated {
+        .ftp-stat-label {
           font-size: 11px;
-          color: #9B9B9B;
-          flex-shrink: 0;
-          white-space: nowrap;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .ftp-pulse-dot { animation: none; }
+          color: #6B7280;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          font-weight: 600;
         }
         @media (max-width: 767px) {
-          .ftp-stats-bar {
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 10px 12px;
-            font-size: 11px;
+          .ftp-stats-bar { grid-template-columns: repeat(2, 1fr); }
+          .ftp-stat-tile {
+            padding: 14px 16px;
+            border-bottom: 0.5px solid #E5E7EB;
           }
-          .ftp-stat-divider { display: none; }
-          .ftp-stat-spacer { width: 100%; height: 0; }
-          .ftp-stat-updated { width: 100%; text-align: right; }
+          .ftp-stat-tile:nth-child(odd) { border-right: 0.5px solid #E5E7EB; }
+          .ftp-stat-tile:nth-child(even) { border-right: none; }
+          .ftp-stat-num { font-size: 20px; }
+          /* Last (5th) tile spans full width on mobile */
+          .ftp-stat-tile:last-child {
+            grid-column: 1 / -1;
+            border-right: none;
+            border-bottom: none;
+          }
         }
       `}</style>
 
-      <span className="ftp-stats-live-pill">
-        <span className="ftp-pulse-dot" aria-hidden="true" />
-        LIVE
-      </span>
-      <span className="ftp-stat-divider" aria-hidden="true" />
-      <StatTile target={activeDistricts} label="districts live" />
-      <span className="ftp-stat-divider" aria-hidden="true" />
-      <StatTile target={dashboardsPerDistrict} label="dashboards/district" />
-      <span className="ftp-stat-divider" aria-hidden="true" />
-      <StatTile target={totalDataPoints} label="data points" />
-      <span className="ftp-stat-divider" aria-hidden="true" />
-      <StatTile target={comingDistricts} label="coming" />
-      <span className="ftp-stat-spacer" aria-hidden="true" />
-      <span className="ftp-stat-updated">
-        {updated.isLive ? "Live" : `Updated ${updated.label}`}
-      </span>
+      <StatTile target={activeDistricts} label="Districts live" />
+      <StatTile target={dashboardsPerDistrict} label="Dashboards per district" />
+      <StatTile target={totalDataPoints} label="Data points tracked" />
+      <StatTile target={comingDistricts} label="Districts coming" />
+
+      {/* Last-updated tile uses the same visual rhythm but renders text, not a number. */}
+      <div className="ftp-stat-tile">
+        <div className="ftp-stat-num-updated">{updatedDisplay}</div>
+        <div className="ftp-stat-label">Last updated</div>
+      </div>
     </div>
   );
 }
