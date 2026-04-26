@@ -23,10 +23,11 @@ import { useCountUp } from "@/lib/hooks/useCountUp";
 import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
 export interface StatsBarProps {
-  activeDistricts: number;
-  dashboardsPerDistrict: number;
-  totalDataPoints: number;
-  comingDistricts: number;
+  /** All optional — sensible defaults render if page.tsx hasn't wired props yet. */
+  activeDistricts?: number;
+  dashboardsPerDistrict?: number;
+  totalDataPoints?: number;
+  comingDistricts?: number;
   mostRecentAt?: string | null;
 }
 
@@ -40,10 +41,10 @@ function StatTile({ target, label }: { target: number; label: string }) {
 }
 
 export default function StatsBar({
-  activeDistricts,
-  dashboardsPerDistrict,
-  totalDataPoints,
-  comingDistricts,
+  activeDistricts = 10,
+  dashboardsPerDistrict = 32,
+  totalDataPoints = 0,
+  comingDistricts = 770,
   mostRecentAt,
 }: StatsBarProps) {
   const updated = timeAgoLabel(mostRecentAt ?? null);
