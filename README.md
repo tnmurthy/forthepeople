@@ -20,8 +20,15 @@
 
 ForThePeople.in aggregates publicly available Indian government data into clean, citizen-friendly dashboards — one for every district. Instead of navigating 50+ government portals, citizens get a single platform with real-time data on crop prices, dam levels, budget spending, school performance, infrastructure projects, and 25+ more modules.
 
-**Currently live:** Karnataka (Mandya, Mysuru, Bengaluru Urban) |
-Delhi (New Delhi) | Maharashtra (Mumbai, Pune) | West Bengal (Kolkata) | Tamil Nadu (Chennai) | Telangana (Hyderabad) | Uttar Pradesh (Lucknow)
+**Currently live (10 districts across 7 states):**
+- **Karnataka:** Mandya, Mysuru, Bengaluru Urban
+- **Tamil Nadu:** Chennai
+- **Maharashtra:** Mumbai, Pune
+- **Delhi:** New Delhi
+- **West Bengal:** Kolkata
+- **Telangana:** Hyderabad
+- **Uttar Pradesh:** Lucknow
+
 **Goal:** All 780+ districts across 28 states and 8 UTs.
 
 ## 29 Dashboard Modules
@@ -40,7 +47,7 @@ Delhi (New Delhi) | Maharashtra (Mumbai, Pune) | West Bengal (Kolkata) | Tamil N
 | Frontend | Next.js 16, TypeScript, Tailwind CSS v4, react-simple-maps, Recharts |
 | Database | PostgreSQL (Neon), Prisma ORM (45+ models) |
 | Cache | Upstash Redis |
-| AI | Anthropic Claude (default), Google Gemini (fallback) |
+| AI | OpenRouter (free models for news classification, paid for analysis) with multi-provider fallback |
 | Scraping | Railway.app (24/7), Google News RSS, Cheerio |
 | Hosting | Vercel Pro |
 | Payments | Razorpay (for supporter contributions) |
@@ -114,7 +121,18 @@ We welcome contributions from developers of all skill levels! Whether you want t
 - Review our [Code of Conduct](CODE_OF_CONDUCT.md)
 - Report security issues privately via [SECURITY.md](SECURITY.md)
 
-**Goal:** Cover all 780+ districts across India. Currently at 9 — help us get there!
+**Goal:** Cover all 780+ districts across India. Currently at 10 — help us get there!
+
+## Active Contributors
+
+This project moves forward thanks to:
+- [@AmanSurushe](https://github.com/AmanSurushe) — Mobile responsiveness, Hindi translations
+- [@threatner](https://github.com/threatner) — UI fixes
+- [@joellui](https://github.com/joellui) — Prisma config
+- [@Ronithkumar](https://github.com/Ronithkumar) — Module bug fixes
+- [@tiwarikaran](https://github.com/tiwarikaran) — Ahmedabad district (in progress)
+
+Want to join? See [CONTRIBUTING.md](CONTRIBUTING.md) and check `good-first-issue` labels. CodeRabbit auto-reviews every PR.
 
 ## Creator
 
