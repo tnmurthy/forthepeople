@@ -41,6 +41,7 @@ import {
   Search,
 } from "lucide-react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import { timeAgoLabel, type TimeAgoResult } from "@/lib/utils/timeAgo";
 
 // ── Product dropdown items ────────────────────────────────
 type Product = {
@@ -81,9 +82,12 @@ const LANGUAGES: Lang[] = [
 const GITHUB_STAR_FALLBACK = 149;
 const GITHUB_REPO_URL = "https://github.com/jayanthmb14/forthepeople";
 
-// ── "Updated X ago" pill polls homepage-stats ─────────────
-function useUpdatedAgoPill() {
-  const [ago, setAgo] = useState<string>("--");
+// ── "Updated X ago" pill polls homepage-stats every 60s.
+// Uses the shared timeAgoLabel so behavior is uniform with the hero stat
+// pill, footer, and live-activity ribbon (>2h → "Live", else real label).
+function useUpdatedPill(): TimeAgoResult {
+  const [mostRecentAt, setMostRecentAt] = useState<string | null>(null);
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,32 +96,27 @@ function useUpdatedAgoPill() {
         const res = await fetch("/api/data/homepage-stats");
         if (!res.ok) return;
         const data = (await res.json()) as { mostRecentAt?: string | null };
-        if (cancelled || !data.mostRecentAt) return;
-        setAgo(formatAgo(new Date(data.mostRecentAt)));
+        if (cancelled) return;
+        setMostRecentAt(data.mostRecentAt ?? null);
       } catch {
         /* ignore — keep last value */
       }
     }
     fetchStat();
-    const t = setInterval(fetchStat, 60_000);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const tick = setInterval(() => {
+      fetchStat();
+      setNow(Date.now());
+    }, 60_000);
     return () => {
       cancelled = true;
-      clearInterval(t);
+      clearInterval(tick);
     };
   }, []);
 
-  return ago;
-}
-
-function formatAgo(then: Date): string {
-  const ms = Date.now() - then.getTime();
-  if (ms < 60_000) return "just now";
-  const m = Math.floor(ms / 60_000);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
+  if (now == null) return { label: "—", isStale: false, isLive: false };
+  return timeAgoLabel(mostRecentAt, { nowMs: now });
 }
 
 // ── Click-outside helper for dropdowns ────────────────────
@@ -142,7 +141,7 @@ export interface HeaderBarProps {
 
 export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
   const pathname = usePathname();
-  const ago = useUpdatedAgoPill();
+  const updated = useUpdatedPill();
 
   const [productOpen, setProductOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -359,10 +358,14 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         )}
       </div>
 
-      {/* ── "Updated Xm ago" pill ── */}
+      {/* ── "Updated Xm ago" pill (or "Live" when stale >2h) ── */}
       <span
         className="ftp-pill ftp-desktop-only"
-        title="Most recent fresh data write"
+        title={
+          updated.isLive
+            ? "Live — most recent data write was over 2 hours ago"
+            : "Most recent fresh data write"
+        }
         style={{
           background: "#F0FDF4",
           color: "#166534",
@@ -371,7 +374,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         }}
       >
         <span className="ftp-pulse-dot" aria-hidden="true" />
-        Updated {ago}
+        {updated.isLive ? "Live" : `Updated ${updated.label}`}
       </span>
 
       {/* ── Search ── */}

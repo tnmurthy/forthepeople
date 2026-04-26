@@ -16,12 +16,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
 type DistrictPreview = {
   slug: string;
   name: string;
   state?: { slug?: string; name?: string };
-  // Several other fields exist on /homepage-preview — we only consume name.
 };
 
 type HomepagePreview = {
@@ -37,17 +37,6 @@ type Activity = {
   district: string;
   ago: string;
 };
-
-function formatAgo(now: number, then: Date): string {
-  const ms = now - then.getTime();
-  if (ms < 60_000) return "just now";
-  const m = Math.floor(ms / 60_000);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
-}
 
 export default function LiveActivityRibbon() {
   const [items, setItems] = useState<Activity[]>([]);
@@ -67,14 +56,10 @@ export default function LiveActivityRibbon() {
 
         if (cancelled) return;
 
-        // Build activity row: each active district + the global "most recent"
-        // timestamp as a proxy for that district's last activity. This is
-        // approximate (we don't have per-district mostRecentAt today) — when
-        // a future endpoint exposes per-district timestamps, swap in here.
-        const now = Date.now();
-        const ago = stats.mostRecentAt
-          ? formatAgo(now, new Date(stats.mostRecentAt))
-          : "recently";
+        // Single shared "ago" for all districts — we don't have per-district
+        // mostRecentAt today, so we proxy from the global stat. Friendly
+        // "Live" fallback when stale (>2h) instead of misleading "12h ago".
+        const ago = timeAgoLabel(stats.mostRecentAt).label;
 
         const districts = preview.districtPreviews ?? [];
         const acts: Activity[] = districts.map((d) => ({

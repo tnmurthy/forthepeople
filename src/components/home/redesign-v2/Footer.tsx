@@ -19,24 +19,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Github, Instagram } from "lucide-react";
-
-function formatAgo(now: number, then: Date): string {
-  const ms = now - then.getTime();
-  if (ms < 60_000) return "just now";
-  const m = Math.floor(ms / 60_000);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
-}
+import { timeAgoLabel, type TimeAgoResult } from "@/lib/utils/timeAgo";
 
 export interface FooterProps {
   locale: string;
 }
 
 export default function Footer({ locale }: FooterProps) {
-  const [ago, setAgo] = useState<string>("—");
+  const [updated, setUpdated] = useState<TimeAgoResult>({
+    label: "—",
+    isStale: false,
+    isLive: false,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -45,8 +39,8 @@ export default function Footer({ locale }: FooterProps) {
         const res = await fetch("/api/data/homepage-stats");
         if (!res.ok) return;
         const data = (await res.json()) as { mostRecentAt?: string | null };
-        if (!cancelled && data.mostRecentAt) {
-          setAgo(formatAgo(Date.now(), new Date(data.mostRecentAt)));
+        if (!cancelled) {
+          setUpdated(timeAgoLabel(data.mostRecentAt ?? null));
         }
       } catch {
         /* ignore */
@@ -187,7 +181,9 @@ export default function Footer({ locale }: FooterProps) {
             <Instagram size={13} aria-hidden="true" />
           </a>
         </div>
-        <span style={{ fontSize: 11 }}>Updated {ago}</span>
+        <span style={{ fontSize: 11 }}>
+          {updated.isLive ? "Live" : `Updated ${updated.label}`}
+        </span>
       </div>
     </footer>
   );

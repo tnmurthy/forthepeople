@@ -63,15 +63,18 @@ export function useCountUp<T extends HTMLElement = HTMLDivElement>(
       requestAnimationFrame(tick);
     }
 
-    if (typeof IntersectionObserver === "undefined") {
-      animate();
-      return;
-    }
+    // Safety net: if neither the observer fires nor the ref attaches in
+    // time, fall through to a plain animation after 800ms. Also handles
+    // the (rare) case where IntersectionObserver is missing entirely.
+    const safety = setTimeout(animate, 800);
 
-    const node = ref.current;
-    if (!node) {
-      animate();
-      return;
+    if (typeof IntersectionObserver === "undefined" || !ref.current) {
+      // Animate at next tick (don't block the safety timer either way).
+      const t = setTimeout(animate, 0);
+      return () => {
+        clearTimeout(t);
+        clearTimeout(safety);
+      };
     }
 
     const observer = new IntersectionObserver(
@@ -84,10 +87,15 @@ export function useCountUp<T extends HTMLElement = HTMLDivElement>(
           }
         }
       },
-      { threshold: 0.3 },
+      // Lower threshold than the previous 0.3 — partially-visible tiles
+      // still trigger early enough to feel intentional.
+      { threshold: 0.1 },
     );
-    observer.observe(node);
-    return () => observer.disconnect();
+    observer.observe(ref.current);
+    return () => {
+      observer.disconnect();
+      clearTimeout(safety);
+    };
   }, [target, durationMs]);
 
   return { value, ref };

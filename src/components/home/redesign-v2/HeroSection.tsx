@@ -31,6 +31,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useCountUp } from "@/lib/hooks/useCountUp";
+import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -57,15 +58,6 @@ interface HomepageStats {
   modulesPerDistrict?: number;
   totalDataPoints?: number;
   mostRecentAt?: string | null;
-}
-
-function formatAgo(now: number, then: Date): string {
-  const ms = now - then.getTime();
-  if (ms < 60_000) return "just now";
-  const m = Math.floor(ms / 60_000);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return `${h}h ago`;
 }
 
 export interface HeroSectionProps {
@@ -108,20 +100,14 @@ export default function HeroSection({ locale }: HeroSectionProps) {
   const countDataPoints = useCountUp<HTMLDivElement>(totalDataPoints);
   const countComing = useCountUp<HTMLDivElement>(comingSoon);
 
-  // Stale-timestamp friendly label
-  let updatedLabel = "—";
-  let updatedIsLive = false;
-  if (stats?.mostRecentAt && now != null) {
-    const minutes = (now - new Date(stats.mostRecentAt).getTime()) / 60_000;
-    if (minutes > STALE_MINUTES) {
-      updatedLabel = "Live";
-      updatedIsLive = true;
-    } else if (minutes < 1) {
-      updatedLabel = "just now";
-    } else {
-      updatedLabel = formatAgo(now, new Date(stats.mostRecentAt));
-    }
-  }
+  // Stale-timestamp friendly label (shared across header / footer / hero / activity)
+  const updated =
+    now == null
+      ? { label: "—", isLive: false, isStale: false }
+      : timeAgoLabel(stats?.mostRecentAt, {
+          staleThresholdMinutes: STALE_MINUTES,
+          nowMs: now,
+        });
 
   return (
     <section
@@ -136,14 +122,41 @@ export default function HeroSection({ locale }: HeroSectionProps) {
           gap: 32px;
           align-items: center;
           min-height: 480px;
+          max-height: calc(100vh - 200px); /* reserve room for header + tickers */
         }
-        .ftp-hero-map-large { min-height: 480px; }
+        .ftp-hero-map-large {
+          width: 100%;
+          height: 100%;
+          min-height: 380px;
+          max-height: 480px; /* prevents 1058px natural-aspect blow-up */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        /* DrillDownMap renders an SVG inside a div with width/height 100%.
+           Force the SVG to scale into the cap. */
+        .ftp-hero-map-large svg {
+          width: 100%;
+          height: 100%;
+          max-height: 480px;
+        }
         @media (max-width: 767px) {
-          .ftp-hero { grid-template-columns: 1fr !important; gap: 20px !important; min-height: 0 !important; }
+          .ftp-hero {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+            min-height: 0 !important;
+            max-height: none !important;
+          }
           .ftp-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
           .ftp-hero-stats > .ftp-stat:nth-child(5) { grid-column: span 2; }
           .ftp-hero-h1 { font-size: 28px !important; line-height: 1.15 !important; }
-          .ftp-hero-map-large { min-height: 320px !important; order: -1; }
+          .ftp-hero-map-large {
+            min-height: 280px !important;
+            max-height: 360px !important;
+            order: -1;
+          }
+          .ftp-hero-map-large svg { max-height: 360px; }
         }
 
         .ftp-hero-fade { animation: ftp-hero-fade-in 300ms ease-out; }
@@ -274,13 +287,13 @@ export default function HeroSection({ locale }: HeroSectionProps) {
               />
               <Stat
                 value={
-                  updatedIsLive ? (
+                  updated.isLive ? (
                     <span>
                       <span className="ftp-hero-live-dot" aria-hidden="true" />
                       Live
                     </span>
                   ) : (
-                    updatedLabel
+                    updated.label
                   )
                 }
                 label="last updated"
