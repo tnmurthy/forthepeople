@@ -90,6 +90,8 @@ export default function DrillDownMap({ locale }: DrillDownMapProps) {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
+                    className={isActive ? "ftp-geo-active" : "ftp-geo-locked"}
+                    data-active={isActive ? "true" : "false"}
                     onClick={() => {
                       if (isActive && state) {
                         router.push(`/${locale}/${state.slug}`);
