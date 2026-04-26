@@ -138,6 +138,9 @@ export default function PageProgressBar() {
     }
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
+    // start() is module-stable in this component (closure over refs/setters,
+    // never re-derived) so omitting it from deps doesn't risk staleness.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // When pathname changes, the new route has rendered → complete the bar.

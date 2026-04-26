@@ -73,7 +73,7 @@ export default function VoteDistrictPage({
   locale,
   preselected,
 }: VoteDistrictPageProps) {
-  const allLocked = useMemo(flattenLocked, []);
+  const allLocked = useMemo(() => flattenLocked(), []);
 
   // ── Augment with live vote counts ──
   const [voteMap, setVoteMap] = useState<Record<string, number>>({});
@@ -140,19 +140,14 @@ export default function VoteDistrictPage({
   }, [allLocked, voteMap, bumps, search, stateFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / PAGE_SIZE));
-  const pageItems = filteredSorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
-  // Reset to page 0 when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [search, stateFilter, sortBy]);
+  const safePage = Math.min(page, totalPages - 1);
+  const pageItems = filteredSorted.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
   // Pre-select scroll: if preselected, scroll its row into view on mount
   useEffect(() => {
     if (!preselected) return;
     const el = document.getElementById(`vote-row-${preselected}`);
     if (el) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       el.scrollIntoView({ block: "center" });
     }
   }, [preselected]);
@@ -328,13 +323,19 @@ export default function VoteDistrictPage({
           className="ftp-vote-input"
           placeholder="🔎 Search any locked district…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+          }}
           aria-label="Search locked districts"
         />
         <select
           className="ftp-vote-select"
           value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
+          onChange={(e) => {
+            setStateFilter(e.target.value);
+            setPage(0);
+          }}
           aria-label="Filter by state"
         >
           <option value="all">All states</option>
@@ -347,7 +348,10 @@ export default function VoteDistrictPage({
         <select
           className="ftp-vote-select"
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as "votes" | "alpha")}
+          onChange={(e) => {
+            setSortBy(e.target.value as "votes" | "alpha");
+            setPage(0);
+          }}
           aria-label="Sort by"
         >
           <option value="votes">Sort: most votes</option>
@@ -403,18 +407,18 @@ export default function VoteDistrictPage({
           type="button"
           className="ftp-vote-page-btn"
           onClick={() => setPage((p) => Math.max(0, p - 1))}
-          disabled={page === 0}
+          disabled={safePage === 0}
         >
           ← Previous
         </button>
         <span>
-          Page {page + 1} of {totalPages} · {filteredSorted.length} districts
+          Page {safePage + 1} of {totalPages} · {filteredSorted.length} districts
         </span>
         <button
           type="button"
           className="ftp-vote-page-btn"
           onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-          disabled={page >= totalPages - 1}
+          disabled={safePage >= totalPages - 1}
         >
           Next →
         </button>
