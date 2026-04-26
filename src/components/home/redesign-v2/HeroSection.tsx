@@ -29,6 +29,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DISTRICT_META } from "@/lib/data/district-meta";
+import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -48,18 +49,20 @@ const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
 
 const NEW_BADGE_COUNT = 3;
 
-// Live preview data per district (temperature, health grade) from
-// the existing /api/data/homepage-preview endpoint (5-min cache).
+// Live preview data per district (temperature, last-updated). The
+// health-grade field is intentionally not consumed any more — the
+// grade was inaccurate and removed in Session 16 Phase F (Fix #6).
 interface PreviewLive {
   temp: number | null;
-  grade: string | null;
+  mostRecentAt: string | null;
 }
 type PreviewMap = Record<string, PreviewLive>;
 
 interface HomepagePreviewRow {
   slug: string;
   weather?: { temp: number | null } | null;
-  healthGrade?: string | null;
+  // We use the freshest of news / dam / crop / weather as a "data refreshed at" hint.
+  news?: { publishedAt: string } | null;
 }
 
 interface ActiveDistrict {
@@ -87,7 +90,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
     return new Set(sorted.slice(0, NEW_BADGE_COUNT).map((d) => d.slug));
   }, [districts]);
 
-  // Live preview enrichment (temp + grade) per district.
+  // Live preview enrichment (temp + last-updated) per district.
   const [preview, setPreview] = useState<PreviewMap>({});
   useEffect(() => {
     let cancelled = false;
@@ -101,12 +104,12 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         for (const r of data.districtPreviews ?? []) {
           next[r.slug] = {
             temp: r.weather?.temp ?? null,
-            grade: r.healthGrade ?? null,
+            mostRecentAt: r.news?.publishedAt ?? null,
           };
         }
         setPreview(next);
       } catch {
-        /* swallow — rows render without temp/grade */
+        /* swallow — rows render without temp/freshness */
       }
     }
     load();
@@ -312,7 +315,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           padding-right: 4px;
           scrollbar-width: thin;
         }
-        /* Session 15 v9 Phase F (Fix #8): rich district row with rating + native + tags + temp */
+        /* Session 16 v10 Phase F (Fixes #6, #7): no rating badge, solid hover, no bleed */
         .ftp-district-row {
           display: flex;
           align-items: flex-start;
@@ -323,29 +326,15 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           border-radius: 8px;
           text-decoration: none;
           color: #1A1A1A;
-          transition: background 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 200ms ease;
+          position: relative;
+          transition: border-color 150ms ease, box-shadow 200ms ease;
           min-height: 44px;
         }
         .ftp-district-row:hover {
-          background: #FAFAF8;
+          background: #FFFFFF;
           border-color: #2563EB;
-          transform: translateX(2px);
-          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
-        }
-        .ftp-district-rating {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 32px;
-          height: 28px;
-          padding: 0 8px;
-          background: #DBEAFE;
-          color: #1E40AF;
-          font-weight: 700;
-          font-size: 12px;
-          border-radius: 6px;
-          flex-shrink: 0;
-          font-variant-numeric: tabular-nums;
+          box-shadow: 0 4px 16px rgba(37, 99, 235, 0.12);
+          z-index: 2;
         }
         .ftp-district-row-main { flex: 1; min-width: 0; }
         .ftp-district-row-name {
@@ -393,17 +382,24 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           color: #D1D5DB;
           margin-left: 4px;
         }
-        .ftp-district-temp {
-          font-size: 11px;
-          color: #4B5563;
+        /* Session 16 v10 Phase F (Fix #7 supplemental): per-row meta line */
+        .ftp-district-row-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 4px;
+          padding-top: 4px;
+          border-top: 1px dashed #E5E7EB;
+        }
+        .ftp-district-meta-item {
+          font-size: 10px;
+          color: #6B7280;
           font-weight: 500;
-          flex-shrink: 0;
-          align-self: center;
           font-variant-numeric: tabular-nums;
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-district-row { transition: none; }
-          .ftp-district-row:hover { transform: none; box-shadow: none; }
+          .ftp-district-row:hover { box-shadow: none; }
         }
 
         @media (max-width: 767px) {
@@ -473,18 +469,15 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
             {districts.map((d) => {
               const meta = DISTRICT_META[d.slug];
               const live = preview[d.slug];
-              const grade = live?.grade ?? "C";
               const temp = live?.temp ?? null;
               const isNew = newSlugs.has(d.slug);
+              const updated = timeAgoLabel(live?.mostRecentAt ?? null);
               return (
                 <Link
                   key={d.slug}
                   href={`/${locale}/${d.stateSlug}/${d.slug}`}
                   className="ftp-district-row"
                 >
-                  <span className="ftp-district-rating" aria-label={`Health grade ${grade}`}>
-                    {grade}
-                  </span>
                   <div className="ftp-district-row-main">
                     <div className="ftp-district-row-name">
                       <span>{d.name}</span>
@@ -505,12 +498,19 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                         ))}
                       </div>
                     )}
+                    {(temp != null || live?.mostRecentAt) && (
+                      <div className="ftp-district-row-meta">
+                        {temp != null && (
+                          <span className="ftp-district-meta-item">🌡️ {temp}°C</span>
+                        )}
+                        {live?.mostRecentAt && (
+                          <span className="ftp-district-meta-item">
+                            🕐 {updated.isLive ? "Live" : `Updated ${updated.label}`}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {temp != null && (
-                    <span className="ftp-district-temp" title="Latest weather reading">
-                      🌡️ {temp}°C
-                    </span>
-                  )}
                 </Link>
               );
             })}
