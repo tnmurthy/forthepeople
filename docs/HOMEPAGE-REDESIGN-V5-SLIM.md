@@ -450,3 +450,81 @@ Net delta: **+1 error in unrelated pre-existing code** (not introduced by any Se
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-14-polish-2026-04-26` exists; all v8.1 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 15 — v9 production-pattern restoration (2026-04-26, NOT pushed)
+
+13 production-pattern restorations from Jayanth's localhost vs prod
+review. ~10 commits, all on local `main`. Reversibility tag:
+`pre-session-15-v9-restoration-2026-04-26`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| Hero map | SVG transform scale(1.15), light-blue (#F0F7FF) container, overflow:hidden — crops surrounding ocean visually without touching the read-only DrillDownMap | #1 |
+| globals.css | Body bg #FAFAF8 cream (was undefined → defaulted white) | #3 |
+| globals.css | `.ftp-section-wrap` now carries 32px-y padding; alternating bg per section: hero white / livedata white / how cream / supporters white / vote light-blue tint | #2, #4 |
+| Components | Inline `background:` removed from each redesign-v2 section so the new class-based bg can apply | #2, #3, #4 |
+| HeroSection | Right column rebuilt as a unified white dashboard card (border + shadow + radius) holding 3 blocks: tagline (h1 stacked 3 lines + bottom border) → blue gradient "Explore the whole India" tab → LIVE pill + districts list | #5 |
+| HeaderBar | Lucide Users icon (18px blue) renders next to "ForThePeople.in" / "FTP.in" text on the header itself (was only inside dropdown) | #6 |
+| HeaderBar | Padding 8px 24px → 10px 32px on wide viewports + margin-left:auto on GitHub link → right group pushes to the corner | #7 |
+| HeroSection | Each district row now shows: health-grade badge (light-blue chip) + name + native-script subtitle + NEW pill + blue tagline + 3 emoji-bullets + 🌡️ live temperature | #8 |
+| HeroSection | Live temp + grade pulled from existing `/api/data/homepage-preview` (5-min cache, no new endpoint, no new schema fields) | #8 |
+| New file | `src/lib/data/district-meta.ts` — DISTRICT_META (10 active districts × native script + tagline + 3 bullets) + STATE_FULL_NAMES (36 states/UTs) | #8, #11 |
+| HowItWorks | 4 steps → 3 (📡 We Collect / 📊 We Organize / 👁️ You See) with production short copy. Sources caption removed. Grid 4-col → 3-col, gap 16→20px | #9 |
+| ContributorsStrip | Restructured into 3 categorized sections: 🇮🇳 India Patrons / 🏛️ State Champions / ⌂ District Sponsors. STATIC_THRESHOLD = 6: ≤6 renders as static wrap list, >6 falls back to per-tier marquee (120s / 80s / 50s) | #10 |
+| ContributorsStrip | Pill format is natural language — "Name — Karnataka", "Name — Mandya", "Name — 🇮🇳 India" — no more code-style "STATE · KA" badges | #11, #12 |
+| API | `/api/payment/contributors` v4 → v5: now surfaces districtName + stateName from existing sponsoredDistrict/sponsoredState FK relations (or legacy plain-text Supporter.district fallback) | #11, #12 |
+| /features | Vote / Suggest tab structure removed. Page is now one continuous flow: header → 📊 Vote on existing ideas → 💡 Share your idea + accepted-suggestions list. Both call existing endpoints | #13 |
+
+## v9 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />                      ← LAYOUT
+<MigrationBanner />                      ← LAYOUT
+<DisclaimerBanner />                     ← LAYOUT
+<HeaderBar />                            ← LAYOUT (Users icon · GitHub stars · Globe · layered Support, right group at corner)
+<main>                                                                bg: alternating per section
+  <FinancialTicker />                    — Market Open/Closed pill + marquee + Updated
+  <StatsBar />                           — 5-tile dashboard, blue numbers
+  <HeroSection districts={...} />        — map LEFT 56% (zoomed, light-blue bg) / dashboard card RIGHT 44%
+                                            (tagline / blue Explore tab / LIVE pill + 10 rich rows)
+  <LiveDataShowcase />                   — district chip tabs + 4 module cards
+  <HowItWorks />                         — 3 short steps with blue gradient circles + connecting line
+  <ContributorsStrip />                  — 🇮🇳 India / 🏛️ State / ⌂ District (static or marquee)
+  <VoteFeaturesCTA />                    — purple gradient card (light-blue section bg)
+</main>
+<Footer />                               ← LAYOUT
+```
+
+## Verification
+
+| | Before Session 15 | After Session 15 |
+|---|---|---|
+| Total problems | 108 | **107** |
+| Errors | 62 | **61** |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (1 better than baseline — the /features rewrite dropped one stale lint issue).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` — all 200.
+- API verified: `/api/payment/contributors?limit=3` now returns full names — e.g. `districtName: "Nagpur"`, `stateName: "Maharashtra"`.
+
+## v9 commits (10 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `fe68963` | B | Hero map — zoom 1.15x + light-blue container |
+| 2 | `0f45a3c` | C | globals — cream body + alternating section bgs + 32px section padding |
+| 3 | `9302956` | D | Hero — dashboard card with blue Explore tab + LIVE district section |
+| 4 | `a539433` | E | Header — Users icon visible + right group at corner |
+| 5 | `328c59f` | F | District rows — rating + native script + tagline + bullets + temp + new district-meta.ts |
+| 6 | `76b9c07` | G | HowItWorks — 3 short steps (We Collect / We Organize / You See) |
+| 7 | `49df3e5` | H | Supporters — 3 categorized sections + threshold marquee + full names |
+| 8 | `e0f6660` | I | /features — unified Vote + Share Your Idea (no tabs) |
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-15-v9-restoration-2026-04-26` exists; all v9 commits sit on local `main`. Push after Jayanth's manual review.
