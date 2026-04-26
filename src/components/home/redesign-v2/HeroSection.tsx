@@ -3,17 +3,31 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 12 v7 — homepage hero.
- *   - Layout: 60% map LEFT / 40% text RIGHT (was 55/45 in v6)
- *   - No inline stats — those moved to the StatsBar above the hero
- *   - 2 CTAs: primary "Find my district →" + secondary "Browse all 10 →"
- *   - DrillDownMap unchanged — only its placement and CSS wrapper change
- *   - Responds to prefers-reduced-motion on hover transforms + fade-in
+ * Session 13 v8 Phases F + G — major hero restructure.
+ *
+ * Phase F (Fix #5): Bigger map (560px max), centered, with a floating
+ * "Click a state to explore" hint at the bottom.
+ *
+ * Phase G (Fixes #6, #7, #8, #9): Districts move INTO the hero right
+ * column as inline rows (replacing the separate LiveDistrictsList
+ * section). Each row shows district name, state, 2 curated tag-bullets
+ * (Sugar capital · KRS dam · etc.), and a small NEW badge (8px pill,
+ * NOT a background-color change) for the 3 most-recently-launched.
+ *
+ * Adds the green "Explore the whole India →" CTA between the subtitle
+ * and the districts list.
+ *
+ * Layout: 60% map LEFT / 40% text+districts RIGHT, stretch-aligned so
+ * the columns share height.
+ *
+ * Mobile: stacks; map first; districts list show all (no scroll cap).
  */
 
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { useMemo } from "react";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -31,11 +45,48 @@ const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ),
 });
 
-export interface HeroSectionProps {
-  locale: string;
+// ── Curated rich intros (2-3 tags per district) ──
+// Design copy only — not data. Used to fill the inline district rows.
+const DISTRICT_INTROS: Record<string, { tags: string[] }> = {
+  "mandya":           { tags: ["Sugar capital", "KRS dam", "Cauvery basin"] },
+  "bengaluru-urban":  { tags: ["Silicon Valley of India", "IT capital", "Garden city"] },
+  "mysuru":           { tags: ["Heritage city", "Mysuru Palace", "Cultural capital"] },
+  "mumbai":           { tags: ["Financial capital", "Bollywood", "Gateway of India"] },
+  "pune":             { tags: ["Auto + IT hub", "Oxford of the East", "Khadakwasla"] },
+  "lucknow":          { tags: ["City of Nawabs", "Awadhi culture", "Capital of UP"] },
+  "hyderabad":        { tags: ["Cyberabad", "IT + biotech hub", "Charminar"] },
+  "new-delhi":        { tags: ["National capital", "India Gate", "Government seat"] },
+  "chennai":          { tags: ["Detroit of India", "IT hub", "Marina Beach"] },
+  "kolkata":          { tags: ["Cultural capital", "City of Joy", "Howrah Bridge"] },
+};
+
+const NEW_BADGE_COUNT = 3;
+
+interface ActiveDistrict {
+  slug: string;
+  name: string;
+  stateSlug: string;
+  stateName: string;
+  goLiveDate?: string | null;
 }
 
-export default function HeroSection({ locale }: HeroSectionProps) {
+export interface HeroSectionProps {
+  locale: string;
+  /** Optional during phase rollout — Phase M wires the real list. */
+  districts?: ActiveDistrict[];
+}
+
+export default function HeroSection({ locale, districts = [] }: HeroSectionProps) {
+  // Top N most-recently launched get the small NEW badge.
+  const newSlugs = useMemo(() => {
+    const sorted = [...districts].sort((a, b) => {
+      const ax = a.goLiveDate ? new Date(a.goLiveDate).getTime() : 0;
+      const bx = b.goLiveDate ? new Date(b.goLiveDate).getTime() : 0;
+      return bx - ax;
+    });
+    return new Set(sorted.slice(0, NEW_BADGE_COUNT).map((d) => d.slug));
+  }, [districts]);
+
   return (
     <section
       aria-labelledby="hero-heading"
@@ -46,38 +97,65 @@ export default function HeroSection({ locale }: HeroSectionProps) {
         .ftp-hero {
           display: grid;
           grid-template-columns: 60% 40%;
-          gap: 32px;
-          align-items: center;
-          min-height: 480px;
-          max-height: calc(100vh - 240px);
-          padding: 32px 24px;
+          gap: 24px;
+          align-items: stretch;
+          min-height: 580px;
+          padding: 24px 24px;
         }
-        .ftp-hero-map-large {
-          width: 100%;
-          height: 100%;
-          min-height: 420px;
-          max-height: 520px;
+        .ftp-hero-map-col {
           display: flex;
           align-items: center;
           justify-content: center;
-          overflow: hidden;
-          background: #FAFAF8;
-          border: 1px solid #E8E8E4;
-          border-radius: 16px;
+        }
+        .ftp-hero-map-large {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          min-height: 480px;
+          max-height: 560px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
         }
         .ftp-hero-map-large svg {
           width: 100%;
           height: 100%;
-          max-height: 520px;
+          max-height: 540px;
         }
-        .ftp-hero-text {
+        .ftp-hero-map-hint {
+          position: absolute;
+          bottom: 12px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 11px;
+          color: #6B7280;
+          pointer-events: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          padding: 4px 10px;
+          border-radius: 12px;
+          border: 0.5px solid #E5E7EB;
+        }
+        .ftp-hero-map-hint::before {
+          content: "👆";
+          font-size: 14px;
+        }
+
+        .ftp-hero-right {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
+          padding: 8px 0;
+          min-width: 0;
         }
         .ftp-hero-h1 {
           margin: 0;
-          font-size: 36px;
+          font-size: 32px;
           font-weight: 600;
           line-height: 1.15;
           letter-spacing: -0.02em;
@@ -85,18 +163,13 @@ export default function HeroSection({ locale }: HeroSectionProps) {
         }
         .ftp-hero-subtitle {
           margin: 0;
-          font-size: 15px;
+          font-size: 14px;
           color: #4B5563;
-          line-height: 1.6;
-          max-width: 520px;
+          line-height: 1.5;
         }
-        .ftp-hero-ctas {
-          display: flex;
-          gap: 12px;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-        .ftp-hero-cta-primary {
+        .ftp-hero-cta-explore {
+          display: inline-block;
+          align-self: flex-start;
           background: #10B981;
           color: #FFFFFF;
           padding: 10px 18px;
@@ -106,51 +179,119 @@ export default function HeroSection({ locale }: HeroSectionProps) {
           text-decoration: none;
           transition: transform 200ms ease, background 150ms ease;
         }
-        .ftp-hero-cta-primary:hover {
+        .ftp-hero-cta-explore:hover {
           background: #059669;
           transform: scale(1.02);
         }
-        .ftp-hero-cta-secondary {
-          color: #2563EB;
-          font-size: 14px;
-          font-weight: 500;
+
+        .ftp-hero-districts-header {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          margin-top: 8px;
+          padding-top: 12px;
+          border-top: 0.5px solid #E5E7EB;
+        }
+        .ftp-hero-districts-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #1A1A1A;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .ftp-hero-districts-all {
+          font-size: 12px;
+          color: #6B7280;
           text-decoration: none;
-          padding: 10px 12px;
         }
-        .ftp-hero-cta-secondary:hover {
-          text-decoration: underline;
-          text-underline-offset: 4px;
+        .ftp-hero-districts-all:hover { color: #2563EB; }
+
+        .ftp-hero-districts-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          overflow-y: auto;
+          max-height: 360px;
+          scrollbar-width: thin;
         }
+        .ftp-district-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+          border-radius: 6px;
+          text-decoration: none;
+          color: #1A1A1A;
+          transition: background 150ms ease;
+          min-height: 44px;
+        }
+        .ftp-district-row:hover { background: #FAFAF8; }
+        .ftp-district-row-main { flex: 1; min-width: 0; }
+        .ftp-district-row-name {
+          font-size: 13px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        /* Session 13 v8 Fix #9: NEW as a small letter pill, NOT a background color. */
+        .ftp-district-row-newbadge {
+          background: #EAB308;
+          color: #FFFFFF;
+          font-size: 8px;
+          font-weight: 700;
+          padding: 1px 4px;
+          border-radius: 2px;
+          letter-spacing: 0.3px;
+        }
+        .ftp-district-row-tags {
+          font-size: 11px;
+          color: #6B7280;
+          margin-top: 1px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .ftp-district-row-arrow {
+          font-size: 12px;
+          color: #9B9B9B;
+          flex-shrink: 0;
+        }
+
         @media (max-width: 767px) {
           .ftp-hero {
             grid-template-columns: 1fr;
-            max-height: none;
             min-height: auto;
-            padding: 20px 16px;
+            padding: 16px 12px;
+            gap: 16px;
           }
-          .ftp-hero-map-large {
-            order: -1;
-            min-height: 280px;
-            max-height: 360px;
-          }
-          .ftp-hero-h1 { font-size: 28px; }
+          .ftp-hero-map-col { order: -1; min-height: 320px; }
+          .ftp-hero-map-large { min-height: 320px; max-height: 380px; }
+          .ftp-hero-right { padding: 0; }
+          .ftp-hero-h1 { font-size: 24px; }
+          .ftp-hero-districts-list { max-height: none; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .ftp-hero-cta-primary { transition: none; }
-          .ftp-hero-cta-primary:hover { transform: none; }
+          .ftp-hero-cta-explore { transition: none; }
+          .ftp-hero-cta-explore:hover { transform: none; }
         }
       `}</style>
 
       <div className="ftp-hero">
-        <div
-          className="ftp-hero-map-large"
-          aria-label="India map showing active states"
-          role="img"
-        >
-          <DrillDownMap locale={locale} />
+        {/* LEFT — Map (60%) */}
+        <div className="ftp-hero-map-col">
+          <div
+            className="ftp-hero-map-large"
+            aria-label="India map showing active states"
+            role="img"
+          >
+            <DrillDownMap locale={locale} />
+            <div className="ftp-hero-map-hint">Click a state to explore</div>
+          </div>
         </div>
 
-        <div className="ftp-hero-text">
+        {/* RIGHT — Tagline + CTA + districts list (40%) */}
+        <div className="ftp-hero-right">
           <h1 id="hero-heading" className="ftp-hero-h1">
             Your district.{" "}
             <span style={{ color: "#9CA3AF" }}>Your data.</span>{" "}
@@ -159,15 +300,54 @@ export default function HeroSection({ locale }: HeroSectionProps) {
           </h1>
           <p className="ftp-hero-subtitle">
             India&apos;s first free, real-time district transparency platform.
-            Open-source, NDSAP-aligned, citizen-built.
           </p>
-          <div className="ftp-hero-ctas">
-            <a href="#live-districts" className="ftp-hero-cta-primary">
-              Find my district →
-            </a>
-            <a href="#live-districts" className="ftp-hero-cta-secondary">
-              Browse all 10 districts →
-            </a>
+
+          <Link
+            href={`/${locale}/india-detail`}
+            className="ftp-hero-cta-explore"
+          >
+            Explore the whole India →
+          </Link>
+
+          <div className="ftp-hero-districts-header">
+            <span className="ftp-hero-districts-title">
+              {districts.length} districts live
+            </span>
+            <Link
+              href={`/${locale}/vote-district`}
+              className="ftp-hero-districts-all"
+            >
+              View all →
+            </Link>
+          </div>
+
+          <div className="ftp-hero-districts-list">
+            {districts.map((d) => {
+              const intro = DISTRICT_INTROS[d.slug];
+              const isNew = newSlugs.has(d.slug);
+              const tags = (intro?.tags ?? []).slice(0, 2).join(" · ");
+              return (
+                <Link
+                  key={d.slug}
+                  href={`/${locale}/${d.stateSlug}/${d.slug}`}
+                  className="ftp-district-row"
+                >
+                  <div className="ftp-district-row-main">
+                    <div className="ftp-district-row-name">
+                      {d.name}
+                      {isNew && (
+                        <span className="ftp-district-row-newbadge">NEW</span>
+                      )}
+                      <span style={{ color: "#9CA3AF", fontWeight: 400, fontSize: 11 }}>
+                        · {d.stateName}
+                      </span>
+                    </div>
+                    {tags && <div className="ftp-district-row-tags">{tags}</div>}
+                  </div>
+                  <span className="ftp-district-row-arrow">→</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
