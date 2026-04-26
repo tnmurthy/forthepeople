@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const CACHE_KEY = "ftp:contributors:v3"; // bump: now reads Supporter table
+const CACHE_KEY = "ftp:contributors:v4"; // bump: now surfaces socialLink + socialPlatform
 const CACHE_TTL = 60; // 60 seconds
 
 export interface ContributorItem {
@@ -17,6 +17,8 @@ export interface ContributorItem {
   tier: string | null;
   message: string | null;
   timeAgo: string;
+  socialLink: string | null;
+  socialPlatform: string | null;
 }
 
 export interface ContributorsResponse {
@@ -25,19 +27,16 @@ export interface ContributorsResponse {
   count: number;
 }
 
+// Session 14 v8.1 Fix #15: when the supporter has opted in to be public,
+// show the full name. Privacy theater (first + last initial) only applied
+// to people who specifically asked NOT to be displayed publicly — and for
+// those we still return "Anonymous", so the truncation form was never
+// the right balance.
 function anonymizeName(raw: string, isPublic: boolean): string {
   if (!isPublic) return "Anonymous";
   const name = (raw || "").trim();
   if (!name) return "Anonymous";
-  const parts = name.split(/\s+/);
-  if (parts.length === 1) {
-    const first = parts[0];
-    if (first.length <= 3) return first;
-    return `${first.slice(0, 3)}...`;
-  }
-  const first = parts[0];
-  const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
-  return `${first} ${lastInitial}.`;
+  return name;
 }
 
 // Aligned with VISIBILITY_THRESHOLD in /api/data/contributors so labels match
@@ -96,6 +95,8 @@ export async function GET() {
           message: true,
           isPublic: true,
           createdAt: true,
+          socialLink: true,
+          socialPlatform: true,
         },
       }),
       prisma.supporter.aggregate({
@@ -113,6 +114,9 @@ export async function GET() {
         tier: r.tier,
         message: r.isPublic ? truncateMessage(r.message ?? null) : null,
         timeAgo: relativeTime(r.createdAt ?? null),
+        // Only surface the social link if the supporter opted into being public.
+        socialLink: r.isPublic ? r.socialLink ?? null : null,
+        socialPlatform: r.isPublic ? r.socialPlatform ?? null : null,
       };
     });
 
