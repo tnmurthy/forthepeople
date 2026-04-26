@@ -59,24 +59,27 @@ export default function Footer({ locale }: FooterProps) {
       className="ftp-footer"
       style={{
         background: "#FFFFFF",
-        borderTop: "1px solid #E8E8E4",
         marginTop: 32,
       }}
     >
       <style>{`
+        /* Session 16 v10 Phase K (Fix #12): blue accent + yellow band + bordered hover pills */
+        .ftp-footer {
+          border-top: 2px solid #2563EB;
+        }
         .ftp-footer-warning {
           font-size: 11px;
-          color: #92400E;
+          color: #713F12;
           background: #FFFBEB;
-          border-bottom: 0.5px solid #FDE68A;
+          border-bottom: 1px solid #FDE68A;
           text-align: center;
-          padding: 6px 12px;
+          padding: 8px 24px;
           letter-spacing: 0.02em;
         }
         .ftp-footer-main {
           max-width: 1200px;
           margin: 0 auto;
-          padding: 12px 24px;
+          padding: 14px 24px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -88,22 +91,24 @@ export default function Footer({ locale }: FooterProps) {
         .ftp-footer-links {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 4px;
           flex-wrap: wrap;
         }
         .ftp-footer-links a {
+          padding: 4px 10px;
+          border-radius: 6px;
           color: #6B7280;
           text-decoration: none;
+          transition: background 150ms ease, color 150ms ease;
         }
         .ftp-footer-links a:hover {
-          color: #1A1A1A;
-          text-decoration: underline;
-          text-underline-offset: 2px;
+          background: #F0F7FF;
+          color: #2563EB;
         }
-        .ftp-footer-links span.sep { color: #D1D5DB; }
+        .ftp-footer-links span.sep { color: #D1D5DB; padding: 0 2px; }
         .ftp-footer-social {
           display: inline-flex;
-          gap: 8px;
+          gap: 6px;
         }
         .ftp-footer-social a {
           color: #6B7280;
@@ -111,15 +116,20 @@ export default function Footer({ locale }: FooterProps) {
           align-items: center;
           justify-content: center;
           width: 32px; height: 32px;
-          border-radius: 8px;
-          transition: background-color 150ms, color 150ms;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 6px;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
         }
         .ftp-footer-social a:hover {
-          background: #F5F5F0;
-          color: #1A1A1A;
+          background: #F0F7FF;
+          border-color: #2563EB;
+          color: #2563EB;
+          transform: translateY(-2px);
         }
         .ftp-footer-social a.brand-ig:hover {
           background: linear-gradient(135deg, #F58529, #DD2A7B, #8134AF);
+          border-color: #DD2A7B;
           color: #FFFFFF;
         }
         .ftp-footer-icon { width: 18px; height: 18px; }
@@ -130,10 +140,17 @@ export default function Footer({ locale }: FooterProps) {
         @media (max-width: 767px) {
           .ftp-footer-main {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-            padding: 12px 16px;
+            align-items: stretch;
+            gap: 12px;
+            padding: 14px 16px;
           }
+          .ftp-footer-links { justify-content: center; }
+          .ftp-footer-social { justify-content: center; }
+          .ftp-footer-built { text-align: center; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-footer-social a { transition: none; }
+          .ftp-footer-social a:hover { transform: none; }
         }
       `}</style>
 
