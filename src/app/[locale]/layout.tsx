@@ -5,11 +5,18 @@
  */
 
 import QueryProvider from "@/components/providers/QueryProvider";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import DisclaimerBar from "@/components/layout/DisclaimerBar";
 import MigrationBanner from "@/components/layout/MigrationBanner";
 import SuggestionFloatingButton from "@/components/common/SuggestionFloatingButton";
+
+// Session 11.1 — chrome swapped to redesign-v2 site-wide.
+// Legacy components (Header.tsx 938 LOC, Footer.tsx 144 LOC,
+// DisclaimerBar.tsx 73 LOC) remain on disk for rollback. Some
+// district-page-specific behavior of the legacy Header (lock state,
+// state/district jump, MobileSidebar wiring) is intentionally simpler
+// in HeaderBar — see component header comment for the deferred list.
+import DisclaimerBanner from "@/components/home/redesign-v2/DisclaimerBanner";
+import HeaderBar from "@/components/home/redesign-v2/HeaderBar";
+import Footer from "@/components/home/redesign-v2/Footer";
 
 export default async function LocaleLayout({
   children,
@@ -23,10 +30,10 @@ export default async function LocaleLayout({
   return (
     <QueryProvider>
       <MigrationBanner />
-      <DisclaimerBar />
-      <Header locale={locale} />
+      <DisclaimerBanner />
+      <HeaderBar locale={locale} />
       {children}
-      <Footer />
+      <Footer locale={locale} />
       <SuggestionFloatingButton />
     </QueryProvider>
   );
