@@ -305,51 +305,34 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
                     href={targetHref}
                     onClick={() => setProductOpen(false)}
                     aria-current={isActive ? "page" : undefined}
+                    title={isActive ? "Currently here" : "Not yet live"}
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
+                      gap: 8,
                       padding: "8px 10px",
                       borderRadius: 6,
                       fontSize: 13,
                       color: "#1A1A1A",
                       textDecoration: "none",
-                      background: isActive ? "#F0FDF4" : "transparent",
                     }}
                   >
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                      {isActive && (
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            display: "inline-block",
-                            width: 6,
-                            height: 6,
-                            borderRadius: "50%",
-                            background: "#16A34A",
-                            flexShrink: 0,
-                          }}
-                          title="Currently active product"
-                        />
-                      )}
-                      <span>
-                        {p.name}
-                        <span style={{ color: p.suffixColor, fontWeight: 600 }}>{p.suffix}</span>
-                      </span>
+                    <span
+                      aria-hidden="true"
+                      aria-label={isActive ? "Live" : "Not yet live"}
+                      style={{
+                        display: "inline-block",
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        background: isActive ? "#10B981" : "#DC2626",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span>
+                      {p.name}
+                      <span style={{ color: p.suffixColor, fontWeight: 600 }}>{p.suffix}</span>
                     </span>
-                    {p.comingSoon && (
-                      <span
-                        className="ftp-pill"
-                        style={{
-                          background: "#FAEEDA",
-                          color: "#78350F",
-                          border: "1px solid #E8C68B",
-                        }}
-                      >
-                        Coming soon
-                      </span>
-                    )}
                   </Link>
                 </li>
               );
