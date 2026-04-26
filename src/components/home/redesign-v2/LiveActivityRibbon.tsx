@@ -56,55 +56,57 @@ export default function StatsBar({
   return (
     <div className="ftp-stats-bar" role="status" aria-live="polite">
       <style>{`
+        /* Session 14 v8.1 Phase C (Fixes #6, #7): blue numbers, bolder, stronger dividers */
         .ftp-stats-bar {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           gap: 0;
           background: #FFFFFF;
-          border-top: 0.5px solid #E5E7EB;
-          border-bottom: 0.5px solid #E5E7EB;
+          border-top: 1px solid #E5E7EB;
+          border-bottom: 1px solid #E5E7EB;
         }
         .ftp-stat-tile {
-          padding: 18px 24px;
+          padding: 20px 24px;
           text-align: center;
-          border-right: 0.5px solid #E5E7EB;
+          border-right: 1px solid #E5E7EB;
           display: flex;
           flex-direction: column;
           gap: 6px;
           transition: background 150ms ease;
+          position: relative;
         }
         .ftp-stat-tile:last-child { border-right: none; }
-        .ftp-stat-tile:hover { background: #FAFAF8; }
+        .ftp-stat-tile:hover { background: #F0F7FF; }
         .ftp-stat-num {
-          font-size: 24px;
-          font-weight: 600;
+          font-size: 28px;
+          font-weight: 700;
           line-height: 1;
-          color: #1A1A1A;
+          color: #2563EB;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.02em;
         }
         .ftp-stat-num-updated {
           font-size: 14px;
-          font-weight: 500;
-          color: #16A34A;
+          font-weight: 600;
+          color: #2563EB;
           line-height: 1.2;
         }
         .ftp-stat-label {
           font-size: 11px;
-          color: #6B7280;
+          color: #4B5563;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          font-weight: 600;
+          letter-spacing: 0.6px;
+          font-weight: 500;
         }
         @media (max-width: 767px) {
           .ftp-stats-bar { grid-template-columns: repeat(2, 1fr); }
           .ftp-stat-tile {
             padding: 14px 16px;
-            border-bottom: 0.5px solid #E5E7EB;
+            border-bottom: 1px solid #E5E7EB;
           }
-          .ftp-stat-tile:nth-child(odd) { border-right: 0.5px solid #E5E7EB; }
+          .ftp-stat-tile:nth-child(odd) { border-right: 1px solid #E5E7EB; }
           .ftp-stat-tile:nth-child(even) { border-right: none; }
-          .ftp-stat-num { font-size: 20px; }
+          .ftp-stat-num { font-size: 22px; }
           /* Last (5th) tile spans full width on mobile */
           .ftp-stat-tile:last-child {
             grid-column: 1 / -1;
