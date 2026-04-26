@@ -1,36 +1,46 @@
 /**
- * Razorpay plan registry — ₹999 State Champion migration.
+ * Razorpay plan registry.
  *
  * ARCHITECTURE NOTE
  * ─────────────────
  * Subscriptions are created DYNAMICALLY in `src/app/api/payment/create-subscription/route.ts`
- * — each subscriber gets a one-off plan at their chosen amount. So the static
- * plan IDs below are NOT used by new subscribers. They exist only to:
+ * — each subscriber gets a brand-new plan at their chosen amount. So the
+ * static plan IDs below are vestigial: zero active paying subscribers use
+ * them. They exist only as a fallback if we ever switch from the dynamic
+ * flow back to a static-plan model.
  *
- *   1. Document which legacy plan IDs are grandfathered (pre-2026-04-24 ₹1,999
- *      State Champion subscribers must continue on `state_champion_monthly_legacy`
- *      — NEVER migrate them to the new ₹999 plan).
- *   2. Provide a target `planId` string for Jayanth to paste after manually
- *      creating a ₹999 monthly plan in the Razorpay dashboard (if we ever
- *      switch from dynamic to static plan-based subscriptions).
+ * RECONCILIATION SNAPSHOT (Session 10.6, 2026-04-26)
+ * ──────────────────────────────────────────────────
+ * Read-only API audit confirmed each `RAZORPAY_PLAN_*` env var resolves to
+ * a real Razorpay plan_id, but the Razorpay-side amounts on the FOUNDER /
+ * PATRON / STATE / DISTRICT plans do NOT match today's BadgeExplainer.tsx
+ * UI labels. Specifically:
  *
- * LEGACY PLAN IDS
- * ───────────────
- * Historical `RAZORPAY_PLAN_STATE` env var points at the old ₹1,999 plan.
- * Do NOT read it here — existing subscribers on that plan keep charging at
- * ₹1,999/mo until they cancel and resubscribe.
+ *   ENV VAR                  → Razorpay name + amount         vs UI label
+ *   RAZORPAY_PLAN_FOUNDER    → "Founding Builder" ₹50,000/mo  ✓ matches
+ *   RAZORPAY_PLAN_PATRON     → "All-India Patron" ₹50,000/mo  ⚠ UI says ₹10,000
+ *   RAZORPAY_PLAN_STATE      → "State Champion"  ₹10,000/mo   ⚠ UI says ₹999
+ *   RAZORPAY_PLAN_DISTRICT   → "District Champion" ₹2,000/mo  ⚠ UI says ₹200
  *
- * STATE CHAMPION ₹999 PLAN
- * ────────────────────────
+ * No billing harm — both `created`-status subs on these plans (PATRON,
+ * STATE) are test data from Apr 10 (names "dd"/"ff", never paid). All
+ * real subscribers were placed on either:
+ *   (a) older legacy static plans `plan_SbraA*` — Apr 11-13 cohort,
+ *       paid the amount the UI showed at THAT time
+ *   (b) per-subscriber dynamic plans `plan_S{xxxxx}` — Apr 14+ cohort
+ *
+ * The mismatched env-var plan_ids are stale; safe to leave as-is. A
+ * future cleanup could (a) rotate the env vars to point at fresh plans
+ * matching current UI prices, or (b) delete the env-var indirection
+ * entirely now that dynamic-plan creation is the canonical path.
+ *
+ * STATE CHAMPION ₹999 PLAN (current public price)
+ * ───────────────────────────────────────────────
  * Created via Razorpay API in Session 10.5 (2026-04-26):
  *   POST /v1/plans → plan_Si4gHceNb9Mz4w (₹999 monthly, INR, live mode).
  * Hardcoded as a fallback so prod works immediately; env override
  * (RAZORPAY_PLAN_STATE_CHAMPION) allows future plan rotation without a
  * code change.
- *
- * Until/unless Jayanth pastes RAZORPAY_PLAN_STATE_CHAMPION on Vercel, the
- * hardcoded plan_Si4gHceNb9Mz4w is what gets used on prod. Either path
- * keeps the dynamic-plan flow in create-subscription/route.ts unaffected.
  */
 
 export const RAZORPAY_PLANS = {
@@ -48,17 +58,24 @@ export const RAZORPAY_PLANS = {
     label: "State Champion (₹999/mo)",
   },
   state_champion_monthly_legacy: {
-    planId: process.env.RAZORPAY_PLAN_STATE ?? "", // old ₹1,999 plan — grandfathered
-    amount: 199900, // ₹1,999 in paise
+    // RAZORPAY_PLAN_STATE → plan_Sbq807rjS75Ajp ("State Champion") at
+    // ₹10,000/mo on Razorpay (verified Session 10.6). Vestigial — 0
+    // active paying subs. Kept for backward compat / future rotation.
+    planId: process.env.RAZORPAY_PLAN_STATE ?? "",
+    amount: 1000000, // ₹10,000 in paise
     interval: "monthly" as const,
-    label: "State Champion (₹1,999/mo — legacy)",
+    label: "State Champion (₹10,000/mo — vestigial)",
     legacy: true as const,
   },
   district_champion_monthly: {
+    // RAZORPAY_PLAN_DISTRICT → plan_Sbq7zv3srFbP15 ("District Champion")
+    // at ₹2,000/mo on Razorpay (verified Session 10.6). Vestigial — 0
+    // active paying subs. Today's District tier (₹99-₹200/mo) goes
+    // through the dynamic-plan flow in create-subscription/route.ts.
     planId: process.env.RAZORPAY_PLAN_DISTRICT ?? "",
-    amount: 9900, // ₹99 in paise
+    amount: 200000, // ₹2,000 in paise
     interval: "monthly" as const,
-    label: "District Champion",
+    label: "District Champion (₹2,000/mo — vestigial)",
   },
 } as const;
 
