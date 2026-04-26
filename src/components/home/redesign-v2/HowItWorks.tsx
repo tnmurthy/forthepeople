@@ -15,35 +15,27 @@
 
 import { useCountUp } from "@/lib/hooks/useCountUp";
 
+// Session 15 v9 Phase G (Fix #9): production wording — 3 short steps.
 const STEPS = [
   {
     num: 1,
-    icon: "📥",
-    title: "Aggregate",
-    desc: "We aggregate from official government portals (NDSAP), accredited research institutions, and verified public sources. Nothing fabricated — every data point is traceable to its origin.",
+    icon: "📡",
+    title: "We Collect",
+    desc: "Data from government portals every 5–30 minutes.",
   },
   {
     num: 2,
-    icon: "🤖",
-    title: "Process",
-    desc: "An automated pipeline classifies, summarises, and structures the incoming data and news so it's easy to read.",
+    icon: "📊",
+    title: "We Organize",
+    desc: "Into 32 dashboards with charts & maps.",
   },
   {
     num: 3,
-    icon: "📊",
-    title: "Surface",
-    desc: "We organise it into district-level dashboards — 32 modules covering health, infrastructure, agriculture, schemes, courts, RTI, and more.",
-  },
-  {
-    num: 4,
-    icon: "🤝",
-    title: "Sustain",
-    desc: "Citizen-built, citizen-funded. No corporate sponsorship. No ads. Open-source code on GitHub.",
+    icon: "👁️",
+    title: "You See",
+    desc: "Real-time district data. Free. Open source. Yours.",
   },
 ];
-
-const SOURCES_CAPTION =
-  "Sources include data.gov.in, censusindia.gov.in, agmarknet.gov.in, ejalshakti.gov.in, NFHS-5 mirrors, SHRUG, PRS Legislative Research, Harvard Dataverse, and other public datasets. Full source attribution on every module.";
 
 function StepNumber({ target }: { target: number }) {
   const { value, ref } = useCountUp<HTMLDivElement>(target);
@@ -69,11 +61,11 @@ export default function HowItWorks() {
           letter-spacing: -0.01em;
           color: #1A1A1A;
         }
-        /* Session 13 v8 Phase K (Fix #17): visual polish */
+        /* Session 13 v8 Phase K (Fix #17) + Session 15 v9 Phase G: 3 columns now (was 4) */
         .ftp-how-grid {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
           margin-bottom: 24px;
           position: relative;
         }
@@ -180,7 +172,6 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
-        <p className="ftp-how-caption">{SOURCES_CAPTION}</p>
       </div>
     </section>
   );
