@@ -337,7 +337,44 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         }
         .ftp-status-dot-green { background: #10B981; }
         .ftp-status-dot-red   { background: #DC2626; }
-        .ftp-search-input:focus { outline: none; border-color: #2563EB; }
+        /* Session 16 v10 Phase B (Fix #1): blue-tinted search field */
+        .ftp-search-shell {
+          flex: 1;
+          min-width: 0;
+          max-width: 440px;
+          margin-left: auto;
+          position: relative;
+        }
+        .ftp-search-form {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #F0F7FF;
+          border: 1px solid #DBEAFE;
+          border-radius: 8px;
+          padding: 6px 10px;
+          transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+        }
+        .ftp-search-form:hover {
+          background: #E0F0FF;
+          border-color: #93C5FD;
+        }
+        .ftp-search-form:focus-within {
+          background: #FFFFFF;
+          border-color: #2563EB;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .ftp-search-icon { color: #2563EB; flex-shrink: 0; }
+        .ftp-search-input {
+          flex: 1;
+          min-width: 0;
+          border: none;
+          outline: none;
+          background: transparent;
+          font-size: 13px;
+          color: #1A1A1A;
+        }
+        .ftp-search-input::placeholder { color: #60A5FA; opacity: 0.85; }
         .ftp-search-results {
           position: absolute;
           top: calc(100% + 4px);
@@ -649,22 +686,14 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         {updated.isLive ? "Live" : `Updated ${updated.label}`}
       </span>
 
-      {/* ── Search ── */}
-      <div ref={searchRef} style={{ flex: 1, minWidth: 0, maxWidth: 440, position: "relative" }} className="ftp-desktop-only">
+      {/* ── Search — Session 16 v10 Phase B Fix #1: blue-tinted with affordance ── */}
+      <div ref={searchRef} className="ftp-desktop-only ftp-search-shell">
         <form
           onSubmit={handleSearchSubmit}
           role="search"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            background: "#FAFAF8",
-            border: "1px solid #E8E8E4",
-            borderRadius: 10,
-            padding: "6px 10px",
-          }}
+          className="ftp-search-form"
         >
-          <Search size={14} style={{ color: "#9B9B9B", flexShrink: 0 }} aria-hidden="true" />
+          <Search size={14} className="ftp-search-icon" aria-hidden="true" />
           <input
             type="search"
             placeholder="Search any district…"
@@ -676,15 +705,6 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             onFocus={() => setSearchOpen(true)}
             aria-label="Search any district"
             className="ftp-search-input"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              fontSize: 13,
-              color: "#1A1A1A",
-            }}
           />
         </form>
 
