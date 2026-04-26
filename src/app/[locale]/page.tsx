@@ -3,40 +3,67 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 11.6 — v6 simplification.
+ * Session 12 v7 — page.tsx swap (Phase N).
  *
- * Body sections (chrome handled by [locale]/layout.tsx — see Session 11.1):
- *   1. FinancialTicker
- *   2. LiveActivityRibbon
- *   3. HeroSection           — map LEFT (55%), text RIGHT (45%), 3-stat row
- *   4. LiveDistrictsList     — flat 10-district grid, NEW badge on 3 newest
- *   5. UpcomingDistricts     — top 2 voted + "Vote for the next district"
- *   6. ContributorsStrip     — flat names + "View all supporters & contribute"
- *   7. VoteFeaturesCTA       — top 3 features + "Vote on features"
+ * Composition:
+ *   1. FinancialTicker         — LIVE pill + scrolling marquee + updated label
+ *   2. StatsBar                — count-up stats line (replaces LiveActivityRibbon)
+ *   3. HeroSection             — map LEFT (60%), text RIGHT (40%)
+ *   4. LiveDistrictsList       — flat 10-district grid, NEW badge on top 3 newest
+ *   5. LiveDataShowcase        — RESTORED — district chip tabs + 4 module cards
+ *   6. HowItWorks              — 4-step explainer (Aggregate/Process/Surface/Sustain)
+ *   7. ContributorsStrip       — flat names + "View all supporters & how to join"
+ *   8. VoteFeaturesCTA         — top 3 features + "Vote on features"
  *
- * Six v5 components retired from the homepage but kept on disk for rollback:
- *   DistrictExplorer · LiveDataShowcase · FoundingPatronCard ·
- *   SupporterMarquee · PricingTiers · RequestAndVoteCards
+ * UpcomingDistricts removed from the homepage — its function is now served
+ * by the dedicated /vote-district route (linked from the HeaderBar district
+ * autocomplete and from the StatsBar "coming districts" affordance).
  *
- * Pricing tiers continue to render on /support page from the same
- * source-of-truth (src/lib/razorpay/plans.ts) — homepage just no
- * longer competes with that flow.
- *
- * Pre-edit snapshots: page.v8.tsx
+ * StatsBar pulls real values via the cached /api/data/homepage-stats endpoint
+ * (5-min cache, SSR-safe). DASHBOARDS_PER_DISTRICT and TOTAL_INDIA_DISTRICTS
+ * come from src/lib/constants.ts so the numbers stay in one place.
  */
 
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import {
+  DASHBOARDS_PER_DISTRICT,
+  TOTAL_INDIA_DISTRICTS,
+} from "@/lib/constants";
 
 import FinancialTicker from "@/components/home/redesign-v2/FinancialTicker";
-import LiveActivityRibbon from "@/components/home/redesign-v2/LiveActivityRibbon";
+import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
 import LiveDistrictsList from "@/components/home/redesign-v2/LiveDistrictsList";
-import UpcomingDistricts from "@/components/home/redesign-v2/UpcomingDistricts";
+import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
+import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import ContributorsStrip from "@/components/home/redesign-v2/ContributorsStrip";
 import VoteFeaturesCTA from "@/components/home/redesign-v2/VoteFeaturesCTA";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
+
+interface HomepageStats {
+  activeDistricts: number;
+  totalDataPoints: number;
+  mostRecentAt: string | null;
+}
+
+async function fetchHomepageStats(): Promise<HomepageStats | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/data/homepage-stats`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as Partial<HomepageStats>;
+    return {
+      activeDistricts: json.activeDistricts ?? 0,
+      totalDataPoints: json.totalDataPoints ?? 0,
+      mostRecentAt: json.mostRecentAt ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -66,45 +93,38 @@ export default async function HomePage({
   const { locale } = await params;
 
   // Server-side fetch (single round trip) — feeds the body components.
-  const [activeRows, voteRequests] = await Promise.all([
+  const [activeRows, statsFromApi] = await Promise.all([
     prisma.district.findMany({
       where: { active: true },
       select: {
         slug: true,
         name: true,
+        nameLocal: true,
+        tagline: true,
         goLiveDate: true,
         state: { select: { slug: true, name: true } },
       },
       orderBy: { name: "asc" },
     }),
-    prisma.districtRequest.findMany({
-      orderBy: { requestCount: "desc" },
-      take: 10,
-    }),
+    fetchHomepageStats(),
   ]);
 
   const activeDistricts = activeRows.map((d) => ({
     slug: d.slug,
     name: d.name,
+    nameLocal: d.nameLocal,
+    tagline: d.tagline,
     stateSlug: d.state.slug,
     stateName: d.state.name,
     goLiveDate: d.goLiveDate ? d.goLiveDate.toISOString() : null,
   }));
 
-  const activeNamesLower = new Set(
-    activeDistricts.map((d) => d.name.toLowerCase()),
-  );
-
-  // Top vote requests, excluding districts already active.
-  const voteForUpcoming = voteRequests
-    .filter((r) => !activeNamesLower.has(r.districtName.toLowerCase()))
-    .slice(0, 2)
-    .map((r) => ({
-      id: r.id,
-      stateName: r.stateName,
-      districtName: r.districtName,
-      requestCount: r.requestCount,
-    }));
+  // Stats fed into StatsBar — fall back to derivable values if the
+  // homepage-stats endpoint is unreachable (cache miss + DB hiccup).
+  const activeCount = statsFromApi?.activeDistricts ?? activeRows.length;
+  const totalDataPoints = statsFromApi?.totalDataPoints ?? 0;
+  const mostRecentAt = statsFromApi?.mostRecentAt ?? null;
+  const comingDistricts = Math.max(0, TOTAL_INDIA_DISTRICTS - activeCount);
 
   return (
     <>
@@ -118,10 +138,17 @@ export default async function HomePage({
 
       <main role="main">
         <FinancialTicker />
-        <LiveActivityRibbon />
+        <StatsBar
+          activeDistricts={activeCount}
+          dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
+          totalDataPoints={totalDataPoints}
+          comingDistricts={comingDistricts}
+          mostRecentAt={mostRecentAt}
+        />
         <HeroSection locale={locale} />
         <LiveDistrictsList locale={locale} activeDistricts={activeDistricts} />
-        <UpcomingDistricts locale={locale} voteRequests={voteForUpcoming} />
+        <LiveDataShowcase locale={locale} districts={activeDistricts} />
+        <HowItWorks />
         <ContributorsStrip locale={locale} />
         <VoteFeaturesCTA locale={locale} />
       </main>
