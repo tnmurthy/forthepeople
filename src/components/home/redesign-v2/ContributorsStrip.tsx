@@ -3,30 +3,32 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 14 v8.1 Phase H (Fixes #13, #14, #15) — tier-based marquee.
+ * Session 15 v9 Phase H (Fixes #10, #11, #12) — three categorized
+ * supporter sections with threshold-based marquee.
  *
- * Three separate sliding tracks at tier-paced speeds, top → bottom:
- *   1. All-India + Founder pills — SLOW (90s) so the eye can read each name
- *   2. State pills              — MEDIUM (60s)
- *   3. District + One-time pills — FAST (35s)
+ * Layout:
+ *   🇮🇳 India Patrons    (founder + all-india)   marquee speed 120s
+ *   🏛️ State Champions   (state)                  marquee speed 80s
+ *   ⌂  District Sponsors (district + one-time)   marquee speed 50s
  *
- * Each pill is clickable IF the contributor exposes a social link;
- * otherwise it falls back to a non-link <span>.
+ * If a category has ≤ STATIC_THRESHOLD pills, it renders as a static
+ * wrap list (no animation). If more, it falls back to a horizontally-
+ * scrolling marquee at the per-category speed. Reduced-motion freezes
+ * everything into a wrapped list.
  *
- * Names render full (no truncation) for public supporters; the API now
- * returns the un-anonymized name when isPublic=true (Session 14 Phase H
- * API surface). Private supporters still appear as "Anonymous".
+ * Pill format is natural language: "Name — Karnataka", "Name — Mandya",
+ * "Name — 🇮🇳 India". Full state/district names from the existing
+ * Supporter FK relations (sponsoredState / sponsoredDistrict), surfaced
+ * by the v5 /api/payment/contributors endpoint.
  *
- * Data source: existing /api/payment/contributors endpoint (now surfaces
- * socialLink + socialPlatform from the existing Supporter schema).
- * No new endpoints, no new schema fields.
+ * Pills are clickable when contributor.socialLink exists.
  */
 
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Building, Crown, MapPin } from "lucide-react";
+import { STATE_FULL_NAMES } from "@/lib/data/district-meta";
 
 interface ContributorItem {
   displayName: string;
@@ -36,9 +38,13 @@ interface ContributorItem {
   timeAgo: string;
   socialLink?: string | null;
   socialPlatform?: string | null;
+  districtName?: string | null;
+  stateName?: string | null;
 }
 
 type SupTier = "founder" | "all-india" | "state" | "district" | "one-time";
+
+const STATIC_THRESHOLD = 6;
 
 function classifyTier(c: ContributorItem): SupTier {
   const label = `${c.tierLabel ?? ""} ${c.tier ?? ""}`.toLowerCase();
@@ -53,55 +59,36 @@ function safeExternalLink(url: string | null | undefined): string | null {
   if (!url) return null;
   const trimmed = url.trim();
   if (!trimmed) return null;
-  // Only allow http(s) and basic handle/url forms; reject javascript:, data:, etc.
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  // Bare handle like "@user" → assume Instagram (common case)
   if (trimmed.startsWith("@")) return `https://instagram.com/${trimmed.slice(1)}`;
   return null;
 }
 
+function badgeFor(c: ContributorItem, tier: SupTier): string {
+  if (tier === "founder") return "Founder";
+  if (tier === "all-india") return "🇮🇳 India";
+  if (tier === "state") {
+    if (c.stateName) return c.stateName;
+    // Fallback for legacy 2-letter codes (rare, but covered).
+    const upper = (c.stateName ?? "").toUpperCase();
+    return STATE_FULL_NAMES[upper] ?? "";
+  }
+  if (tier === "district") return c.districtName ?? "";
+  return "";
+}
+
 function SupporterPill({ contributor }: { contributor: ContributorItem }) {
   const tier = classifyTier(contributor);
-  const name = contributor.displayName;
   const link = safeExternalLink(contributor.socialLink);
-
-  const innerByTier: Record<SupTier, React.ReactNode> = {
-    founder: (
-      <>
-        <Crown className="ftp-sup-icon" aria-hidden="true" />
-        <span className="ftp-sup-name">{name}</span>
-        <span className="ftp-sup-badge">FOUNDER</span>
-      </>
-    ),
-    "all-india": (
-      <>
-        <span className="ftp-sup-flag" aria-hidden="true">🇮🇳</span>
-        <span className="ftp-sup-name">{name}</span>
-        <span className="ftp-sup-badge">ALL-INDIA</span>
-      </>
-    ),
-    state: (
-      <>
-        <MapPin className="ftp-sup-icon" aria-hidden="true" />
-        <span className="ftp-sup-name">{name}</span>
-        <span className="ftp-sup-badge">STATE</span>
-      </>
-    ),
-    district: (
-      <>
-        <Building className="ftp-sup-icon" aria-hidden="true" />
-        <span className="ftp-sup-name">{name}</span>
-        <span className="ftp-sup-badge">DISTRICT</span>
-      </>
-    ),
-    "one-time": (
-      <>
-        <span className="ftp-sup-name">{name}</span>
-      </>
-    ),
-  };
-
+  const badge = badgeFor(contributor, tier);
   const className = `ftp-sup-pill ftp-sup-${tier}${link ? " ftp-sup-link" : ""}`;
+
+  const inner = (
+    <>
+      <span className="ftp-sup-name">{contributor.displayName}</span>
+      {badge && <span className="ftp-sup-badge-text">— {badge}</span>}
+    </>
+  );
 
   if (link) {
     return (
@@ -110,26 +97,61 @@ function SupporterPill({ contributor }: { contributor: ContributorItem }) {
         target="_blank"
         rel="noopener noreferrer"
         className={className}
-        title={contributor.socialPlatform ? `${name} on ${contributor.socialPlatform}` : name}
+        title={contributor.socialPlatform ? `${contributor.displayName} on ${contributor.socialPlatform}` : contributor.displayName}
       >
-        {innerByTier[tier]}
+        {inner}
       </a>
     );
   }
-  return <span className={className}>{innerByTier[tier]}</span>;
+  return <span className={className}>{inner}</span>;
+}
+
+function CategorySection({
+  title,
+  supporters,
+  marqueeSpeed,
+}: {
+  title: string;
+  supporters: ContributorItem[];
+  marqueeSpeed: string;
+}) {
+  if (supporters.length === 0) return null;
+  const isStatic = supporters.length <= STATIC_THRESHOLD;
+  return (
+    <div className="ftp-supporter-category">
+      <div className="ftp-supporter-category-header">
+        <span className="ftp-supporter-category-title">{title}</span>
+        <span className="ftp-supporter-category-count">{supporters.length}</span>
+      </div>
+
+      {isStatic ? (
+        <div className="ftp-supporter-static-list">
+          {supporters.map((s, i) => (
+            <SupporterPill key={i} contributor={s} />
+          ))}
+        </div>
+      ) : (
+        <div className="ftp-supporter-marquee-viewport">
+          <div
+            className="ftp-supporter-marquee-track"
+            style={{ animationDuration: marqueeSpeed }}
+          >
+            {supporters.map((s, i) => (
+              <SupporterPill key={`a-${i}`} contributor={s} />
+            ))}
+            {supporters.map((s, i) => (
+              <SupporterPill key={`b-${i}`} contributor={s} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export interface ContributorsStripProps {
   locale: string;
 }
-
-const TIER_ORDER: Record<SupTier, number> = {
-  founder: 0,
-  "all-india": 1,
-  state: 2,
-  district: 3,
-  "one-time": 4,
-};
 
 export default function ContributorsStrip({ locale }: ContributorsStripProps) {
   const [contributors, setContributors] = useState<ContributorItem[] | null>(null);
@@ -156,22 +178,18 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
     };
   }, []);
 
-  // Split into 3 tracks. Founders ride with All-India (top tier).
-  const tracks = (() => {
+  const buckets = (() => {
     if (!contributors) return null;
-    const sorted = [...contributors].sort(
-      (a, b) => TIER_ORDER[classifyTier(a)] - TIER_ORDER[classifyTier(b)],
-    );
-    const top: ContributorItem[] = [];
-    const mid: ContributorItem[] = [];
-    const fast: ContributorItem[] = [];
-    for (const c of sorted) {
+    const allIndia: ContributorItem[] = [];
+    const states: ContributorItem[] = [];
+    const districts: ContributorItem[] = [];
+    for (const c of contributors) {
       const t = classifyTier(c);
-      if (t === "founder" || t === "all-india") top.push(c);
-      else if (t === "state") mid.push(c);
-      else fast.push(c);
+      if (t === "founder" || t === "all-india") allIndia.push(c);
+      else if (t === "state") states.push(c);
+      else districts.push(c);
     }
-    return { top, mid, fast };
+    return { allIndia, states, districts };
   })();
 
   const total = contributors?.length ?? 0;
@@ -183,55 +201,85 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
-        .ftp-supporters-section { padding: 28px 24px; }
         .ftp-supporters-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 16px;
-          gap: 16px;
-          flex-wrap: wrap;
+          margin-bottom: 24px;
         }
-        .ftp-supporters-title {
-          font-size: 16px;
+        .ftp-supporters-h2 {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1A1A1A;
+          margin: 0 0 4px;
+          letter-spacing: -0.01em;
+        }
+        .ftp-supporters-sub {
+          font-size: 13px;
+          color: #6B7280;
+          margin: 0;
+        }
+
+        .ftp-supporters-categories {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        .ftp-supporter-category {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .ftp-supporter-category-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
           font-weight: 600;
           color: #1A1A1A;
         }
-        .ftp-supporters-subtitle {
-          font-size: 12px;
+        .ftp-supporter-category-title { display: inline-flex; align-items: center; gap: 6px; }
+        .ftp-supporter-category-count {
+          background: #F3F4F6;
           color: #6B7280;
-          margin-top: 2px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 1px 7px;
+          border-radius: 10px;
+          font-variant-numeric: tabular-nums;
         }
-        .ftp-supporters-more {
-          font-size: 12px;
-          color: #2563EB;
-          font-weight: 500;
-          text-decoration: none;
-        }
-        .ftp-supporters-more:hover { text-decoration: underline; }
 
-        .ftp-supporters-marquees {
+        /* Static list — wraps naturally */
+        .ftp-supporter-static-list {
           display: flex;
-          flex-direction: column;
-          gap: 10px;
+          flex-wrap: wrap;
+          gap: 8px;
         }
-        .ftp-marquee-viewport {
+
+        /* Marquee — single-line scroll */
+        .ftp-supporter-marquee-viewport {
           overflow: hidden;
           position: relative;
           -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
           mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
         }
-        .ftp-marquee-track {
+        .ftp-supporter-marquee-track {
           display: inline-flex;
-          gap: 10px;
+          gap: 8px;
           white-space: nowrap;
-          padding: 6px 0;
+          animation-name: ftp-supporters-marquee;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          padding: 4px 0;
         }
-        /* Session 14 v8.1 Phase H Fix #13: tier-based marquee speeds */
-        .ftp-marquee-slow   { animation: ftp-supporters-marquee 90s linear infinite; }
-        .ftp-marquee-medium { animation: ftp-supporters-marquee 60s linear infinite; }
-        .ftp-marquee-fast   { animation: ftp-supporters-marquee 35s linear infinite; }
-        .ftp-marquee-track:hover { animation-play-state: paused; }
+        .ftp-supporter-marquee-track:hover { animation-play-state: paused; }
+
+        .ftp-supporters-cta {
+          display: inline-block;
+          font-size: 13px;
+          color: #2563EB;
+          font-weight: 500;
+          text-decoration: none;
+        }
+        .ftp-supporters-cta:hover { text-decoration: underline; }
 
         /* Pills */
         .ftp-sup-pill {
@@ -252,136 +300,72 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           transform: translateY(-1px);
           box-shadow: 0 4px 10px rgba(0,0,0,0.06);
         }
-        .ftp-sup-icon { width: 12px; height: 12px; }
-        .ftp-sup-name { font-weight: 500; white-space: nowrap; }
-        .ftp-sup-badge {
-          font-size: 9px;
-          font-weight: 700;
-          padding: 1px 5px;
-          border-radius: 3px;
-          letter-spacing: 0.3px;
-          text-transform: uppercase;
-          color: #FFFFFF;
+        .ftp-sup-name { font-weight: 600; white-space: nowrap; }
+        .ftp-sup-badge-text {
+          font-size: 11px;
+          font-weight: 400;
+          opacity: 0.85;
+          white-space: nowrap;
         }
-        .ftp-sup-flag { font-size: 13px; line-height: 1; }
 
-        .ftp-sup-founder {
-          background: #FEF3C7;
-          color: #92400E;
-          border-color: #FCD34D;
-        }
-        .ftp-sup-founder .ftp-sup-badge { background: #BA7517; }
-        .ftp-sup-founder .ftp-sup-icon { color: #BA7517; }
-
-        .ftp-sup-allindia {
-          background: #FCEBEB;
-          color: #791F1F;
-          border-color: #E24B4A;
-        }
-        .ftp-sup-allindia .ftp-sup-badge { background: #E24B4A; }
-
-        .ftp-sup-state {
-          background: #EEEDFE;
-          color: #3C3489;
-          border-color: #6E59C0;
-        }
-        .ftp-sup-state .ftp-sup-badge { background: #6E59C0; }
-        .ftp-sup-state .ftp-sup-icon { color: #6E59C0; }
-
-        .ftp-sup-district {
-          background: #D1FAE5;
-          color: #065F46;
-          border-color: #10B981;
-        }
-        .ftp-sup-district .ftp-sup-badge { background: #10B981; }
-        .ftp-sup-district .ftp-sup-icon { color: #10B981; }
-
-        .ftp-sup-onetime {
-          background: #F3F4F6;
-          color: #4B5563;
-          border-color: #E5E7EB;
-        }
+        .ftp-sup-founder   { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+        .ftp-sup-all-india { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
+        .ftp-sup-state     { background: #EEEDFE; color: #3C3489; border-color: #6E59C0; }
+        .ftp-sup-district  { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+        .ftp-sup-one-time  { background: #F3F4F6; color: #4B5563; border-color: #E5E7EB; }
 
         @keyframes ftp-supporters-marquee {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
         @media (prefers-reduced-motion: reduce) {
-          .ftp-marquee-slow,
-          .ftp-marquee-medium,
-          .ftp-marquee-fast {
+          .ftp-supporter-marquee-track {
             animation: none;
             flex-wrap: wrap;
             white-space: normal;
           }
-          .ftp-marquee-viewport { -webkit-mask-image: none; mask-image: none; }
+          .ftp-supporter-marquee-viewport { -webkit-mask-image: none; mask-image: none; }
           .ftp-sup-link:hover { transform: none; box-shadow: none; }
         }
       `}</style>
 
-      <div className="ftp-section-inner ftp-supporters-section">
-        <h2 id="supporters-heading" className="sr-only">
-          Supporters
-        </h2>
-
+      <div className="ftp-section-inner">
         <div className="ftp-supporters-header">
-          <div>
-            <div className="ftp-supporters-title">
-              {contributors === null
-                ? "Loading supporters…"
-                : total === 0
-                  ? "Be the first to back us"
-                  : `Backed by ${total} supporter${total === 1 ? "" : "s"}`}
-            </div>
-            <div className="ftp-supporters-subtitle">
-              No corporate funding. No ads. Just citizens backing citizens.
-            </div>
-          </div>
-          <Link href={`/${locale}/contributors`} className="ftp-supporters-more">
-            View all &amp; how to join →
-          </Link>
+          <h2 id="supporters-heading" className="ftp-supporters-h2">
+            {contributors === null
+              ? "Loading supporters…"
+              : total === 0
+                ? "Be the first to back us"
+                : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
+          </h2>
+          <p className="ftp-supporters-sub">
+            No corporate funding. No ads. Just citizens backing citizens.
+          </p>
         </div>
 
-        {tracks && total > 0 && (
-          <div className="ftp-supporters-marquees">
-            {tracks.top.length > 0 && (
-              <div className="ftp-marquee-viewport">
-                <div className="ftp-marquee-track ftp-marquee-slow">
-                  {tracks.top.map((c, i) => (
-                    <SupporterPill key={`top-a-${i}`} contributor={c} />
-                  ))}
-                  {tracks.top.map((c, i) => (
-                    <SupporterPill key={`top-b-${i}`} contributor={c} />
-                  ))}
-                </div>
-              </div>
-            )}
-            {tracks.mid.length > 0 && (
-              <div className="ftp-marquee-viewport">
-                <div className="ftp-marquee-track ftp-marquee-medium">
-                  {tracks.mid.map((c, i) => (
-                    <SupporterPill key={`mid-a-${i}`} contributor={c} />
-                  ))}
-                  {tracks.mid.map((c, i) => (
-                    <SupporterPill key={`mid-b-${i}`} contributor={c} />
-                  ))}
-                </div>
-              </div>
-            )}
-            {tracks.fast.length > 0 && (
-              <div className="ftp-marquee-viewport">
-                <div className="ftp-marquee-track ftp-marquee-fast">
-                  {tracks.fast.map((c, i) => (
-                    <SupporterPill key={`fast-a-${i}`} contributor={c} />
-                  ))}
-                  {tracks.fast.map((c, i) => (
-                    <SupporterPill key={`fast-b-${i}`} contributor={c} />
-                  ))}
-                </div>
-              </div>
-            )}
+        {buckets && total > 0 && (
+          <div className="ftp-supporters-categories">
+            <CategorySection
+              title="🇮🇳 India Patrons"
+              supporters={buckets.allIndia}
+              marqueeSpeed="120s"
+            />
+            <CategorySection
+              title="🏛️ State Champions"
+              supporters={buckets.states}
+              marqueeSpeed="80s"
+            />
+            <CategorySection
+              title="⌂ District Sponsors"
+              supporters={buckets.districts}
+              marqueeSpeed="50s"
+            />
           </div>
         )}
+
+        <Link href={`/${locale}/contributors`} className="ftp-supporters-cta">
+          View all supporters &amp; how to join →
+        </Link>
       </div>
     </section>
   );

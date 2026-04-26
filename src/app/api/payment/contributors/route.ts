@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const CACHE_KEY = "ftp:contributors:v4"; // bump: now surfaces socialLink + socialPlatform
+const CACHE_KEY = "ftp:contributors:v5"; // bump: now surfaces sponsoredDistrict + sponsoredState
 const CACHE_TTL = 60; // 60 seconds
 
 export interface ContributorItem {
@@ -19,6 +19,10 @@ export interface ContributorItem {
   timeAgo: string;
   socialLink: string | null;
   socialPlatform: string | null;
+  /** Full district name (e.g. "Mandya") if the supporter sponsored a specific district. */
+  districtName: string | null;
+  /** Full state name (e.g. "Karnataka") if the supporter sponsored a specific state. */
+  stateName: string | null;
 }
 
 export interface ContributorsResponse {
@@ -97,6 +101,11 @@ export async function GET() {
           createdAt: true,
           socialLink: true,
           socialPlatform: true,
+          // Plain-text district fallback (legacy field on Supporter).
+          district: true,
+          // FK relations — preferred source for full names.
+          sponsoredDistrict: { select: { name: true } },
+          sponsoredState: { select: { name: true } },
         },
       }),
       prisma.supporter.aggregate({
@@ -108,6 +117,10 @@ export async function GET() {
 
     const contributors: ContributorItem[] = rows.map((r) => {
       const rupees = Math.floor(r.amount); // already rupees
+      // Prefer the FK relation; fall back to the legacy plain-text Supporter.district.
+      const districtName =
+        r.sponsoredDistrict?.name ?? (r.district && r.district.trim() ? r.district.trim() : null);
+      const stateName = r.sponsoredState?.name ?? null;
       return {
         displayName: anonymizeName(r.name, r.isPublic),
         tierLabel: tierLabelFor(rupees),
@@ -117,6 +130,8 @@ export async function GET() {
         // Only surface the social link if the supporter opted into being public.
         socialLink: r.isPublic ? r.socialLink ?? null : null,
         socialPlatform: r.isPublic ? r.socialPlatform ?? null : null,
+        districtName,
+        stateName,
       };
     });
 
