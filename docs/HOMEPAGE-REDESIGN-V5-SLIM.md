@@ -122,6 +122,53 @@ TSC: 0 errors. Lint: 107 problems (exactly baseline, no regression).
 - No MobileSidebar wired (HeaderBar's ☰ button is a no-op until layout passes `onOpenMobileNav` callback wired to existing MobileSidebar)
 - Footer trades the live IST clock for an "Updated Xm ago" pill
 
+## v6 simplification (Session 11.6, 2026-04-27)
+
+Localhost review of the v5 homepage flagged it as over-engineered: too many salesy sections (pricing tiers + big founder card + supporter marquee), redundant district browsers (explorer with tier groups + live-data 4-card showcase), and a dual request-and-vote card. v6 collapses the homepage body to **5 simpler sections** while pricing/founder/supporter content continues to render at `/support` from the same source of truth.
+
+### New homepage structure (post-v6)
+
+```
+[layout chrome — DisclaimerBanner + HeaderBar (with green/red status dots)]
+<main>
+  1. FinancialTicker
+  2. LiveActivityRibbon
+  3. HeroSection           ← map LEFT (55%), text RIGHT (45%), 3-stat row
+  4. LiveDistrictsList     ← flat 10-district grid, NEW badge on 3 newest
+  5. UpcomingDistricts     ← top 2 voted + "Vote for the next district →"
+  6. ContributorsStrip     ← flat names + "View all supporters & contribute →"
+  7. VoteFeaturesCTA       ← top 3 features + "Vote on features →"
+</main>
+[layout chrome — Footer]
+```
+
+### Removed from homepage (all retained on disk)
+
+| Component | Reason |
+|---|---|
+| `PricingTiers.tsx` | Defer to `/support` — already renders the same tiers from `src/lib/razorpay/plans.ts` |
+| `FoundingPatronCard.tsx` | Defer to `/support` — Micah Alex appears first in the new flat ContributorsStrip without special treatment |
+| `SupporterMarquee.tsx` | Defer to `/support` — flat names with "View all" link is honest civic vibe |
+| `LiveDataShowcase.tsx` | District pages already cover crops/infra/news/weather per district |
+| `DistrictExplorer.tsx` | Replaced by simpler `LiveDistrictsList` (no tab UI, no second map column) |
+| `RequestAndVoteCards.tsx` | Split into focused `UpcomingDistricts` + `VoteFeaturesCTA` |
+
+### HeaderBar product-dropdown change
+
+Three items, status dots only — `"Coming soon"` text labels removed:
+- 🟢 ForThePeople**.in** (active)
+- 🔴 ForThePeople**.connect** → `/coming-soon`
+- 🔴 ForThePeople**.jobs** → `/coming-soon`
+
+### Verified Session 11.6
+- TSC: 0 errors
+- Lint: 107 problems (61 errors, 46 warnings) — exact baseline preserved
+- HTML payload `/en`: 84 KB (was 105 KB in v5 — ~20% slimmer)
+- District pages `/en/karnataka/mandya`, `/en/maharashtra/pune`: still HTTP 200
+- Tag `pre-session-11.6-v6-simplification-2026-04-26` covers full pre-state
+
+---
+
 ## Old components (kept on disk for rollback)
 
 | Legacy file | Replaced by | Status |
