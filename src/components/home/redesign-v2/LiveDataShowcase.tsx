@@ -137,7 +137,7 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
     <section
       aria-labelledby="livedata-heading"
       className="ftp-section-wrap ftp-livedata-wrap"
-      style={{ background: "#FFFFFF", borderTop: "1px solid #F0F0EC" }}
+      style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
         .ftp-livedata-card {

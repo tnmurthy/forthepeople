@@ -60,7 +60,7 @@ export default function VoteFeaturesCTA({ locale }: VoteFeaturesCTAProps) {
     <section
       aria-labelledby="features-heading"
       className="ftp-section-wrap ftp-vote-wrap"
-      style={{ background: "#FAFAF8", borderTop: "1px solid #F0F0EC" }}
+      style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
         .ftp-vote-features {

@@ -60,7 +60,7 @@ export default function HowItWorks() {
     <section
       aria-labelledby="how-heading"
       className="ftp-section-wrap ftp-how-wrap"
-      style={{ background: "#FFFFFF", borderTop: "1px solid #F0F0EC" }}
+      style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
         .ftp-how-h2 {

@@ -91,7 +91,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
     <section
       aria-labelledby="hero-heading"
       className="ftp-section-wrap ftp-hero-wrap"
-      style={{ background: "#FFFFFF", borderBottom: "1px solid #F0F0EC" }}
+      style={{ borderBottom: "1px solid #F0F0EC" }}
     >
       <style>{`
         /* Session 14 v8.1 Phase D+E (Fixes #8, #9): bigger map + room for one-line tagline */

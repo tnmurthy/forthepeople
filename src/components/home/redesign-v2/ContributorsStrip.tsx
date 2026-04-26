@@ -180,7 +180,7 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
     <section
       aria-labelledby="supporters-heading"
       className="ftp-section-wrap ftp-supporters-wrap"
-      style={{ background: "#FFFFFF", borderTop: "1px solid #F0F0EC" }}
+      style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
         .ftp-supporters-section { padding: 28px 24px; }
