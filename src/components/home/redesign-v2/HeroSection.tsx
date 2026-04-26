@@ -153,62 +153,106 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           font-size: 14px;
         }
 
-        .ftp-hero-right {
+        /* Session 15 v9 Phase D (Fix #5): right column = white dashboard card */
+        .ftp-hero-dashboard {
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 12px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
-          padding: 8px 0;
+          gap: 18px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
           min-width: 0;
         }
+        .ftp-hero-tagline-block {
+          padding-bottom: 14px;
+          border-bottom: 1px solid #E5E7EB;
+        }
         .ftp-hero-h1 {
-          margin: 0;
-          font-size: 28px;
+          margin: 0 0 8px;
+          font-size: 26px;
           font-weight: 700;
-          line-height: 1.15;
+          line-height: 1.2;
           letter-spacing: -0.02em;
           color: #1A1A1A;
-          white-space: nowrap;
-        }
-        @media (max-width: 1280px) {
-          .ftp-hero-h1 { font-size: 24px; white-space: normal; }
         }
         .ftp-hero-subtitle {
           margin: 0;
-          font-size: 14px;
+          font-size: 13px;
           color: #4B5563;
           line-height: 1.5;
         }
-        .ftp-hero-cta-explore {
-          display: inline-block;
-          align-self: flex-start;
-          background: #10B981;
-          color: #FFFFFF;
-          padding: 10px 18px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          text-decoration: none;
-          transition: transform 200ms ease, background 150ms ease;
-        }
-        .ftp-hero-cta-explore:hover {
-          background: #059669;
-          transform: scale(1.02);
-        }
 
+        /* Session 15 v9 Phase D: blue gradient "Explore whole India" tab */
+        .ftp-hero-explore-tab {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+          background: linear-gradient(135deg, #2563EB, #1D4ED8);
+          color: #FFFFFF;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: transform 200ms ease, box-shadow 200ms ease;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
+        }
+        .ftp-hero-explore-tab:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.30);
+        }
+        .ftp-hero-explore-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+        .ftp-hero-explore-text { flex: 1; min-width: 0; }
+        .ftp-hero-explore-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+        .ftp-hero-explore-sub { font-size: 11px; opacity: 0.9; }
+        .ftp-hero-explore-arrow { font-size: 18px; flex-shrink: 0; }
+
+        .ftp-hero-districts-section {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 0;
+        }
         .ftp-hero-districts-header {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: space-between;
-          margin-top: 8px;
-          padding-top: 12px;
-          border-top: 0.5px solid #E5E7EB;
+          margin-bottom: 4px;
         }
         .ftp-hero-districts-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
           font-size: 13px;
           font-weight: 600;
           color: #1A1A1A;
-          text-transform: uppercase;
+        }
+        .ftp-live-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #10B981;
+          color: #FFFFFF;
+          padding: 2px 7px;
+          border-radius: 3px;
+          font-size: 9px;
+          font-weight: 700;
           letter-spacing: 0.5px;
+        }
+        .ftp-live-dot {
+          width: 5px; height: 5px;
+          background: #FFFFFF;
+          border-radius: 50%;
+          animation: ftp-live-pulse 2s ease-in-out infinite;
+        }
+        @keyframes ftp-live-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.5; transform: scale(0.8); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-live-dot { animation: none; }
+          .ftp-hero-explore-tab { transition: none; }
+          .ftp-hero-explore-tab:hover { transform: none; }
         }
         .ftp-hero-districts-all {
           font-size: 12px;
@@ -217,12 +261,15 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-hero-districts-all:hover { color: #2563EB; }
 
-        /* Session 14 v8.1 Phase F (Fix #10): outlined rows, more padding, all 3 tags, all 10 visible */
+        /* Session 15 v9 Phase D: districts scroll inside the dashboard card */
         .ftp-hero-districts-list {
           display: flex;
           flex-direction: column;
           gap: 6px;
-          /* No max-height / overflow — all 10 rows visible; page scrolls naturally if needed. */
+          max-height: 380px;
+          overflow-y: auto;
+          padding-right: 4px;
+          scrollbar-width: thin;
         }
         .ftp-district-row {
           display: flex;
@@ -287,12 +334,9 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           }
           .ftp-hero-map-col { order: -1; min-height: 320px; }
           .ftp-hero-map-large { min-height: 320px; max-height: 400px; }
-          .ftp-hero-right { padding: 0; }
-          .ftp-hero-h1 { font-size: 22px; white-space: normal; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .ftp-hero-cta-explore { transition: none; }
-          .ftp-hero-cta-explore:hover { transform: none; }
+          .ftp-hero-dashboard { padding: 16px; }
+          .ftp-hero-h1 { font-size: 22px; }
+          .ftp-hero-districts-list { max-height: none; }
         }
       `}</style>
 
@@ -309,38 +353,49 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           </div>
         </div>
 
-        {/* RIGHT — Tagline + CTA + districts list (40%) */}
-        <div className="ftp-hero-right">
-          <h1 id="hero-heading" className="ftp-hero-h1">
-            Your district.{" "}
-            <span style={{ color: "#9CA3AF" }}>Your data.</span>{" "}
-            <span style={{ color: "#2563EB" }}>Your right.</span>{" "}
-            <span style={{ fontSize: "0.85em" }} aria-label="India">🇮🇳</span>
-          </h1>
-          <p className="ftp-hero-subtitle">
-            India&apos;s first free, real-time district transparency platform.
-          </p>
+        {/* RIGHT — Dashboard card (44%) */}
+        <div className="ftp-hero-dashboard">
+          <div className="ftp-hero-tagline-block">
+            <h1 id="hero-heading" className="ftp-hero-h1">
+              Your district.<br />
+              <span style={{ color: "#9CA3AF" }}>Your data.</span><br />
+              <span style={{ color: "#2563EB" }}>Your right.</span>{" "}
+              <span style={{ fontSize: "0.85em" }} aria-label="India">🇮🇳</span>
+            </h1>
+            <p className="ftp-hero-subtitle">
+              India&apos;s first free, real-time district transparency platform.
+            </p>
+          </div>
 
           <Link
             href={`/${locale}/india-detail`}
-            className="ftp-hero-cta-explore"
+            className="ftp-hero-explore-tab"
           >
-            Explore the whole India →
+            <span className="ftp-hero-explore-icon" aria-hidden="true">🗺️</span>
+            <div className="ftp-hero-explore-text">
+              <div className="ftp-hero-explore-title">Explore the whole India</div>
+              <div className="ftp-hero-explore-sub">All-India dashboard view</div>
+            </div>
+            <span className="ftp-hero-explore-arrow" aria-hidden="true">→</span>
           </Link>
 
-          <div className="ftp-hero-districts-header">
-            <span className="ftp-hero-districts-title">
-              {districts.length} districts live
-            </span>
-            <Link
-              href={`/${locale}/vote-district`}
-              className="ftp-hero-districts-all"
-            >
-              View all →
-            </Link>
-          </div>
+          <div className="ftp-hero-districts-section">
+            <div className="ftp-hero-districts-header">
+              <span className="ftp-hero-districts-title">
+                <span className="ftp-live-pill">
+                  <span className="ftp-live-dot" aria-hidden="true" /> LIVE
+                </span>
+                <span>{districts.length} districts</span>
+              </span>
+              <Link
+                href={`/${locale}/vote-district`}
+                className="ftp-hero-districts-all"
+              >
+                View all →
+              </Link>
+            </div>
 
-          <div className="ftp-hero-districts-list">
+            <div className="ftp-hero-districts-list">
             {districts.map((d) => {
               const intro = DISTRICT_INTROS[d.slug];
               const isNew = newSlugs.has(d.slug);
@@ -367,6 +422,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                 </Link>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
