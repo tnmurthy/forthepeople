@@ -343,6 +343,24 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           0%   { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        /* Session 16 v10 Phase L (Fix #13): tighten on mobile */
+        @media (max-width: 767px) {
+          .ftp-supporters-categories {
+            padding: 14px;
+            gap: 12px;
+          }
+          .ftp-supporter-category { padding: 12px; }
+          .ftp-supporters-h2 { font-size: 18px; }
+          .ftp-supporter-marquee-track {
+            animation: none;
+            flex-wrap: wrap;
+            white-space: normal;
+          }
+          .ftp-supporter-marquee-viewport {
+            -webkit-mask-image: none;
+            mask-image: none;
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .ftp-supporter-marquee-track {
             animation: none;

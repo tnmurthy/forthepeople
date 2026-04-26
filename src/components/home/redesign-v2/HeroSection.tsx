@@ -402,19 +402,60 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-district-row:hover { box-shadow: none; }
         }
 
+        /* Session 16 v10 Phase L (Fix #13): mobile reorders text → map → districts */
         @media (max-width: 767px) {
           .ftp-hero {
             grid-template-columns: 1fr;
+            grid-template-areas:
+              "text"
+              "map"
+              "districts";
             min-height: auto;
             padding: 16px 12px;
-            gap: 16px;
+            gap: 14px;
           }
-          .ftp-hero-map-col { padding-right: 0; }
+          .ftp-hero-map-col {
+            grid-area: map;
+            padding-right: 0;
+          }
           .ftp-hero-map-col::after { display: none; }
           .ftp-hero-map-large { min-height: 320px; max-height: 400px; }
-          .ftp-hero-dashboard { padding: 16px; }
-          .ftp-hero-h1 { font-size: 22px; white-space: normal; line-height: 1.25; }
-          .ftp-hero-districts-list { max-height: none; }
+          /* Dashboard becomes a layout-flattening wrapper so its children
+             can participate in the hero grid via grid-area. */
+          .ftp-hero-dashboard {
+            display: contents;
+          }
+          .ftp-hero-dashboard > .ftp-hero-h1,
+          .ftp-hero-dashboard > .ftp-hero-subtitle-tiny,
+          .ftp-hero-dashboard > .ftp-hero-explore-link {
+            grid-area: text;
+          }
+          .ftp-hero-dashboard > .ftp-hero-h1 { margin-bottom: 0; }
+          .ftp-hero-dashboard > .ftp-hero-subtitle-tiny { margin-top: 4px; }
+          .ftp-hero-dashboard > .ftp-hero-explore-link { margin-top: 4px; }
+          .ftp-hero-dashboard > .ftp-hero-divider { display: none; }
+          .ftp-hero-dashboard > .ftp-hero-districts-section {
+            grid-area: districts;
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 12px;
+          }
+          .ftp-hero-h1 {
+            font-size: 22px;
+            white-space: normal;
+            line-height: 1.25;
+            text-overflow: clip;
+            overflow: visible;
+          }
+          .ftp-hero-districts-list { max-height: none; padding-right: 0; }
+          /* Mobile district row simplification (Phase L Fix #13) */
+          .ftp-district-row-script { display: none; }
+          .ftp-district-row { padding: 10px 12px; }
+          .ftp-district-row-name { font-size: 14px; }
+          .ftp-district-row-tagline { font-size: 11px; }
+          .ftp-district-bullet { font-size: 10px; }
+          .ftp-district-meta-item { font-size: 9px; }
         }
       `}</style>
 
