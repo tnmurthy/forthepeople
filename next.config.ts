@@ -72,7 +72,17 @@ const nextConfig: NextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
-  silent: true,
-  org: "forthepeople",
-  project: "forthepeople-web",
+  // Match the dashboard project Jayanth uses to view events
+  // (forthepeoplein.sentry.io/issues/?project=javascript-nextjs).
+  // If org/project ever change, update both here AND in Vercel env so
+  // source-map upload at build time still finds the right project.
+  org: "forthepeoplein",
+  project: "javascript-nextjs",
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  disableLogger: true,
+  // Keep Vercel's per-cron monitoring off — we already have admin dashboards
+  // for cron health and don't need duplicate noise in Sentry.
+  automaticVercelMonitors: false,
 });
