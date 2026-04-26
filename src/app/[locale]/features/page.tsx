@@ -17,7 +17,6 @@
 
 import { useEffect, useState } from "react";
 import { ThumbsUp, CheckCircle, Clock, Zap } from "lucide-react";
-import SuggestionForm from "@/components/features/SuggestionForm";
 
 interface Feature {
   id: string;
@@ -28,17 +27,6 @@ interface Feature {
   votes: number;
   status: "proposed" | "in-progress" | "completed";
   priority: number;
-}
-
-interface PublicSuggestion {
-  id: string;
-  name: string;
-  title: string;
-  body: string;
-  category: string | null;
-  status: "ACCEPTED" | "IMPLEMENTED";
-  upvotes: number;
-  createdAt: string;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -56,51 +44,23 @@ const STATUS_CONFIG = {
 };
 
 export default function FeaturesPage() {
+  // Session 16 v10 Phase J (Fix #11): /features is voting-only again.
+  // The Share-Your-Idea form moved to the homepage VoteFeaturesCTA card.
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 48px" }}>
-      {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <div style={{ fontSize: 36, marginBottom: 8 }}>🗳️</div>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
           Help Shape ForThePeople.in
         </h1>
         <p style={{ fontSize: 15, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 500, margin: "0 auto" }}>
-          Vote for the features you want most, or share your own idea.
-          Citizen voices drive what we build next.
+          Vote for the features you want most. The highest-voted features
+          get built first.
         </p>
       </div>
 
-      {/* Section 1 — Vote on existing ideas */}
-      <section style={{ marginBottom: 48 }}>
-        <SectionHeading icon="📊" title="Vote on existing ideas" />
-        <VoteSection />
-      </section>
-
-      {/* Section 2 — Share your idea */}
-      <section style={{ marginBottom: 48 }}>
-        <SectionHeading icon="💡" title="Share your idea" />
-        <SuggestSection />
-      </section>
+      <VoteSection />
     </div>
-  );
-}
-
-function SectionHeading({ icon, title }: { icon: string; title: string }) {
-  return (
-    <h2
-      style={{
-        fontSize: 18,
-        fontWeight: 700,
-        color: "#1A1A1A",
-        margin: "0 0 16px",
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-      }}
-    >
-      <span aria-hidden="true">{icon}</span>
-      {title}
-    </h2>
   );
 }
 
@@ -240,75 +200,3 @@ function VoteSection() {
   );
 }
 
-// ═══ Suggest section (was SuggestTab) ═══════════════════════
-function SuggestSection() {
-  const [items, setItems] = useState<PublicSuggestion[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/suggestions")
-      .then((r) => r.json())
-      .then((d: { data: PublicSuggestion[] }) => { setItems(d.data ?? []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  async function refreshList() {
-    try {
-      const r = await fetch("/api/suggestions");
-      const d = await r.json() as { data: PublicSuggestion[] };
-      setItems(d.data ?? []);
-    } catch { /* ignore */ }
-  }
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-      <div style={{
-        padding: "20px 22px", background: "#FFFFFF",
-        border: "1px solid #E8E8E4", borderRadius: 14,
-      }}>
-        <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
-          Have a feature in mind that&apos;s not listed? Suggest it below — we review every submission.
-        </div>
-        <SuggestionForm onSuccess={refreshList} />
-      </div>
-
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A", marginBottom: 12 }}>
-          Accepted + implemented suggestions
-        </div>
-        {loading ? (
-          <div style={{ textAlign: "center", color: "#9B9B9B", padding: "24px 0", fontSize: 13 }}>Loading…</div>
-        ) : items.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#9B9B9B", padding: "24px 0", fontSize: 13 }}>
-            No public suggestions yet. Be the first!
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {items.map((s) => (
-              <div key={s.id} style={{
-                background: "#FFFFFF", border: "1px solid #E8E8E4",
-                borderRadius: 12, padding: "14px 18px",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "#1A1A1A" }}>{s.title}</span>
-                  {s.category && (
-                    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10, background: "#EFF6FF", color: "#2563EB" }}>
-                      {s.category}
-                    </span>
-                  )}
-                  <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 10,
-                    background: s.status === "IMPLEMENTED" ? "#DCFCE7" : "#FEF3C7",
-                    color: s.status === "IMPLEMENTED" ? "#166534" : "#854D0E" }}>
-                    {s.status === "IMPLEMENTED" ? "✓ Shipped" : "Accepted"}
-                  </span>
-                </div>
-                <p style={{ fontSize: 12, color: "#6B6B6B", lineHeight: 1.5, margin: "0 0 6px" }}>{s.body}</p>
-                <div style={{ fontSize: 11, color: "#9B9B9B" }}>— {s.name}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
