@@ -122,14 +122,17 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
       style={{ borderBottom: "1px solid #F0F0EC" }}
     >
       <style>{`
-        /* Session 14 v8.1 Phase D+E (Fixes #8, #9): bigger map + room for one-line tagline */
+        /* Session 16 v10 Phase E (Fixes #4, #5): map dominant 65/35 */
         .ftp-hero {
           display: grid;
-          grid-template-columns: 56% 44%;
-          gap: 28px;
+          grid-template-columns: 65% 35%;
+          gap: 24px;
           align-items: stretch;
           min-height: 640px;
           padding: 24px 24px;
+        }
+        @media (max-width: 1024px) {
+          .ftp-hero { grid-template-columns: 60% 40%; }
         }
         .ftp-hero-map-col {
           display: flex;
@@ -181,59 +184,69 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           font-size: 14px;
         }
 
-        /* Session 15 v9 Phase D (Fix #5): right column = white dashboard card */
+        /* Session 16 v10 Phase E (Fix #5): compact right column */
         .ftp-hero-dashboard {
           background: #FFFFFF;
           border: 1px solid #E5E7EB;
           border-radius: 12px;
-          padding: 24px;
+          padding: 20px;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 12px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.04);
           min-width: 0;
         }
-        .ftp-hero-tagline-block {
-          padding-bottom: 14px;
-          border-bottom: 1px solid #E5E7EB;
-        }
         .ftp-hero-h1 {
-          margin: 0 0 8px;
-          font-size: 26px;
-          font-weight: 700;
-          line-height: 1.2;
-          letter-spacing: -0.02em;
-          color: #1A1A1A;
-        }
-        .ftp-hero-subtitle {
           margin: 0;
+          font-size: 20px;
+          font-weight: 700;
+          line-height: 1.25;
+          letter-spacing: -0.01em;
+          color: #1A1A1A;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        @media (max-width: 1280px) {
+          .ftp-hero-h1 { font-size: 18px; }
+        }
+        .ftp-flag { font-size: 0.9em; margin-left: 4px; }
+        .ftp-hero-subtitle-tiny {
+          margin: 0;
+          font-size: 11px;
+          color: #9B9B9B;
+          line-height: 1.4;
+        }
+        .ftp-hero-explore-link {
           font-size: 13px;
-          color: #4B5563;
-          line-height: 1.5;
-        }
-
-        /* Session 15 v9 Phase D: blue gradient "Explore whole India" tab */
-        .ftp-hero-explore-tab {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px 16px;
-          background: linear-gradient(135deg, #2563EB, #1D4ED8);
-          color: #FFFFFF;
-          border-radius: 10px;
+          color: #2563EB;
+          font-weight: 500;
           text-decoration: none;
-          transition: transform 200ms ease, box-shadow 200ms ease;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.20);
+          align-self: flex-start;
         }
-        .ftp-hero-explore-tab:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.30);
+        .ftp-hero-explore-link:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
         }
-        .ftp-hero-explore-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
-        .ftp-hero-explore-text { flex: 1; min-width: 0; }
-        .ftp-hero-explore-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
-        .ftp-hero-explore-sub { font-size: 11px; opacity: 0.9; }
-        .ftp-hero-explore-arrow { font-size: 18px; flex-shrink: 0; }
+        .ftp-hero-divider {
+          height: 1px;
+          background: #E5E7EB;
+          margin: 4px 0;
+        }
+        /* Session 16 v10 Phase E: vertical separator on the map column */
+        .ftp-hero-map-col {
+          position: relative;
+          padding-right: 12px;
+        }
+        .ftp-hero-map-col::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          top: 10%;
+          bottom: 10%;
+          width: 1px;
+          background: #E5E7EB;
+        }
 
         .ftp-hero-districts-section {
           display: flex;
@@ -400,10 +413,11 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
             padding: 16px 12px;
             gap: 16px;
           }
-          .ftp-hero-map-col { order: -1; min-height: 320px; }
+          .ftp-hero-map-col { padding-right: 0; }
+          .ftp-hero-map-col::after { display: none; }
           .ftp-hero-map-large { min-height: 320px; max-height: 400px; }
           .ftp-hero-dashboard { padding: 16px; }
-          .ftp-hero-h1 { font-size: 22px; }
+          .ftp-hero-h1 { font-size: 22px; white-space: normal; line-height: 1.25; }
           .ftp-hero-districts-list { max-height: none; }
         }
       `}</style>
@@ -421,31 +435,23 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           </div>
         </div>
 
-        {/* RIGHT — Dashboard card (44%) */}
+        {/* RIGHT — Dashboard card (35%) */}
         <div className="ftp-hero-dashboard">
-          <div className="ftp-hero-tagline-block">
-            <h1 id="hero-heading" className="ftp-hero-h1">
-              Your district.<br />
-              <span style={{ color: "#9CA3AF" }}>Your data.</span><br />
-              <span style={{ color: "#2563EB" }}>Your right.</span>{" "}
-              <span style={{ fontSize: "0.85em" }} aria-label="India">🇮🇳</span>
-            </h1>
-            <p className="ftp-hero-subtitle">
-              India&apos;s first free, real-time district transparency platform.
-            </p>
-          </div>
-
+          <h1 id="hero-heading" className="ftp-hero-h1">
+            Your district. Your data. Your right.
+            <span className="ftp-flag" aria-label="India">🇮🇳</span>
+          </h1>
+          <p className="ftp-hero-subtitle-tiny">
+            India&apos;s first free, real-time district transparency platform.
+          </p>
           <Link
             href={`/${locale}/india-detail`}
-            className="ftp-hero-explore-tab"
+            className="ftp-hero-explore-link"
           >
-            <span className="ftp-hero-explore-icon" aria-hidden="true">🗺️</span>
-            <div className="ftp-hero-explore-text">
-              <div className="ftp-hero-explore-title">Explore the whole India</div>
-              <div className="ftp-hero-explore-sub">All-India dashboard view</div>
-            </div>
-            <span className="ftp-hero-explore-arrow" aria-hidden="true">→</span>
+            → Explore the whole India
           </Link>
+
+          <div className="ftp-hero-divider" aria-hidden="true" />
 
           <div className="ftp-hero-districts-section">
             <div className="ftp-hero-districts-header">
