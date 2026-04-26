@@ -153,6 +153,19 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
   useClickOutside(productRef, () => setProductOpen(false));
   useClickOutside(langRef, () => setLangOpen(false));
 
+  // Escape closes whichever dropdown is open.
+  useEffect(() => {
+    if (!productOpen && !langOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setProductOpen(false);
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [productOpen, langOpen]);
+
   const activeLang = LANGUAGES.find((l) => l.code === locale) ?? LANGUAGES[0];
 
   function onSearchSubmit(e: React.FormEvent) {
@@ -211,20 +224,39 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           background: transparent; border: none; cursor: pointer;
         }
         .ftp-link-btn:hover { background: #F5F5F0; }
+        .ftp-product-trigger:hover { background: #F5F5F0; }
+        .ftp-product-trigger:focus-visible {
+          outline: 2px solid #2563EB;
+          outline-offset: 2px;
+        }
       `}</style>
 
-      {/* ── Logo ── */}
-      <Link
-        href={`/${locale}`}
-        aria-label="ForThePeople.in home"
-        style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}
-      >
-        {/* ftplogofinal.png is intentionally not referenced — file does not exist
-            in /public per Session 11 audit. Use text fallback. Drop the image
-            in /public/ftplogofinal.png and switch to <Image> in a follow-up. */}
-        <span
-          aria-hidden="true"
+      {/* ── Logo + product dropdown (combined trigger) ──
+          The logo IS the trigger button. Clicking opens the menu listing
+          .in / .connect / .jobs. The active product (.in) menu item still
+          routes to /<locale> so the legacy "click logo → home" affordance
+          is preserved (one extra click via the menu).
+
+          ftplogofinal.png is intentionally not referenced — file does not
+          exist in /public per Session 11 audit. Text fallback. Drop the
+          image in /public/ftplogofinal.png and switch to <Image> later. */}
+      <div ref={productRef} style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setProductOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={productOpen}
+          aria-label="ForThePeople product menu"
+          className="ftp-product-trigger"
           style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 10px",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            borderRadius: 8,
             fontWeight: 700,
             fontSize: 16,
             color: "#1A1A1A",
@@ -232,30 +264,28 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             whiteSpace: "nowrap",
           }}
         >
-          ForThePeople<span style={{ color: "#2563EB" }}>.in</span>
-        </span>
-      </Link>
-
-      {/* ── Product dropdown (desktop) ── */}
-      <div ref={productRef} className="ftp-desktop-only" style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => setProductOpen((v) => !v)}
-          aria-haspopup="menu"
-          aria-expanded={productOpen}
-          className="ftp-link-btn"
-          style={{ fontSize: 12, color: "#6B6B6B" }}
-        >
-          <ChevronDown size={14} aria-hidden="true" />
+          <span>
+            ForThePeople<span style={{ color: "#2563EB" }}>.in</span>
+          </span>
+          <ChevronDown
+            size={14}
+            aria-hidden="true"
+            style={{
+              color: "#9B9B9B",
+              transform: productOpen ? "rotate(180deg)" : "none",
+              transition: "transform 150ms ease",
+            }}
+          />
         </button>
         {productOpen && (
           <ul
             role="menu"
+            aria-label="Switch product"
             style={{
               position: "absolute",
               top: "calc(100% + 4px)",
               left: 0,
-              minWidth: 220,
+              minWidth: 240,
               background: "#FFFFFF",
               border: "1px solid #E8E8E4",
               borderRadius: 10,
@@ -263,45 +293,68 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
               padding: 4,
               listStyle: "none",
               margin: 0,
+              zIndex: 40,
             }}
           >
-            {PRODUCTS.map((p) => (
-              <li key={p.key} role="none">
-                <Link
-                  role="menuitem"
-                  href={p.comingSoon ? "/coming-soon" : `/${locale}`}
-                  onClick={() => setProductOpen(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: "8px 10px",
-                    borderRadius: 6,
-                    fontSize: 13,
-                    color: "#1A1A1A",
-                    textDecoration: "none",
-                  }}
-                >
-                  <span>
-                    {p.name}
-                    <span style={{ color: p.suffixColor, fontWeight: 600 }}>{p.suffix}</span>
-                  </span>
-                  {p.comingSoon && (
-                    <span
-                      className="ftp-pill"
-                      style={{
-                        background: "#FAEEDA",
-                        color: "#78350F",
-                        border: "1px solid #E8C68B",
-                      }}
-                    >
-                      Coming soon
+            {PRODUCTS.map((p) => {
+              const isActive = !p.comingSoon; // only .in is active today
+              const targetHref = p.comingSoon ? "/coming-soon" : `/${locale}`;
+              return (
+                <li key={p.key} role="none">
+                  <Link
+                    role="menuitem"
+                    href={targetHref}
+                    onClick={() => setProductOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      padding: "8px 10px",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      color: "#1A1A1A",
+                      textDecoration: "none",
+                      background: isActive ? "#F0FDF4" : "transparent",
+                    }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      {isActive && (
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            display: "inline-block",
+                            width: 6,
+                            height: 6,
+                            borderRadius: "50%",
+                            background: "#16A34A",
+                            flexShrink: 0,
+                          }}
+                          title="Currently active product"
+                        />
+                      )}
+                      <span>
+                        {p.name}
+                        <span style={{ color: p.suffixColor, fontWeight: 600 }}>{p.suffix}</span>
+                      </span>
                     </span>
-                  )}
-                </Link>
-              </li>
-            ))}
+                    {p.comingSoon && (
+                      <span
+                        className="ftp-pill"
+                        style={{
+                          background: "#FAEEDA",
+                          color: "#78350F",
+                          border: "1px solid #E8C68B",
+                        }}
+                      >
+                        Coming soon
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
