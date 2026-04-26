@@ -94,6 +94,34 @@ Each component declares its own `@media (max-width: 767px)` rules inline (Tailwi
 
 Example: `public/districts/mandya.svg`, `public/districts/pune.svg`.
 
+## Session 11.1 — Chrome swap completed (2026-04-26)
+
+The redesign-v2 chrome (DisclaimerBanner + HeaderBar + Footer) is now wired into `src/app/[locale]/layout.tsx` and renders **site-wide**, not just on the homepage.
+
+**Verified post-swap (HTTP 200 + reasonable HTML size):**
+
+| Route | Status | Size |
+|---|---|---|
+| /en | 200 | 87 KB |
+| /en/karnataka/mandya | 200 | 127 KB |
+| /en/karnataka/bengaluru-urban | 200 | 127 KB |
+| /en/karnataka/mysuru | 200 | 127 KB |
+| /en/maharashtra/mumbai | 200 | 125 KB |
+| /en/maharashtra/pune | 200 | 122 KB |
+| /en/delhi/new-delhi | 200 | 123 KB |
+| /en/tamil-nadu/chennai | 200 | 124 KB |
+| /en/west-bengal/kolkata | 200 | 124 KB |
+| /en/telangana/hyderabad | 200 | 133 KB |
+| /en/uttar-pradesh/lucknow | 200 | 126 KB |
+
+TSC: 0 errors. Lint: 107 problems (exactly baseline, no regression).
+
+**Intentional regressions vs legacy Header (each documented inline in `HeaderBar.tsx` SCOPE NOTE):**
+- No state/district autocomplete (search submits to `/<locale>?q=...`)
+- No "Lock" indicator per-district
+- No MobileSidebar wired (HeaderBar's ☰ button is a no-op until layout passes `onOpenMobileNav` callback wired to existing MobileSidebar)
+- Footer trades the live IST clock for an "Updated Xm ago" pill
+
 ## Old components (kept on disk for rollback)
 
 | Legacy file | Replaced by | Status |
