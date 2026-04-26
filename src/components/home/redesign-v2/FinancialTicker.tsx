@@ -34,10 +34,26 @@ type TickerItem = {
 
 type TickerResponse = { items?: TickerItem[]; tickers?: TickerItem[] };
 
+// Session 13 v8 Fix #3: Indian markets — Mon-Fri, 09:15–15:30 IST.
+// IST is UTC+5:30 with no DST.
+function getMarketStatus(nowMs: number): { status: "open" | "closed"; label: string } {
+  const utc = new Date(nowMs);
+  const istMs = utc.getTime() + (5 * 60 + 30) * 60 * 1000;
+  const ist = new Date(istMs);
+  const day = ist.getUTCDay(); // 0 Sun .. 6 Sat
+  const minutesOfDay = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+  const isWeekday = day >= 1 && day <= 5;
+  const open = 9 * 60 + 15;
+  const close = 15 * 60 + 30;
+  const isOpen = isWeekday && minutesOfDay >= open && minutesOfDay < close;
+  return { status: isOpen ? "open" : "closed", label: isOpen ? "Market Open" : "Market Closed" };
+}
+
 export default function FinancialTicker() {
   const [items, setItems] = useState<TickerItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [mostRecentAt, setMostRecentAt] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -70,8 +86,12 @@ export default function FinancialTicker() {
     }
     fetchTicker();
     fetchUpdated();
+    setNowMs(Date.now());
+    // Re-evaluate market status every minute (cheap, no fetch).
+    const tick = setInterval(() => setNowMs(Date.now()), 60_000);
     return () => {
       cancelled = true;
+      clearInterval(tick);
     };
   }, []);
 
@@ -79,6 +99,7 @@ export default function FinancialTicker() {
 
   const loop = items.length > 0 ? [...items, ...items] : [];
   const updated = timeAgoLabel(mostRecentAt);
+  const market = getMarketStatus(nowMs ?? Date.now());
 
   return (
     <div
@@ -97,23 +118,27 @@ export default function FinancialTicker() {
           font-size: 12px;
           height: 36px;
         }
-        .ftp-ticker-live-pill {
+        /* Session 13 v8 Fix #3: Market Open/Closed status pill (replaces LIVE) */
+        .ftp-market-pill {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          background: #DC2626;
-          color: #FFFFFF;
           padding: 2px 8px;
           border-radius: 3px;
           font-size: 9px;
           font-weight: 600;
           letter-spacing: 0.5px;
           flex-shrink: 0;
+          color: #FFFFFF;
         }
-        .ftp-ticker-live-pill .ftp-pulse-dot-white {
+        .ftp-market-open   { background: #10B981; }
+        .ftp-market-closed { background: #6B7280; }
+        .ftp-market-pill .ftp-pulse-dot-white {
           width: 5px; height: 5px;
           background: #FFFFFF;
           border-radius: 50%;
+        }
+        .ftp-market-open .ftp-pulse-dot-white {
           animation: ftp-ticker-pulse 2s ease-in-out infinite;
         }
         @keyframes ftp-ticker-pulse {
@@ -170,9 +195,12 @@ export default function FinancialTicker() {
         }
       `}</style>
 
-      <span className="ftp-ticker-live-pill" aria-label="Live financial data">
+      <span
+        className={`ftp-market-pill ftp-market-${market.status}`}
+        aria-label={market.label}
+      >
         <span className="ftp-pulse-dot-white" aria-hidden="true" />
-        LIVE
+        {market.label}
       </span>
 
       <div className="ftp-financial-viewport">
