@@ -94,7 +94,7 @@ export default function DisclaimerBanner() {
 
       <span aria-hidden="true" className="ftp-disclaimer-icon" style={{ flexShrink: 0, fontSize: 14 }}>⚠</span>
       <span style={{ flex: 1 }}>
-        <strong>Independent platform — not affiliated with any government office.</strong>{" "}
+        <strong>ForThePeople.in is NOT an official government website.</strong>{" "}
         Data aggregated from official portals (NDSAP), accredited research
         institutions, and verified public sources. Always verify at the
         original source.
