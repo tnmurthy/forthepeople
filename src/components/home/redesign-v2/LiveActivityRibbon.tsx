@@ -3,177 +3,139 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 11 redesign — slim 40px LIVE activity marquee.
+ * Session 12 v7 — StatsBar (filename retained as LiveActivityRibbon.tsx
+ * for import-path stability; the export is now `StatsBar`).
  *
- * Data shape: derived from /api/data/homepage-stats (mostRecentAt + a
- * count of total data points) + /api/data/homepage-preview (active
- * districts).
+ * Single horizontal line:
+ *   [🟢 LIVE pill] · [N districts live] · [N dashboards/district]
+ *   · [N data points] · [N coming] · [Updated Xm ago]
  *
- * Animation: 90s loop (slower than financial ticker). Hover pauses.
- * prefers-reduced-motion → static row, no marquee.
+ * Each numeric stat animates 0 → final via useCountUp on first
+ * scroll-into-view (cubic ease-out, ~1.2s). Respects prefers-reduced-motion.
+ *
+ * Stats are passed in as props (server-fetched in [locale]/page.tsx)
+ * to avoid a client roundtrip on first paint.
  */
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCountUp } from "@/lib/hooks/useCountUp";
 import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
-type DistrictPreview = {
-  slug: string;
-  name: string;
-  state?: { slug?: string; name?: string };
-};
-
-type HomepagePreview = {
-  districtPreviews?: DistrictPreview[];
-};
-
-type HomepageStats = {
+export interface StatsBarProps {
+  activeDistricts: number;
+  dashboardsPerDistrict: number;
+  totalDataPoints: number;
+  comingDistricts: number;
   mostRecentAt?: string | null;
-  totalDataPoints?: number | null;
-};
+}
 
-type Activity = {
-  district: string;
-  ago: string;
-};
+function StatTile({ target, label }: { target: number; label: string }) {
+  const { value, ref } = useCountUp<HTMLSpanElement>(target);
+  return (
+    <span className="ftp-stat-item" ref={ref}>
+      <strong>{value.toLocaleString("en-IN")}</strong> {label}
+    </span>
+  );
+}
 
-export default function LiveActivityRibbon() {
-  const [items, setItems] = useState<Activity[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchData() {
-      try {
-        const [statsRes, previewRes] = await Promise.all([
-          fetch("/api/data/homepage-stats"),
-          fetch("/api/data/homepage-preview"),
-        ]);
-
-        const stats: HomepageStats = statsRes.ok ? await statsRes.json() : {};
-        const preview: HomepagePreview = previewRes.ok ? await previewRes.json() : {};
-
-        if (cancelled) return;
-
-        // Single shared "ago" for all districts — we don't have per-district
-        // mostRecentAt today, so we proxy from the global stat. Friendly
-        // "Live" fallback when stale (>2h) instead of misleading "12h ago".
-        const ago = timeAgoLabel(stats.mostRecentAt).label;
-
-        const districts = preview.districtPreviews ?? [];
-        const acts: Activity[] = districts.map((d) => ({
-          district: d.name,
-          ago,
-        }));
-
-        setItems(acts);
-      } catch {
-        /* ignore */
-      } finally {
-        if (!cancelled) {
-          setLoaded(true);
-        }
-      }
-    }
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Render fallback static line if no data — preserves vertical rhythm.
-  const loop = items.length > 0 ? [...items, ...items] : [];
+export default function StatsBar({
+  activeDistricts,
+  dashboardsPerDistrict,
+  totalDataPoints,
+  comingDistricts,
+  mostRecentAt,
+}: StatsBarProps) {
+  const updated = timeAgoLabel(mostRecentAt ?? null);
 
   return (
-    <div
-      className="ftp-activity-ribbon"
-      role="region"
-      aria-label="Live district activity"
-      style={{
-        background: "#FAFAF8",
-        borderBottom: "1px solid #E8E8E4",
-        height: 40,
-        overflow: "hidden",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        paddingLeft: 16,
-      }}
-    >
+    <div className="ftp-stats-bar" role="status" aria-live="polite">
       <style>{`
-        .ftp-activity-pill {
+        .ftp-stats-bar {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 10px 24px;
+          background: #F0FDF4;
+          border-bottom: 0.5px solid #E5E7EB;
+          font-size: 12px;
+          color: #1A1A1A;
+        }
+        .ftp-stats-live-pill {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 3px 10px;
-          background: #DCFCE7;
-          color: #166534;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          border-radius: 999px;
+          gap: 4px;
+          background: #10B981;
+          color: #FFFFFF;
+          padding: 2px 8px;
+          border-radius: 3px;
+          font-size: 9px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
           flex-shrink: 0;
         }
-        .ftp-activity-dot {
-          display: inline-block;
-          width: 7px; height: 7px; border-radius: 50%;
-          background: #16A34A;
-          animation: ftp-activity-pulse 2s ease-in-out infinite;
+        .ftp-stats-live-pill .ftp-pulse-dot {
+          width: 5px; height: 5px;
+          background: #FFFFFF;
+          border-radius: 50%;
+          animation: ftp-stats-pulse 2s ease-in-out infinite;
         }
-        @keyframes ftp-activity-pulse {
+        @keyframes ftp-stats-pulse {
           0%, 100% { opacity: 1; transform: scale(1); }
-          50%      { opacity: 0.35; transform: scale(0.8); }
+          50%      { opacity: 0.5; transform: scale(0.8); }
         }
-        .ftp-activity-track {
-          display: inline-flex;
-          gap: 24px;
-          align-items: center;
-          font-size: 12px;
-          color: #6B6B6B;
+        .ftp-stat-item {
+          font-variant-numeric: tabular-nums;
           white-space: nowrap;
-          flex: 1;
-          will-change: transform;
-          animation: ftp-activity-marquee 90s linear infinite;
+          color: #4B5563;
         }
-        .ftp-activity-ribbon:hover .ftp-activity-track {
-          animation-play-state: paused;
+        .ftp-stat-item strong {
+          font-weight: 600;
+          color: #1A1A1A;
         }
-        @keyframes ftp-activity-marquee {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+        .ftp-stat-divider {
+          width: 1px; height: 14px;
+          background: #D1D5DB;
+        }
+        .ftp-stat-spacer { flex: 1; }
+        .ftp-stat-updated {
+          font-size: 11px;
+          color: #9B9B9B;
+          flex-shrink: 0;
+          white-space: nowrap;
         }
         @media (prefers-reduced-motion: reduce) {
-          .ftp-activity-dot { animation: none; }
-          .ftp-activity-track { animation: none; }
-          .ftp-activity-ribbon { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-          .ftp-activity-ribbon::-webkit-scrollbar { display: none; }
+          .ftp-pulse-dot { animation: none; }
         }
-        .ftp-activity-item strong { color: #1A1A1A; font-weight: 600; }
-        .ftp-activity-item .ago { font-family: var(--font-mono, ui-monospace, monospace); font-size: 11px; color: #9B9B9B; }
+        @media (max-width: 767px) {
+          .ftp-stats-bar {
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 12px;
+            font-size: 11px;
+          }
+          .ftp-stat-divider { display: none; }
+          .ftp-stat-spacer { width: 100%; height: 0; }
+          .ftp-stat-updated { width: 100%; text-align: right; }
+        }
       `}</style>
 
-      <span className="ftp-activity-pill" aria-hidden={false}>
-        <span className="ftp-activity-dot" aria-hidden="true" />
-        Live
+      <span className="ftp-stats-live-pill">
+        <span className="ftp-pulse-dot" aria-hidden="true" />
+        LIVE
       </span>
-
-      {!loaded ? (
-        <span style={{ fontSize: 12, color: "#9B9B9B" }}>Loading activity…</span>
-      ) : loop.length === 0 ? (
-        <span style={{ fontSize: 12, color: "#6B6B6B" }}>
-          Updated continuously across active districts
-        </span>
-      ) : (
-        <div className="ftp-activity-track">
-          {loop.map((a, i) => (
-            <span key={`${a.district}-${i}`} className="ftp-activity-item">
-              <strong>{a.district}</strong> <span className="ago">· {a.ago}</span>
-            </span>
-          ))}
-        </div>
-      )}
+      <span className="ftp-stat-divider" aria-hidden="true" />
+      <StatTile target={activeDistricts} label="districts live" />
+      <span className="ftp-stat-divider" aria-hidden="true" />
+      <StatTile target={dashboardsPerDistrict} label="dashboards/district" />
+      <span className="ftp-stat-divider" aria-hidden="true" />
+      <StatTile target={totalDataPoints} label="data points" />
+      <span className="ftp-stat-divider" aria-hidden="true" />
+      <StatTile target={comingDistricts} label="coming" />
+      <span className="ftp-stat-spacer" aria-hidden="true" />
+      <span className="ftp-stat-updated">
+        {updated.isLive ? "Live" : `Updated ${updated.label}`}
+      </span>
     </div>
   );
 }
