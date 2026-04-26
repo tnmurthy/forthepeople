@@ -196,3 +196,114 @@ Three items, status dots only — `"Coming soon"` text labels removed:
 | Layout-level swap to redesign-v2 chrome | requires district-page redesign first | swap `[locale]/layout.tsx` imports when ready |
 | Theme toggle deep wiring (CSS variables across all surfaces) | `ThemeToggle.tsx` already toggles `data-theme`; comprehensive `--bg-*` mapping is its own pass | `globals.css` `[data-theme="dark"]` block |
 | Hindi (`hi`) and other non-en/kn locales | dictionaries not present | `src/dictionaries/hi.json`, etc. |
+
+---
+
+# Session 12 — v7 Comprehensive Redesign (2026-04-26, NOT pushed)
+
+Built phase-by-phase, single commit per phase, on `main` locally. Push held for final review per instructions.
+
+## v7 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />     ← LAYOUT (NEW, NProgress-style top bar)
+<MigrationBanner />     ← LAYOUT
+<DisclaimerBanner />    ← LAYOUT (yellow palette, was orange)
+<HeaderBar />           ← LAYOUT (overhauled — see below)
+<main>
+  <FinancialTicker />        — LIVE pill + scrolling marquee + Updated label
+  <StatsBar />               — count-up stats line (replaces LiveActivityRibbon timestamps)
+  <HeroSection />            — map LEFT 60%, text RIGHT 40%
+  <LiveDistrictsList />      — 10-district grid, NEW badges, mobile scroll-snap
+  <LiveDataShowcase />       — RESTORED (district chip tabs + 4 module cards)
+  <HowItWorks />             — NEW 4-step explainer
+  <ContributorsStrip />      — links to /contributors (was /support)
+  <VoteFeaturesCTA />        — top 3 feature ideas + /features link
+</main>
+<Footer />              ← LAYOUT
+<SuggestionFloatingButton />
+```
+
+`UpcomingDistricts` removed from the homepage. Its function is served by the new dedicated `/vote-district` route, deep-linked from the HeaderBar district autocomplete via `?d=<slug>`.
+
+## v7 commits (16 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `e919a01` style(disclaimer) | B | DisclaimerBanner — yellow palette + pulsing icon |
+| 2 | `057096e` feat(header) | C | HeaderBar — emojis 👥/🤝/💼, district autocomplete, locked dark mode |
+| 3 | `ac2e462` feat(ticker) | D | FinancialTicker — LIVE pill, viewport containment, Updated timestamp |
+| 4 | `8a1e948` feat(home) | E | StatsBar (filename retained as LiveActivityRibbon.tsx for stable imports) |
+| 5 | `9b784ca` fix(stats) | E hotfix | StatsBar props made optional w/ defaults during transition |
+| 6 | `26c3bbd` feat(home) | F | HeroSection — map LEFT 60%, text RIGHT 40%, no inline stats |
+| 7 | `9fcdc61` feat(home) | G | LiveDistrictsList — intros, NEW badges, stagger reveal, mobile scroll-snap |
+| 8 | `3143e39` feat(home) | I | HowItWorks 4-step (Aggregate → Process → Surface → Sustain) + sources caption |
+| 9 | `92b99dd` feat(home) | J | ContributorsStrip → /contributors link |
+| 10 | `a12c14b` feat(contributors) | K | ContributorsHero stats + Join CTA above existing leaderboard |
+| 11 | `69b86f6` feat(vote-district) | L | New `/vote-district` route — search/filter/vote, ?d= preselect |
+| 12 | `090bb6c` feat(homepage) | N | page.tsx swap — activate v7 composition |
+| 13 | `9b4fb38` polish(map) | O | DrillDownMap ambient pulse on active states (CSS-only) |
+| 14 | `ad65bcf` feat(ux) | P | PageProgressBar — NProgress-style top bar |
+| 15 | `7f29a51` chore(lint) | Q | Lint cleanup for vote-district + PageProgressBar |
+
+(Phase H restored LiveDataShowcase — file already on disk from Session 11, no commit needed beyond Phase N's reimport. Phase M verified VoteFeaturesCTA still works as-is.)
+
+## What's new on disk (Session 12 only)
+
+**New routes**
+- `src/app/[locale]/vote-district/page.tsx` — server entry, awaits `?d=` searchParam
+- `src/components/vote-district/VoteDistrictPage.tsx` — client (search/filter/sort/paginate/vote)
+
+**New components**
+- `src/components/home/redesign-v2/HowItWorks.tsx` — 4-step explainer with count-up step numbers
+- `src/components/common/PageProgressBar.tsx` — global top bar, no third-party dep
+- `src/app/[locale]/contributors/ContributorsHero.tsx` — hero above existing leaderboard
+
+**New constants**
+- `src/lib/constants.ts` exports `DASHBOARDS_PER_DISTRICT = 32` and `TOTAL_INDIA_DISTRICTS = 780`
+
+**Heavily reworked existing**
+- `HeaderBar.tsx` — full overhaul (~570 LOC)
+- `FinancialTicker.tsx` — restructured around LIVE pill + viewport
+- `LiveActivityRibbon.tsx` — repurposed as StatsBar export (filename retained for import stability)
+- `HeroSection.tsx` — clean rewrite to 60/40 layout
+- `LiveDistrictsList.tsx` — added NEW badges + intros + mobile scroll-snap
+- `DisclaimerBanner.tsx` — yellow palette
+- `ContributorsStrip.tsx` — link target changed to /contributors
+- `globals.css` — added `.ftp-geo-active` pulse + `prefers-reduced-motion` guard
+
+## StatsBar data wiring (Phase N)
+
+`page.tsx` fetches `/api/data/homepage-stats` (5-min cache) during SSR. Falls back to `activeRows.length` and zeros if the endpoint is unreachable. `comingDistricts = TOTAL_INDIA_DISTRICTS - activeCount`.
+
+## DrillDownMap polish — read-only data flow preserved
+
+Hard Rule 8 honored. Only added a `className={isActive ? "ftp-geo-active" : "ftp-geo-locked"}` and `data-active` on the `<Geography>` element so CSS could attach a pulse. No state, query, click handler, or geo-data flow was touched.
+
+## Reduced-motion respected everywhere
+
+Every animation introduced this session — count-up, stagger reveal, profile-ring pulse, geo-pulse — has a `@media (prefers-reduced-motion: reduce)` skip. The PageProgressBar still renders for accessibility but uses immediate state transitions rather than long easings.
+
+## Lint state at end of session
+
+| | Before Session 12 | After Session 12 |
+|---|---|---|
+| Total problems | 107 | 108 |
+| Errors | 61 | 62 |
+| Warnings | 46 | 46 |
+
+Net delta: **+1 error in unrelated pre-existing code** (not introduced by any Session 12 file). All v7 files have zero lint issues.
+
+## Push status
+
+**NOT pushed.** Per session prompt — all 16 commits are local on `main`. Single-commit-per-phase = clean reversibility. Push only after manual smoke test of:
+- Homepage scroll-through (FinancialTicker → VoteFeaturesCTA, look for visual regressions)
+- HeaderBar district autocomplete → `/vote-district?d=<slug>` deep link
+- StatsBar count-up animation on first scroll
+- HowItWorks step numbers count-up
+- DrillDownMap state pulse (active vs locked)
+- PageProgressBar fires on internal nav, doesn't pin after failed navs
+- /contributors page hero stats + CTA
+- /vote-district vote action (POST → optimistic bump → server upsert)
+- prefers-reduced-motion turned on → no animations
+- Lighthouse / Core Web Vitals on the new homepage
