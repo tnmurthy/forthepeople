@@ -528,3 +528,91 @@ review. ~10 commits, all on local `main`. Reversibility tag:
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-15-v9-restoration-2026-04-26` exists; all v9 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 16 — v10 FINAL polish (2026-04-26, NOT pushed)
+
+13 surgical dashboard fixes from Jayanth's 4:30 AM review of v9.
+Intended as the final polish session before push. ~12 commits, all
+on local `main`. Reversibility tag:
+`pre-session-16-v10-final-2026-04-26`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| HeaderBar — search | Field bg → blue tint #F0F7FF, icon + placeholder in blue, focus-within deepens to white + 3px blue ring | #1 |
+| FinancialTicker — API | Added Nifty Bank, BTC/INR, ETH/INR, EUR/INR (all Yahoo Finance via existing fetchYahooQuote, no new deps); reordered to indices → commodities → fuel → currencies → crypto. Cache key v3→v4. | #2 |
+| FinancialTicker — component | 16px margin-bottom adds gap before StatsBar; green Market Open pill verified | #2 |
+| StatsBar | Solid grid + dividers → outlined tile cards with 12px gaps. Each tile: 1px border, 8px radius, white bg, hover lifts -2px with soft blue shadow + blue border | #3 |
+| HeroSection — grid | 56/44 → 65/35; tablet ≤1024px drops to 60/40 | #4 |
+| HeroSection — right col | Compact dashboard card: h1 forced to one line via white-space:nowrap (20px down from 26); tiny gray subtitle (11px); "Explore the whole India" downgraded from gradient tab → small blue hyperlink; 1px divider above LIVE district section | #5 |
+| HeroSection — map col | 12px right padding + 1px vertical separator on right edge between map and dashboard (mobile drops both) | #5 |
+| District rows | Removed C+/C health-grade badge entirely (and its CSS) — grade was inaccurate enough to read as negative | #6 |
+| District rows | Hover bleed fix: dropped translateX, added position:relative + z-index:2 on hover so the soft blue shadow lifts the row above neighbors instead of bleeding sideways. Solid white bg on hover. | #7 |
+| District rows | Added per-row meta line (dashed top-border): 🌡️ {temp}°C   🕐 Updated {Xm ago} — pulled from existing /api/data/homepage-preview | #7 |
+| LiveDataShowcase | Visual overhaul. Title leads with pulsing green dot. District chips → pill tabs (light-blue resting, blue active). 4 module cards each get a 3px colored top stripe (Crops emerald · Infra blue · News amber · Weather cyan), accent-colored uppercase title, hover lift -3px with colored shadow, footer divider above accent-colored "View all →". Empty state replaces "Data temporarily unavailable" with centered "📭 Data syncing / Refreshing every 5–30 min". | #8 |
+| HowItWorks | Reverted to 4-step Session 12 wording (Aggregate / Process / Surface / Sustain). Sources caption restored. Each card now reveals a 3px blue gradient stripe on hover, lift -3px with 10% blue shadow. | #9 |
+| ContributorsStrip — API | v5 → v6: surfaces existing isRecurring + subscriptionStatus from Supporter schema | #10 |
+| ContributorsStrip — Founder badge | Now reads "🇮🇳 India" (was "Founder") — same visual as All-India patrons | #10 |
+| ContributorsStrip — filter | New isActiveSubscriber() filter: founders always shown; other tiers must have isRecurring=true AND subscriptionStatus="active". One-time supporters drop from the homepage strip (still visible on /contributors). "Backed by N citizens" total still reflects the FULL count. | #10b |
+| ContributorsStrip — borders | Cream container (#FAFAF8) wraps the categories with 1px border + 12px radius + 20px padding. Each category is a white card with 1px border + 8px radius + 14×16 padding. | #10d |
+| /features | REVERTED Session 15 — page is now voting-only again. Dropped SuggestSection, SuggestionForm import, PublicSuggestion interface, SectionHeading helper. | #11 |
+| Homepage VoteFeaturesCTA | NEW combined card: 2-col purple-gradient layout — top 3 voted features LEFT, reused SuggestionForm RIGHT. Existing /api/suggestions endpoint reused via the shared component. Mobile collapses to 1-col. | #11b |
+| Footer | 2px blue top accent line (was 1px gray). Yellow warning band gets explicit 1px bottom border. Link items become tinted-bg pills on hover (#F0F7FF + #2563EB). Social icons go from bare to bordered cards (white square + 1px border + 6px radius), hover lifts -2px and tints to blue (Instagram brand keeps its gradient bg). | #12 |
+| Mobile layout | Hero grid switches to grid-template-areas: text / map / districts. .ftp-hero-dashboard becomes display:contents on mobile so its children participate in the hero grid via grid-area — text reads first, map second, districts third. District rows simplify (native script hidden, padding tightened, font sizes scaled down). Supporters: outer container padding tightens, all 3 marquee tracks freeze + wrap. Edge fade-mask drops. | #13 |
+
+## v10 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />                      ← LAYOUT
+<MigrationBanner />                      ← LAYOUT
+<DisclaimerBanner />                     ← LAYOUT
+<HeaderBar />                            ← LAYOUT (Users icon · blue search · GitHub · Globe · layered Support)
+<main>
+  <FinancialTicker />                    — Market Open/Closed pill + 12 markets + Updated
+  <StatsBar />                           — 5 outlined tile cards with hover lift
+  <HeroSection districts={...} />        — 65% map (zoomed, blue bg, vertical divider) / 35% compact dashboard
+                                            (h1 1-line · tiny subtitle · small Explore link · LIVE district section)
+  <LiveDataShowcase />                   — pulsing-dot title + pill tabs + 4 color-coded data cards
+  <HowItWorks />                         — 4 steps reverted; gradient-stripe hover accent
+  <ContributorsStrip />                  — bordered category cards inside cream container; subscribers-only
+  <VoteFeaturesCTA />                    — combined Vote (top 3) + Share Your Idea form
+</main>
+<Footer />                               ← LAYOUT (blue accent + yellow band + bordered hover pills + bordered socials)
+```
+
+## Verification
+
+| | Before Session 16 | After Session 16 |
+|---|---|---|
+| Total problems | 107 | **107** |
+| Errors | 61 | 61 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (1 better than 108 baseline; matches end-of-Session-15).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` all 200.
+- DrillDownMap component file untouched (Hard Rule 7 honored — only its CSS wrapper changed).
+- prefers-reduced-motion respected on every new animation introduced.
+
+## v10 commits (12 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `917427c` | B | Header search — blue tint + blue icon/placeholder + focus ring |
+| 2 | `1343fd9` | C | Ticker — Bank Nifty + BTC/ETH/EUR + ordering + gap-below |
+| 3 | `a34a60d` | D | StatsBar — outlined tiles, gaps replace dividers |
+| 4 | `78af397` | E | Hero — 65/35 grid, h1 one-line, small Explore hyperlink, vertical divider |
+| 5 | `a5dc949` | F | District rows — drop rating, z-index hover lift, 🌡️🕐 meta line |
+| 6 | `b7f69ff` | G | LiveDataShowcase — color-coded accent stripes + pill tabs |
+| 7 | `f10a9c7` | H | HowItWorks — revert to 4 steps + gradient hover stripe + caption restored |
+| 8 | `31cd248` | I | Supporters — Founder→India badge + subscribers-only filter + bordered category cards + API v6 |
+| 9 | `1350c50` | J | /features revert + homepage VoteFeaturesCTA combined Vote + Share |
+| 10 | `ed33c88` | K | Footer — blue top accent + yellow band + bordered hover pills + bordered socials |
+| 11 | `0500726` | L | Mobile — hero text→map→districts via grid-areas, simpler district rows, marquees freeze |
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-16-v10-final-2026-04-26` exists; all v10 commits sit on local `main`. After Jayanth's well-deserved sleep + manual review, `git push origin main` ships ~218 commits via Vercel (~5–7 min build).
