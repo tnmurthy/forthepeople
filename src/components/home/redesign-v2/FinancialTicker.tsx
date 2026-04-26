@@ -47,13 +47,11 @@ export default function FinancialTicker() {
           data.items ??
           data.tickers ??
           (Array.isArray(data) ? (data as unknown as TickerItem[]) : []);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(list.filter(Boolean));
       } catch {
         /* ignore — keep empty */
       } finally {
         if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLoaded(true);
         }
       }

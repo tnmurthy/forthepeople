@@ -82,13 +82,11 @@ export default function LiveActivityRibbon() {
           ago,
         }));
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setItems(acts);
       } catch {
         /* ignore */
       } finally {
         if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setLoaded(true);
         }
       }

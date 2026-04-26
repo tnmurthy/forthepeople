@@ -46,7 +46,6 @@ export default function Footer({ locale }: FooterProps) {
         if (!res.ok) return;
         const data = (await res.json()) as { mostRecentAt?: string | null };
         if (!cancelled && data.mostRecentAt) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setAgo(formatAgo(Date.now(), new Date(data.mostRecentAt)));
         }
       } catch {

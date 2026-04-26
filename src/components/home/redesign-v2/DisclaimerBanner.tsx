@@ -32,18 +32,15 @@ export default function DisclaimerBanner() {
       setVisible(!dismissed);
     } catch {
       // Private mode / sandbox — show by default.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(true);
     }
     if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
       try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
       } catch {
         /* ignore */
       }
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, []);
 

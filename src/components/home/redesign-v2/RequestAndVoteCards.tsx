@@ -64,7 +64,6 @@ export default function RequestAndVoteCards({ locale }: RequestAndVoteCardsProps
         if (reqRes.ok) {
           const data = (await reqRes.json()) as { top?: DistrictRequestRow[] };
           if (!cancelled && data.top && data.top.length > 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setTopRequest(data.top[0]);
           }
         }
@@ -72,7 +71,6 @@ export default function RequestAndVoteCards({ locale }: RequestAndVoteCardsProps
         if (feaRes.ok) {
           const data = (await feaRes.json()) as { features?: FeatureRow[] };
           if (!cancelled) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFeatures(data.features ?? []);
           }
         }

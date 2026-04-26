@@ -23,7 +23,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 // ── Tier classification (hardcoded fallback; see TODO above) ──
 const TIER_HARDCODE: Record<string, "metro" | "tier2" | "emerging"> = {

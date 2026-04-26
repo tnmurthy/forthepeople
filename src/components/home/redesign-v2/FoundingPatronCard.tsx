@@ -43,15 +43,12 @@ export default function FoundingPatronCard() {
         );
         if (cancelled) return;
         if (founder) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItem({ displayName: founder.displayName, tierLabel: founder.tierLabel });
         } else {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItem(FALLBACK);
         }
       } catch {
         if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItem(FALLBACK);
         }
       }

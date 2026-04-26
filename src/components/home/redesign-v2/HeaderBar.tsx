@@ -93,7 +93,6 @@ function useUpdatedAgoPill() {
         if (!res.ok) return;
         const data = (await res.json()) as { mostRecentAt?: string | null };
         if (cancelled || !data.mostRecentAt) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setAgo(formatAgo(new Date(data.mostRecentAt)));
       } catch {
         /* ignore — keep last value */

@@ -51,7 +51,9 @@ export interface HeroSectionProps {
 
 export default function HeroSection({ locale }: HeroSectionProps) {
   const [stats, setStats] = useState<HomepageStats | null>(null);
-  const [agoTick, setAgoTick] = useState(0); // re-render every 60s for "Xm ago"
+  // Storing 'now' in state keeps the render pure (no Date.now() in body).
+  // Effect refreshes it every 60s so the "Xm ago" string stays fresh.
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,31 +62,31 @@ export default function HeroSection({ locale }: HeroSectionProps) {
         const res = await fetch("/api/data/homepage-stats");
         if (!res.ok) return;
         const data = (await res.json()) as HomepageStats;
-        if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
-          setStats(data);
-        }
+        if (!cancelled) setStats(data);
       } catch {
         /* ignore */
       }
     }
     load();
-    const t = setInterval(() => setAgoTick((n) => n + 1), 60_000);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60_000);
     return () => {
       cancelled = true;
       clearInterval(t);
     };
   }, []);
 
-  // Avoid "agoTick used but never read" lint — the value participates in re-render.
-  void agoTick;
-
   const activeDistricts = stats?.activeDistricts ?? 10;
   const totalDataPoints = stats?.totalDataPoints ?? 2366;
   const comingSoon = Math.max(0, PLANNED_DISTRICTS - activeDistricts);
-  const ago = stats?.mostRecentAt
-    ? formatAgo(Date.now(), new Date(stats.mostRecentAt))
-    : "—";
+
+  // formatAgo is cheap; recomputing per render keeps the React Compiler
+  // happy and avoids useMemo-dependency drift warnings.
+  const ago =
+    stats?.mostRecentAt && now != null
+      ? formatAgo(now, new Date(stats.mostRecentAt))
+      : "—";
 
   return (
     <section

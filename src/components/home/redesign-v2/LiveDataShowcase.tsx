@@ -95,7 +95,6 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
         infra:   summarizeInfra(infraR),
       };
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModuleData((prev) => ({ ...prev, [slug]: set }));
     }
 
@@ -113,12 +112,10 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
     fetch(`/districts/${active.slug}.svg`, { method: "HEAD" })
       .then((r) => {
         if (cancelled) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSvgExists((prev) => ({ ...prev, [active.slug]: r.ok }));
       })
       .catch(() => {
         if (cancelled) return;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSvgExists((prev) => ({ ...prev, [active.slug]: false }));
       });
     return () => {
@@ -314,8 +311,8 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
 function DistrictAvatar({ slug, hasSvg }: { slug: string; hasSvg: boolean }) {
   const SIZE = 56;
   if (hasSvg) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={`/districts/${slug}.svg`}
         alt=""

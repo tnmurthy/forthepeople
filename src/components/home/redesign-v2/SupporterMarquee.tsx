@@ -68,19 +68,16 @@ export default function SupporterMarquee({ locale }: { locale: string }) {
       try {
         const res = await fetch("/api/payment/contributors?limit=100");
         if (!res.ok) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems([]);
           return;
         }
         const data = (await res.json()) as { contributors?: ContributorItem[] };
         const all = (data.contributors ?? []).map(classify).filter(Boolean) as Visible[];
         if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems(all);
         }
       } catch {
         if (!cancelled) {
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           setItems([]);
         }
       }
