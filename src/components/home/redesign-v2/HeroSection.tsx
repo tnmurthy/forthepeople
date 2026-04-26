@@ -108,6 +108,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           align-items: center;
           justify-content: center;
         }
+        /* Session 15 v9 Phase B (Fix #1): light-blue container, zoomed SVG */
         .ftp-hero-map-large {
           position: relative;
           width: 100%;
@@ -118,11 +119,16 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          background: #F0F7FF;
+          border-radius: 12px;
+          overflow: hidden;
         }
         .ftp-hero-map-large svg {
           width: 100%;
           height: 100%;
           max-height: 620px;
+          transform: scale(1.15);
+          transform-origin: center;
         }
         .ftp-hero-map-hint {
           position: absolute;
