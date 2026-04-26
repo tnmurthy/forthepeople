@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
-const CACHE_KEY = "ftp:contributors:v5"; // bump: now surfaces sponsoredDistrict + sponsoredState
+const CACHE_KEY = "ftp:contributors:v6"; // bump: now surfaces isRecurring + subscriptionStatus
 const CACHE_TTL = 60; // 60 seconds
 
 export interface ContributorItem {
@@ -23,6 +23,10 @@ export interface ContributorItem {
   districtName: string | null;
   /** Full state name (e.g. "Karnataka") if the supporter sponsored a specific state. */
   stateName: string | null;
+  /** True if this row represents a recurring subscription (vs one-time). */
+  isRecurring: boolean;
+  /** "active" | "paused" | "cancelled" | "expired" — null for one-time supporters. */
+  subscriptionStatus: string | null;
 }
 
 export interface ContributorsResponse {
@@ -106,6 +110,9 @@ export async function GET() {
           // FK relations — preferred source for full names.
           sponsoredDistrict: { select: { name: true } },
           sponsoredState: { select: { name: true } },
+          // Subscription gate (Phase I Fix #10b).
+          isRecurring: true,
+          subscriptionStatus: true,
         },
       }),
       prisma.supporter.aggregate({
@@ -132,6 +139,8 @@ export async function GET() {
         socialPlatform: r.isPublic ? r.socialPlatform ?? null : null,
         districtName,
         stateName,
+        isRecurring: r.isRecurring,
+        subscriptionStatus: r.subscriptionStatus ?? null,
       };
     });
 

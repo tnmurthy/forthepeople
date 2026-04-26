@@ -40,6 +40,8 @@ interface ContributorItem {
   socialPlatform?: string | null;
   districtName?: string | null;
   stateName?: string | null;
+  isRecurring?: boolean;
+  subscriptionStatus?: string | null;
 }
 
 type SupTier = "founder" | "all-india" | "state" | "district" | "one-time";
@@ -65,16 +67,25 @@ function safeExternalLink(url: string | null | undefined): string | null {
 }
 
 function badgeFor(c: ContributorItem, tier: SupTier): string {
-  if (tier === "founder") return "Founder";
+  // Session 16 v10 Phase I (Fix #10): founder also reads "🇮🇳 India" so
+  // the visual hierarchy stays consistent with the All-India tier above.
+  if (tier === "founder") return "🇮🇳 India";
   if (tier === "all-india") return "🇮🇳 India";
   if (tier === "state") {
     if (c.stateName) return c.stateName;
-    // Fallback for legacy 2-letter codes (rare, but covered).
     const upper = (c.stateName ?? "").toUpperCase();
     return STATE_FULL_NAMES[upper] ?? "";
   }
   if (tier === "district") return c.districtName ?? "";
   return "";
+}
+
+// Session 16 v10 Phase I (Fix #10b): only count active subscriptions in the
+// homepage strip. One-time supporters appear only on /contributors.
+// Founders are kept (they're treated as patrons regardless of cadence).
+function isActiveSubscriber(c: ContributorItem, tier: SupTier): boolean {
+  if (tier === "founder") return true;
+  return c.isRecurring === true && c.subscriptionStatus === "active";
 }
 
 function SupporterPill({ contributor }: { contributor: ContributorItem }) {
@@ -185,13 +196,18 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
     const districts: ContributorItem[] = [];
     for (const c of contributors) {
       const t = classifyTier(c);
+      // Phase I Fix #10b: subscribers only on the homepage strip.
+      if (!isActiveSubscriber(c, t)) continue;
       if (t === "founder" || t === "all-india") allIndia.push(c);
       else if (t === "state") states.push(c);
-      else districts.push(c);
+      else if (t === "district") districts.push(c);
+      // one-time tier intentionally dropped from the strip (visible on /contributors).
     }
     return { allIndia, states, districts };
   })();
 
+  // "Backed by N citizens" still reflects the full count (one-timers included),
+  // since Jayanth's spec only restricted what's *displayed in the categories*.
   const total = contributors?.length ?? 0;
 
   return (
@@ -217,16 +233,25 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           margin: 0;
         }
 
+        /* Session 16 v10 Phase I (Fix #10d): bordered category cards inside cream container */
         .ftp-supporters-categories {
           display: flex;
           flex-direction: column;
-          gap: 20px;
-          margin-bottom: 20px;
+          gap: 16px;
+          background: #FAFAF8;
+          border: 1px solid #E5E7EB;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 16px;
         }
         .ftp-supporter-category {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          padding: 14px 16px;
         }
         .ftp-supporter-category-header {
           display: flex;
