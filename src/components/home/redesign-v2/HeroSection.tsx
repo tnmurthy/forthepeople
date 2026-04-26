@@ -130,9 +130,6 @@ export default function HeroSection({ locale }: HeroSectionProps) {
       style={{ background: "#FFFFFF", borderBottom: "1px solid #F0F0EC" }}
     >
       <style>{`
-        .ftp-section-inner { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
-        @media (max-width: 767px) { .ftp-section-inner { padding: 24px 16px; } }
-
         .ftp-hero {
           display: grid;
           grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);

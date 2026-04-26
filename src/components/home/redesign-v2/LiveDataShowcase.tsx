@@ -136,7 +136,8 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
   return (
     <section
       aria-labelledby="livedata-heading"
-      style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px" }}
+      className="ftp-section-wrap ftp-livedata-wrap"
+      style={{ background: "#FFFFFF", borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
         .ftp-livedata-card {
@@ -204,6 +205,7 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
         }
       `}</style>
 
+      <div className="ftp-section-inner">
       {/* ── Header row ── */}
       <div
         className="ftp-livedata-header"
@@ -303,6 +305,7 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
           data={set.weather}
           href={`${districtPageBase}/weather`}
         />
+      </div>
       </div>
     </section>
   );

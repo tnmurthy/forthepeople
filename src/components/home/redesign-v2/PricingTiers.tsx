@@ -49,8 +49,10 @@ export default function PricingTiers({ locale }: { locale: string }) {
   return (
     <section
       aria-labelledby="pricing-heading"
-      style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px" }}
+      className="ftp-section-wrap ftp-pricing-wrap"
+      style={{ background: "#FFFFFF", borderTop: "1px solid #F0F0EC" }}
     >
+      <div className="ftp-section-inner">
       <div style={{ marginBottom: 18 }}>
         <h2
           id="pricing-heading"
@@ -193,6 +195,7 @@ export default function PricingTiers({ locale }: { locale: string }) {
         >
           Become a Founding Builder →
         </Link>
+      </div>
       </div>
     </section>
   );

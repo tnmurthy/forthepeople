@@ -33,6 +33,7 @@ export function useCountUp<T extends HTMLElement = HTMLDivElement>(
 
   useEffect(() => {
     triggered.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(0);
 
     if (target === 0) return;

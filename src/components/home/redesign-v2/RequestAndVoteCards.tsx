@@ -120,8 +120,10 @@ export default function RequestAndVoteCards({ locale }: RequestAndVoteCardsProps
   return (
     <section
       aria-labelledby="participation-heading"
-      style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px" }}
+      className="ftp-section-wrap ftp-rv-wrap"
+      style={{ background: "#FAFAF8", borderTop: "1px solid #F0F0EC" }}
     >
+      <div className="ftp-section-inner">
       <h2 id="participation-heading" className="sr-only">
         Participate
       </h2>
@@ -344,6 +346,7 @@ export default function RequestAndVoteCards({ locale }: RequestAndVoteCardsProps
             Vote on features →
           </Link>
         </div>
+      </div>
       </div>
     </section>
   );

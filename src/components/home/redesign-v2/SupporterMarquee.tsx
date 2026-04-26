@@ -91,56 +91,51 @@ export default function SupporterMarquee({ locale }: { locale: string }) {
   // Empty state — first-back CTA.
   if (items && items.length === 0) {
     return (
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "16px auto 0",
-          padding: "12px 16px",
-          textAlign: "center",
-          fontSize: 13,
-          color: "#6B7280",
-        }}
+      <section
+        className="ftp-section-wrap ftp-supporter-wrap"
+        style={{ background: "#FAFAF8" }}
       >
-        Be the first to back ForThePeople →{" "}
-        <a
-          href={`/${locale}/support`}
-          style={{ color: "#DC2626", fontWeight: 600, textDecoration: "none" }}
+        <div
+          className="ftp-section-inner"
+          style={{ paddingTop: 0, paddingBottom: 24, textAlign: "center", fontSize: 13, color: "#6B7280" }}
         >
-          Support
-        </a>
-      </div>
+          Be the first to back ForThePeople →{" "}
+          <a
+            href={`/${locale}/support`}
+            style={{ color: "#DC2626", fontWeight: 600, textDecoration: "none" }}
+          >
+            Support
+          </a>
+        </div>
+      </section>
     );
   }
 
   if (!items) {
     // Skeleton row
     return (
-      <div
+      <section
         aria-hidden="true"
-        style={{
-          maxWidth: 1200,
-          margin: "16px auto 0",
-          padding: "0 16px",
-          height: 48,
-          opacity: 0.5,
-        }}
-      />
+        className="ftp-section-wrap ftp-supporter-wrap"
+        style={{ background: "#FAFAF8" }}
+      >
+        <div className="ftp-section-inner" style={{ paddingTop: 0, paddingBottom: 24 }}>
+          <div style={{ height: 48, opacity: 0.5 }} />
+        </div>
+      </section>
     );
   }
 
   const loop = [...items, ...items];
 
   return (
-    <div
-      className="ftp-supporter-marquee"
+    <section
+      className="ftp-section-wrap ftp-supporter-wrap"
       role="region"
       aria-label="Recent supporters"
-      style={{
-        maxWidth: 1200,
-        margin: "16px auto 0",
-        padding: "0 16px",
-      }}
+      style={{ background: "#FAFAF8", borderBottom: "1px solid #F0F0EC" }}
     >
+      <div className="ftp-section-inner ftp-supporter-marquee" style={{ paddingTop: 0 }}>
       <style>{`
         .ftp-supporter-viewport {
           overflow: hidden;
@@ -207,6 +202,7 @@ export default function SupporterMarquee({ locale }: { locale: string }) {
           })}
         </div>
       </div>
-    </div>
+      </div>
+    </section>
   );
 }

@@ -58,6 +58,27 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Session 11.4 — Section wrap pattern ──
+   Lets each redesign-v2 section render its background edge-to-edge
+   while content stays in a centered 1200px column. Use as:
+     <section className="ftp-section-wrap" style={{ background: ... }}>
+       <div className="ftp-section-inner">{content}</div>
+     </section>
+*/
+.ftp-section-wrap {
+  width: 100%;
+}
+.ftp-section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+@media (max-width: 767px) {
+  .ftp-section-inner {
+    padding: 24px 16px;
+  }
+}
+
 /* ── Utility: Card ── */
 .card {
   background: var(--color-surface);

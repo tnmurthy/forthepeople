@@ -62,25 +62,24 @@ export default function FoundingPatronCard() {
   if (!item) {
     // Skeleton — preserve vertical rhythm but don't flash a fake name.
     return (
-      <div
+      <section
         aria-hidden="true"
-        style={{
-          maxWidth: 1200,
-          margin: "32px auto 0",
-          padding: "0 16px",
-        }}
+        className="ftp-section-wrap ftp-patron-wrap"
+        style={{ background: "#FAFAF8", borderTop: "1px solid #F0F0EC" }}
       >
-        <div
-          style={{
-            background: "#FAEEDA",
-            border: "0.5px solid #BA7517",
-            borderRadius: 16,
-            padding: 18,
-            minHeight: 88,
-            opacity: 0.6,
-          }}
-        />
-      </div>
+        <div className="ftp-section-inner" style={{ paddingBottom: 8 }}>
+          <div
+            style={{
+              background: "#FAEEDA",
+              border: "0.5px solid #BA7517",
+              borderRadius: 16,
+              padding: 18,
+              minHeight: 88,
+              opacity: 0.6,
+            }}
+          />
+        </div>
+      </section>
     );
   }
 
@@ -93,7 +92,11 @@ export default function FoundingPatronCard() {
     .toUpperCase();
 
   return (
-    <div style={{ maxWidth: 1200, margin: "32px auto 0", padding: "0 16px" }}>
+    <section
+      className="ftp-section-wrap ftp-patron-wrap"
+      style={{ background: "#FAFAF8", borderTop: "1px solid #F0F0EC" }}
+    >
+      <div className="ftp-section-inner" style={{ paddingBottom: 8 }}>
       <style>{`
         .ftp-founder-card {
           background: #FAEEDA;
@@ -146,6 +149,7 @@ export default function FoundingPatronCard() {
           ♛ FOUNDER
         </span>
       </div>
-    </div>
+      </div>
+    </section>
   );
 }
