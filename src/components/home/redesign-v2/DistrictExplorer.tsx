@@ -4,10 +4,14 @@
  * https://github.com/jayanthmb14/forthepeople
  *
  * Session 11 redesign — DistrictExplorer (slim, single "By tier" tab).
- *
- * Drop-in replacement for the legacy HomeDrilldown's right-column
- * scrollable list. Map column is a placeholder (defer interactive
- * 780-district map to a future session per slim-core scope).
+ * Session 11.4 polish:
+ *   - Map column dropped (the hero now hosts the only India map on the
+ *     page — eliminates the previous side-by-side two-map redundancy).
+ *   - Single full-width column for the district list, with tier groups
+ *     laid out in a responsive auto-fill grid (220px min cards).
+ *   - Wrapped in .ftp-section-wrap so the gray background spans
+ *     edge-to-edge while content caps at 1200px (consistent with the
+ *     other sections).
  *
  * SECTIONS:
  *   ⚡ Recently launched   — top 3 active districts by launch order
@@ -23,26 +27,7 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
-
-// Reuse the existing DrillDownMap (legacy HomeDrilldown wired the same way).
-// SSR off because react-simple-maps internals + useRouter are browser-only.
-const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
-  ssr: false,
-  loading: () => (
-    <div
-      aria-hidden="true"
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: 420,
-        background: "#FAFAF8",
-        borderRadius: 16,
-      }}
-    />
-  ),
-});
 
 // ── Tier classification (hardcoded fallback; see TODO above) ──
 const TIER_HARDCODE: Record<string, "metro" | "tier2" | "emerging"> = {
@@ -63,7 +48,6 @@ interface ActiveDistrict {
   name: string;
   stateSlug: string;
   goLiveDate?: string | null;
-  // Future: dataPointCount when an aggregated endpoint exists
 }
 
 type DistrictRequestRow = {
@@ -75,7 +59,7 @@ type DistrictRequestRow = {
 
 export interface DistrictExplorerProps {
   locale: string;
-  /** Server-fetched active districts (avoids client roundtrip; props-in pattern). */
+  /** Server-fetched active districts (props-in pattern). */
   activeDistricts: ActiveDistrict[];
   /** Server-fetched top-voted requests (excluding active districts). */
   voteRequests: DistrictRequestRow[];
@@ -95,7 +79,6 @@ export default function DistrictExplorer({
     const emerging: ActiveDistrict[] = [];
     const recent: ActiveDistrict[] = [];
 
-    // Recently launched: top 3 by goLiveDate desc
     const sortedByDate = [...activeDistricts].sort((a, b) => {
       const ax = a.goLiveDate ? new Date(a.goLiveDate).getTime() : 0;
       const bx = b.goLiveDate ? new Date(b.goLiveDate).getTime() : 0;
@@ -117,116 +100,86 @@ export default function DistrictExplorer({
     <section
       id="district-explorer"
       aria-labelledby="explorer-heading"
-      style={{
-        maxWidth: 1200,
-        margin: "0 auto",
-        padding: "32px 16px",
-      }}
+      className="ftp-section-wrap ftp-explorer-wrap"
+      style={{ background: "#FAFAF8", borderTop: "1px solid #F0F0EC" }}
     >
-      <div style={{ marginBottom: 16 }}>
-        <h2
-          id="explorer-heading"
-          style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}
-        >
-          Explore districts
-        </h2>
-        <p style={{ marginTop: 4, fontSize: 13, color: "#6B7280" }}>
-          Click any district to see its 32 modules. Vote for the next launch.
-        </p>
-      </div>
+      <style>{`
+        .ftp-explorer-card {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 12px 14px;
+          background: #FFFFFF;
+          border: 1px solid #E8E8E4;
+          border-radius: 10px;
+          text-decoration: none;
+          color: #1A1A1A;
+          transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+          gap: 10px;
+        }
+        .ftp-explorer-card:hover {
+          transform: translateY(-1px);
+          border-color: #D1D5DB;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-explorer-card { transition: none; }
+          .ftp-explorer-card:hover { transform: none; }
+        }
+        .ftp-section-label {
+          font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+          text-transform: uppercase; color: #9B9B9B; margin: 20px 0 10px;
+        }
+        .ftp-section-label:first-child { margin-top: 0; }
+        .ftp-explorer-tier-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 10px;
+        }
+      `}</style>
 
-      {/* ── Tab bar ── */}
-      <div
-        role="tablist"
-        aria-label="Group districts by"
-        style={{
-          display: "inline-flex",
-          gap: 4,
-          padding: 4,
-          background: "#F5F5F0",
-          borderRadius: 10,
-          marginBottom: 18,
-        }}
-      >
-        <TabButton active={tab === "tier"} onClick={() => setTab("tier")}>
-          By tier
-        </TabButton>
-        <TabButton
-          active={false}
-          disabled
-          title="Coming soon"
-          onClick={() => {}}
-        >
-          By region
-        </TabButton>
-      </div>
-
-      {/* ── 50/50 grid (map placeholder + list) ── */}
-      <div
-        className="ftp-explorer-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-          gap: 24,
-        }}
-      >
-        <style>{`
-          @media (max-width: 767px) {
-            .ftp-explorer-grid { grid-template-columns: 1fr !important; }
-            .ftp-explorer-map { min-height: 240px !important; }
-          }
-          .ftp-explorer-card {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 14px;
-            background: #FFFFFF;
-            border: 1px solid #E8E8E4;
-            border-radius: 10px;
-            text-decoration: none;
-            color: #1A1A1A;
-            transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
-          }
-          .ftp-explorer-card:hover {
-            transform: translateY(-1px);
-            border-color: #D1D5DB;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .ftp-explorer-card { transition: none; }
-            .ftp-explorer-card:hover { transform: none; }
-          }
-          .ftp-section-label {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-            text-transform: uppercase; color: #9B9B9B; margin: 16px 0 8px;
-          }
-        `}</style>
-
-        {/* MAP (left) — DrillDownMap (dynamic, SSR off, react-simple-maps) */}
-        <div
-          className="ftp-explorer-map"
-          aria-label="India map — click an active state to explore"
-          style={{
-            minHeight: 480,
-            background: "#FAFAF8",
-            border: "1px solid #E8E8E4",
-            borderRadius: 16,
-            overflow: "hidden",
-          }}
-        >
-          <DrillDownMap locale={locale} />
+      <div className="ftp-section-inner">
+        <div style={{ marginBottom: 16 }}>
+          <h2
+            id="explorer-heading"
+            style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1A1A1A" }}
+          >
+            Explore districts
+          </h2>
+          <p style={{ marginTop: 4, fontSize: 13, color: "#6B7280" }}>
+            Click any district to see its 32 modules. Vote for the next launch.
+          </p>
         </div>
 
-        {/* LIST (right) */}
+        {/* ── Tab bar ── */}
+        <div
+          role="tablist"
+          aria-label="Group districts by"
+          style={{
+            display: "inline-flex",
+            gap: 4,
+            padding: 4,
+            background: "#FFFFFF",
+            border: "1px solid #E8E8E4",
+            borderRadius: 10,
+            marginBottom: 18,
+          }}
+        >
+          <TabButton active={tab === "tier"} onClick={() => setTab("tier")}>
+            By tier
+          </TabButton>
+          <TabButton active={false} disabled title="Coming soon" onClick={() => {}}>
+            By region
+          </TabButton>
+        </div>
+
+        {/* ── List (full width) ── */}
         <div>
           {/* Recently launched */}
           {grouped.recent.length > 0 && (
             <>
-              <div
-                className="ftp-section-label"
-                style={{ color: "#92400E", margin: "0 0 8px" }}
-              >
+              <div className="ftp-section-label" style={{ color: "#92400E" }}>
                 ⚡ Recently launched
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className="ftp-explorer-tier-grid">
                 {grouped.recent.map((d) => (
                   <Link
                     key={`recent-${d.slug}`}
@@ -262,34 +215,19 @@ export default function DistrictExplorer({
           )}
 
           {/* Tier groups */}
-          <TierGroup
-            label="Metro"
-            districts={grouped.metro}
-            locale={locale}
-          />
-          <TierGroup
-            label="Tier 2"
-            districts={grouped.tier2}
-            locale={locale}
-          />
+          <TierGroup label="Metro" districts={grouped.metro} locale={locale} />
+          <TierGroup label="Tier 2" districts={grouped.tier2} locale={locale} />
           {grouped.emerging.length > 0 && (
-            <TierGroup
-              label="Tier 3 / Emerging"
-              districts={grouped.emerging}
-              locale={locale}
-            />
+            <TierGroup label="Tier 3 / Emerging" districts={grouped.emerging} locale={locale} />
           )}
 
           {/* Coming next vote */}
           {voteRequests.length > 0 && (
             <>
-              <div
-                className="ftp-section-label"
-                style={{ color: "#1D4ED8", margin: "20px 0 8px" }}
-              >
+              <div className="ftp-section-label" style={{ color: "#1D4ED8" }}>
                 🗳️ Coming next · vote
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div className="ftp-explorer-tier-grid">
                 {voteRequests.slice(0, 3).map((r) => (
                   <div
                     key={r.id}
@@ -348,15 +286,14 @@ function TabButton({
       title={title}
       onClick={onClick}
       style={{
-        background: active ? "#FFFFFF" : "transparent",
+        background: active ? "#FAFAF8" : "transparent",
         color: disabled ? "#9B9B9B" : active ? "#1A1A1A" : "#6B7280",
-        border: active ? "1px solid #E8E8E4" : "1px solid transparent",
+        border: "1px solid transparent",
         padding: "6px 14px",
         fontSize: 13,
         fontWeight: 600,
         borderRadius: 6,
         cursor: disabled ? "not-allowed" : "pointer",
-        boxShadow: active ? "0 1px 2px rgba(0,0,0,0.04)" : "none",
       }}
     >
       {children}
@@ -377,7 +314,7 @@ function TierGroup({
   return (
     <>
       <div className="ftp-section-label">{label}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+      <div className="ftp-explorer-tier-grid">
         {districts.map((d) => (
           <Link
             key={d.slug}
