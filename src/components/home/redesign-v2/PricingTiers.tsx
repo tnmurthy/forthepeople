@@ -28,7 +28,10 @@ interface TierCardProps {
   badge: string;
   badgeBg: string;
   badgeColor: string;
+  /** Price amount only, e.g. "₹999". Period suffix is rendered in a smaller span. */
   price: string;
+  /** Period suffix, e.g. "/ mo". Rendered smaller + lighter than the price. */
+  pricePeriod?: string;
   perDay: string;
   description: string;
   ctaLabel: string;
@@ -127,7 +130,8 @@ export default function PricingTiers({ locale }: { locale: string }) {
           badge="⌂ DISTRICT CHAMPION"
           badgeBg="#DCFCE7"
           badgeColor="#166534"
-          price="₹99 / mo"
+          price="₹99"
+          pricePeriod="/ mo"
           perDay="≈ ₹3.30 / day"
           description="Pick your district · name on its page"
           ctaLabel="Subscribe ₹99 →"
@@ -140,7 +144,8 @@ export default function PricingTiers({ locale }: { locale: string }) {
           badge="⛳ STATE CHAMPION"
           badgeBg="#EEEDFE"
           badgeColor="#3C3489"
-          price="₹999 / mo"
+          price="₹999"
+          pricePeriod="/ mo"
           perDay="≈ ₹33 / day"
           description="Pick your state · name on every district in it"
           ctaLabel="Subscribe ₹999 →"
@@ -155,7 +160,8 @@ export default function PricingTiers({ locale }: { locale: string }) {
           badge="★ ALL-INDIA PATRON"
           badgeBg="#FCEBEB"
           badgeColor="#791F1F"
-          price="₹9,999 / mo"
+          price="₹9,999"
+          pricePeriod="/ mo"
           perDay="≈ ₹333 / day"
           description="Featured across all 780+ districts"
           ctaLabel="Subscribe ₹9,999 →"
@@ -213,8 +219,6 @@ function TierCard(props: TierCardProps) {
       <div
         style={{
           marginTop: 18,
-          fontSize: 28,
-          fontWeight: 700,
           color: "#1A1A1A",
           letterSpacing: "-0.01em",
           lineHeight: 1.1,
@@ -222,7 +226,19 @@ function TierCard(props: TierCardProps) {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {props.price}
+        <span style={{ fontSize: 28, fontWeight: 700 }}>{props.price}</span>
+        {props.pricePeriod && (
+          <span
+            style={{
+              marginLeft: 6,
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#6B7280",
+            }}
+          >
+            {props.pricePeriod}
+          </span>
+        )}
       </div>
       <div style={{ marginTop: 4, fontSize: 12, color: "#6B7280" }}>{props.perDay}</div>
       <p
