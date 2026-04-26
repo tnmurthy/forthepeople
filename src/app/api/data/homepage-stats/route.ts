@@ -50,7 +50,7 @@ export async function GET() {
 
     // mostRecentAt now reflects healthy data sources, not stale upstream APIs.
     // AGMARKNET (cropPrice.fetchedAt) hasn't published since 2026-04-21 — verified
-    // via Phase 4 [scrape-debug] logs across all 10 districts.
+    // via Session-10 diagnostic logs across all 10 districts.
     // Railway weather scraper (weatherReading.recordedAt) offline since trial
     // credit constraints around 2026-04-21.
     const times = [
