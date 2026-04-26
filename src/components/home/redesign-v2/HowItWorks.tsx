@@ -49,7 +49,7 @@ function StepNumber({ target }: { target: number }) {
   const { value, ref } = useCountUp<HTMLDivElement>(target);
   const display = value.toString().padStart(2, "0");
   return (
-    <div className="ftp-how-num" ref={ref}>
+    <div className="ftp-how-num-circle" ref={ref}>
       {display}
     </div>
   );
@@ -69,38 +69,70 @@ export default function HowItWorks() {
           letter-spacing: -0.01em;
           color: #1A1A1A;
         }
+        /* Session 13 v8 Phase K (Fix #17): visual polish */
         .ftp-how-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 16px;
           margin-bottom: 24px;
+          position: relative;
+        }
+        /* Connecting line behind the cards (desktop only) */
+        .ftp-how-grid::before {
+          content: "";
+          position: absolute;
+          top: 40px;
+          left: 12.5%;
+          right: 12.5%;
+          height: 1px;
+          background: linear-gradient(to right, transparent, #E5E7EB 10%, #E5E7EB 90%, transparent);
+          z-index: 0;
         }
         .ftp-how-step {
+          position: relative;
+          z-index: 1;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           padding: 20px;
-          border-radius: 10px;
-          background: #FAFAF8;
-          border: 0.5px solid #E5E7EB;
+          border-radius: 12px;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
           opacity: 0;
           transform: translateY(8px);
           animation: ftp-card-reveal 400ms ease-out forwards;
-          transition: background 200ms ease, border-color 200ms ease;
+          transition: transform 200ms ease, border-color 150ms ease, box-shadow 200ms ease;
         }
-        .ftp-how-step:hover { background: #F5F5F0; border-color: #D1D5DB; }
-        .ftp-how-num {
-          font-size: 28px;
+        .ftp-how-step:hover {
+          border-color: #10B981;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(16, 185, 129, 0.08);
+        }
+        .ftp-how-num-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #10B981, #059669);
+          color: #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
           font-weight: 700;
-          color: #9B9B9B;
-          line-height: 1;
           font-variant-numeric: tabular-nums;
-          font-family: var(--font-mono, ui-monospace, monospace);
+          align-self: flex-start;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+          animation: ftp-num-pop 0.5s ease-out;
         }
-        .ftp-how-icon { font-size: 24px; line-height: 1; }
+        @keyframes ftp-num-pop {
+          0%   { transform: scale(0); }
+          60%  { transform: scale(1.15); }
+          100% { transform: scale(1); }
+        }
+        .ftp-how-icon { font-size: 28px; line-height: 1; }
         .ftp-how-title { font-size: 16px; font-weight: 600; color: #1A1A1A; }
         .ftp-how-desc {
-          font-size: 13px; color: #4B5563; line-height: 1.55;
+          font-size: 12px; color: #4B5563; line-height: 1.55;
         }
         .ftp-how-caption {
           font-size: 11px; color: #9B9B9B;
@@ -115,13 +147,17 @@ export default function HowItWorks() {
         }
         @media (max-width: 1023px) and (min-width: 768px) {
           .ftp-how-grid { grid-template-columns: repeat(2, 1fr); }
+          .ftp-how-grid::before { display: none; }
         }
         @media (max-width: 767px) {
           .ftp-how-grid { grid-template-columns: 1fr; gap: 12px; }
+          .ftp-how-grid::before { display: none; }
           .ftp-how-step { padding: 16px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-how-step { animation: none; opacity: 1; transform: none; transition: none; }
+          .ftp-how-step:hover { transform: none; box-shadow: none; }
+          .ftp-how-num-circle { animation: none; }
         }
       `}</style>
 
