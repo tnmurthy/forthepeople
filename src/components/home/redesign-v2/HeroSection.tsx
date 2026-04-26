@@ -94,11 +94,11 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
       style={{ background: "#FFFFFF", borderBottom: "1px solid #F0F0EC" }}
     >
       <style>{`
-        /* Session 14 v8.1 Phase D (Fix #8): bigger map (640px) */
+        /* Session 14 v8.1 Phase D+E (Fixes #8, #9): bigger map + room for one-line tagline */
         .ftp-hero {
           display: grid;
-          grid-template-columns: 60% 40%;
-          gap: 24px;
+          grid-template-columns: 56% 44%;
+          gap: 28px;
           align-items: stretch;
           min-height: 640px;
           padding: 24px 24px;
@@ -156,11 +156,15 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-hero-h1 {
           margin: 0;
-          font-size: 32px;
-          font-weight: 600;
+          font-size: 28px;
+          font-weight: 700;
           line-height: 1.15;
           letter-spacing: -0.02em;
           color: #1A1A1A;
+          white-space: nowrap;
+        }
+        @media (max-width: 1280px) {
+          .ftp-hero-h1 { font-size: 24px; white-space: normal; }
         }
         .ftp-hero-subtitle {
           margin: 0;
@@ -269,7 +273,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-hero-map-col { order: -1; min-height: 320px; }
           .ftp-hero-map-large { min-height: 320px; max-height: 400px; }
           .ftp-hero-right { padding: 0; }
-          .ftp-hero-h1 { font-size: 24px; }
+          .ftp-hero-h1 { font-size: 22px; white-space: normal; }
           .ftp-hero-districts-list { max-height: none; }
         }
         @media (prefers-reduced-motion: reduce) {
