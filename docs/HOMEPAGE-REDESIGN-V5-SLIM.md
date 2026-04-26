@@ -307,3 +307,87 @@ Net delta: **+1 error in unrelated pre-existing code** (not introduced by any Se
 - /vote-district vote action (POST → optimistic bump → server upsert)
 - prefers-reduced-motion turned on → no animations
 - Lighthouse / Core Web Vitals on the new homepage
+
+---
+
+# Session 13 — v8 final polish (2026-04-26, NOT pushed)
+
+19 production-pattern-matching fixes from Jayanth's localhost review.
+~14 commits, all on local `main`. Reversibility tag:
+`pre-session-13-v8-polish-2026-04-26`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| DisclaimerBanner | Wording → explicit "ForThePeople.in is NOT an official government website" | #1 |
+| HeaderBar (logo) | Drop 👥 emoji — plain text "ForThePeople.in" / "FTP.in" | #11 |
+| HeaderBar (products) | Lucide icons in brand colors (Users blue · Network purple · Briefcase yellow); .jobs uses YELLOW not orange | #12, #13 |
+| HeaderBar (GitHub) | Replace redundant Support text link with GitHub link showing live star count + scalable color tier (bronze/silver/gold/platinum/diamond, sessionStorage 1h cache, fallback 149) | #2 |
+| HeaderBar (Support btn) | Layered red — rose-50 bg / rose-600 text / rose-200 border (production pattern) | #18 |
+| FinancialTicker | Replace LIVE pill with Market Open/Closed status (Indian market hours: Mon-Fri 09:15-15:30 IST) | #3 |
+| StatsBar | Drop LIVE prefix; redesign as dashboard-style 5-tile grid with hairline dividers, hover, larger 24px tabular figures, uppercase labels; mobile 2-col + last tile spans full width | #4 |
+| HeroSection (map) | 480-560px tall map with floating "Click a state to explore" hint (glass-morphism backdrop) | #5 |
+| HeroSection (right) | Districts moved INTO hero right column as inline rows; "Explore the whole India →" green CTA between subtitle and districts list | #6, #7 |
+| HeroSection (rows) | Each row: name + state suffix + 2 curated tag-bullets (Sugar capital · KRS dam · Cauvery basin etc.); NEW = small 8px letter pill, no card-bg color change | #8, #9 |
+| LiveDistrictsList | Removed from page.tsx (file kept on disk for rollback) | #7 |
+| ContributorsStrip | Tier-colored marquee — Founder amber+Crown · All-India red+🇮🇳 · State purple+MapPin · District emerald+Building · One-time neutral; 60s linear, hover-pause, edge fade-mask | #14 |
+| HowItWorks | 40px gradient number circles with pop-in animation, connecting hairline behind cards (desktop), hover-lift + emerald shadow | #17 |
+| VoteFeaturesCTA | Purple gradient card (#EEEDFE → #F4F3FE) with oversized 🗳️ watermark, white inner rows, violet vote chip + primary button | #16 |
+| Footer | Single line: links · brand IG (@forthepeople_in) + project GitHub · "Built by · Updated"; personal IG removed | #15 |
+| All data | Existing APIs only — no new endpoints, no new schema fields | #10 |
+| Spacing | Hero stretch-aligned, sections flow tightly | #19 |
+
+## v8 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />     ← LAYOUT
+<MigrationBanner />     ← LAYOUT
+<DisclaimerBanner />    ← LAYOUT (wording: NOT an official government website)
+<HeaderBar />           ← LAYOUT (plain logo · GitHub stars · Lucide products · layered Support)
+<main>
+  <FinancialTicker />        — Market Open/Closed pill + marquee + Updated
+  <StatsBar />               — 5-tile dashboard grid (no LIVE prefix)
+  <HeroSection />            — map LEFT 60% / text + districts inline RIGHT 40%
+  <LiveDataShowcase />       — district chip tabs + 4 module cards
+  <HowItWorks />             — 4 gradient-circle steps + connecting line
+  <ContributorsStrip />      — tier-colored marquee (5 tiers)
+  <VoteFeaturesCTA />        — purple gradient card
+</main>
+<Footer />              ← LAYOUT (single line)
+<SuggestionFloatingButton />
+```
+
+## v8 commits (14 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `11beac9` | B | DisclaimerBanner — explicit "NOT official government" wording |
+| 2 | `45cc2a5` | C | HeaderBar — emoji-less logo, GitHub stars, Lucide products, .jobs yellow, layered-red Support |
+| 3 | `19c4b37` | D | FinancialTicker — Market Open/Closed status pill |
+| 4 | `69fc080` | E | StatsBar — dashboard 5-tile grid |
+| 5 | `5af155c` | F+G | HeroSection — bigger map + hint, districts inline w/ rich intros |
+| 6 | `f3fe5ba` | H | page.tsx — drop separate LiveDistrictsList section |
+| 7 | `3b8057d` | I | ContributorsStrip — tier-colored marquee |
+| 8 | `b248536` | J | VoteFeaturesCTA — purple gradient card |
+| 9 | `369b232` | K | HowItWorks — gradient circles + connecting line + hover lift |
+| 10 | `e904f9b` | L | Footer — single line, brand IG + GitHub only |
+| 11 | `80581df` | M | page.tsx — docstring refresh to v8 composition |
+| 12 | `5179fb9` | N | FinancialTicker — lazy-init nowMs (lint cleanup) |
+
+## Verification
+
+| | Before Session 13 | After Session 13 |
+|---|---|---|
+| Total problems | 108 | 108 |
+| Errors | 62 | 62 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 108 baseline preserved exactly.
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district` all 200.
+- GitHub star fetch: cached 1h in sessionStorage; falls back to 149 on rate-limit.
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-13-v8-polish-2026-04-26` exists; all 14 commits sit on local `main`. Push only after Jayanth's manual review.
