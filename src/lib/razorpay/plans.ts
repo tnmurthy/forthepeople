@@ -20,15 +20,17 @@
  * Do NOT read it here — existing subscribers on that plan keep charging at
  * ₹1,999/mo until they cancel and resubscribe.
  *
- * MANUAL ACTION FOR JAYANTH
- * ─────────────────────────
- * 1. Log into Razorpay dashboard → Plans → Create Plan
- * 2. Monthly billing, amount ₹999 (= 99900 paise), INR
- * 3. Copy the `plan_XXXXXXXXXXXXXX` ID
- * 4. Replace the literal "REPLACE_WITH_NEW_999_PLAN_ID" below
+ * STATE CHAMPION ₹999 PLAN
+ * ────────────────────────
+ * Created via Razorpay API in Session 10.5 (2026-04-26):
+ *   POST /v1/plans → plan_Si4gHceNb9Mz4w (₹999 monthly, INR, live mode).
+ * Hardcoded as a fallback so prod works immediately; env override
+ * (RAZORPAY_PLAN_STATE_CHAMPION) allows future plan rotation without a
+ * code change.
  *
- * Until step 4 is done, the app continues to work because subscriptions go
- * through the dynamic-plan path in create-subscription/route.ts.
+ * Until/unless Jayanth pastes RAZORPAY_PLAN_STATE_CHAMPION on Vercel, the
+ * hardcoded plan_Si4gHceNb9Mz4w is what gets used on prod. Either path
+ * keeps the dynamic-plan flow in create-subscription/route.ts unaffected.
  */
 
 export const RAZORPAY_PLANS = {
@@ -39,7 +41,8 @@ export const RAZORPAY_PLANS = {
     label: "Royal Sponsor (India)",
   },
   state_champion_monthly: {
-    planId: "REPLACE_WITH_NEW_999_PLAN_ID", // ⚠ Jayanth creates in dashboard
+    // Created via Razorpay API in Session 10.5: plan_Si4gHceNb9Mz4w (live).
+    planId: process.env.RAZORPAY_PLAN_STATE_CHAMPION ?? "plan_Si4gHceNb9Mz4w",
     amount: 99900, // ₹999 in paise
     interval: "monthly" as const,
     label: "State Champion (₹999/mo)",
