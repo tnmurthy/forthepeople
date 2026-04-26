@@ -391,3 +391,62 @@ Net delta: **+1 error in unrelated pre-existing code** (not introduced by any Se
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-13-v8-polish-2026-04-26` exists; all 14 commits sit on local `main`. Push only after Jayanth's manual review.
+
+---
+
+# Session 14 — v8.1 polish (2026-04-26, NOT pushed)
+
+11 surface-level fixes from Jayanth's localhost review of v8.
+~9 commits, all on local `main`. Reversibility tag:
+`pre-session-14-polish-2026-04-26`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| HeaderBar | GitHub link gets white-bg outline, default star color YELLOW (#EAB308); tier scale silver→#94A3B8, gold→#EAB308 | #1 |
+| HeaderBar | Vote on Features → purple pill (light bg / dark text / soft border) | #2 |
+| HeaderBar | Language button → Lucide Globe icon + outline + chevron | #3 |
+| HeaderBar | Theme toggle → 32px square w/ outline (was bare) | #4 |
+| HeaderBar | Padding 10px 16px → 8px 24px so contents extend toward corners | #5 |
+| StatsBar | Numbers BLUE (#2563EB), 28px (was 24), font-weight 700 (was 600); dividers 1px (was 0.5px); hover #F0F7FF | #6, #7 |
+| HeroSection | Map column 540-640px tall (was 480-560); SVG max-height 620px | #8 |
+| HeroSection | h1 white-space:nowrap + grid 56/44 + gap 28px → tagline single line at 1280px+ | #9 |
+| HeroSection | District rows outlined (1px border, 8px radius), padding 10×14, hover slides right + blue border + soft blue shadow; all 3 curated tags shown (was 2); list lost max-height + overflow:auto so all 10 visible | #10 |
+| /contributors | Removed Session 12 ContributorsHero — was a second hero stacked above the existing GlobalContributorsClient hero. ContributorsHero.tsx kept on disk for rollback. | #11 |
+| /contributors | Wired useCountUp into GlobalContributorsClient hero stats (totalContributors / activeSubscribers / districtsSponsored) — animates 0 → final on scroll-into-view, mirroring StatsBar | #12 |
+| ContributorsStrip | 3 sliding tracks at tier-paced speeds: All-India+Founder 90s SLOW, State 60s MED, District+Onetime 35s FAST; hover-pause; reduced-motion freezes + wraps | #13 |
+| ContributorsStrip | Pills clickable when contributor.socialLink exists (existing schema field, now surfaced by API gated on isPublic); safeExternalLink rejects non-http(s) and accepts bare @handles as Instagram | #14 |
+| ContributorsStrip / API | Public-supporter names render in full (anonymizeName drops the "First L." truncation when isPublic=true; private supporters still show "Anonymous"); pill names use white-space:nowrap | #15 |
+| HowItWorks | Theme switched green → blue: hover border #10B981→#2563EB, num-circle gradient #10B981→#059669 → #2563EB→#1D4ED8, shadows + connecting line tinted blue | #16 |
+| API | /api/payment/contributors now surfaces socialLink + socialPlatform from existing Supporter schema; cache key bumped v3→v4 | #14, #15 |
+
+## Verification
+
+| | Before Session 14 | After Session 14 |
+|---|---|---|
+| Total problems | 108 | 108 |
+| Errors | 62 | 62 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 108 baseline preserved exactly.
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district` all 200.
+- Verified live: `/api/payment/contributors?limit=5` now returns `socialLink` + `socialPlatform` fields, and "Vignesh" displays in full (was "Vig...").
+
+## v8.1 commits (9 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `8462f6a` | B | Header — outlined GitHub/Vote/Language/Theme + yellow star + purple Vote pill + Globe icon |
+| 2 | `554e3ef` | C | StatsBar — blue numbers + bolder + 1px dividers |
+| 3 | `ceebc8d` | D | Hero map — bigger (640px max) |
+| 4 | `96ea21a` | E | Hero h1 — nowrap + 56/44 grid ratio |
+| 5 | `b7303cc` | F | District rows — outlined + 3 tags + all 10 visible |
+| 6 | `8aa5441` | G | /contributors — remove duplicate hero + count-up on 72/16/4 |
+| 7 | `e9dd410` | H | Supporters — tier-based marquee speeds + clickable + full names |
+| 8 | `0673c98` | I | HowItWorks — blue theme (was green) |
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-14-polish-2026-04-26` exists; all v8.1 commits sit on local `main`. Push after Jayanth's manual review.
