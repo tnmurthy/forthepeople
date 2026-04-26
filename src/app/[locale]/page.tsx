@@ -3,21 +3,20 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 12 v7 — page.tsx swap (Phase N).
+ * Session 13 v8 — final composition (Phase M).
  *
  * Composition:
- *   1. FinancialTicker         — LIVE pill + scrolling marquee + updated label
- *   2. StatsBar                — count-up stats line (replaces LiveActivityRibbon)
- *   3. HeroSection             — map LEFT (60%), text RIGHT (40%)
- *   4. LiveDistrictsList       — flat 10-district grid, NEW badge on top 3 newest
- *   5. LiveDataShowcase        — RESTORED — district chip tabs + 4 module cards
- *   6. HowItWorks              — 4-step explainer (Aggregate/Process/Surface/Sustain)
- *   7. ContributorsStrip       — flat names + "View all supporters & how to join"
- *   8. VoteFeaturesCTA         — top 3 features + "Vote on features"
+ *   1. FinancialTicker     — Market Open/Closed pill + scrolling marquee + Updated
+ *   2. StatsBar            — dashboard-style 5-tile grid (no LIVE prefix)
+ *   3. HeroSection         — map LEFT 60% / text + districts RIGHT 40%
+ *                            (districts list lives inline; LiveDistrictsList retired)
+ *   4. LiveDataShowcase    — district chip tabs + 4 module cards
+ *   5. HowItWorks          — 4-step gradient-circle explainer
+ *   6. ContributorsStrip   — tiered colored marquee (Founder/All-India/State/District)
+ *   7. VoteFeaturesCTA     — purple gradient card with top 3 features
  *
- * UpcomingDistricts removed from the homepage — its function is now served
- * by the dedicated /vote-district route (linked from the HeaderBar district
- * autocomplete and from the StatsBar "coming districts" affordance).
+ * /vote-district is the dedicated locked-districts route — linked from
+ * HeaderBar district autocomplete and from VoteFeaturesCTA.
  *
  * StatsBar pulls real values via the cached /api/data/homepage-stats endpoint
  * (5-min cache, SSR-safe). DASHBOARDS_PER_DISTRICT and TOTAL_INDIA_DISTRICTS
