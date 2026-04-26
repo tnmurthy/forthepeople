@@ -5,8 +5,12 @@
  */
 
 import type { Metadata } from "next";
-import ContributorsHero from "./ContributorsHero";
 import GlobalContributorsClient from "./GlobalContributorsClient";
+
+// Session 14 v8.1 Phase G (Fix #11): the Session 12 ContributorsHero
+// was a second hero rendered above GlobalContributorsClient — it
+// duplicated the existing in-page "The People Behind the Platform"
+// heading. ContributorsHero.tsx stays on disk for rollback; just unimported.
 
 export const metadata: Metadata = {
   title: "Contributors — ForThePeople.in",
@@ -19,10 +23,5 @@ interface Props {
 
 export default async function GlobalContributorsPage({ params }: Props) {
   const { locale } = await params;
-  return (
-    <>
-      <ContributorsHero locale={locale} />
-      <GlobalContributorsClient locale={locale} />
-    </>
-  );
+  return <GlobalContributorsClient locale={locale} />;
 }

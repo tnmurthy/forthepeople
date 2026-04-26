@@ -17,6 +17,15 @@ import { normalizeSocialLink } from "@/lib/social-link";
 import BadgeExplainer from "@/components/common/BadgeExplainer";
 import ContributorGrowthChart from "@/components/common/ContributorGrowthChart";
 import { getTotalActiveDistrictCount } from "@/lib/constants/districts";
+import { useCountUp } from "@/lib/hooks/useCountUp";
+
+// Session 14 v8.1 Phase G (Fix #12): count-up animation on the
+// "The People Behind the Platform" hero stats. Mirrors the homepage
+// StatsBar behavior — animates 0 → final on scroll-into-view.
+function HeroStatNum({ target }: { target: number }) {
+  const { value, ref } = useCountUp<HTMLSpanElement>(target);
+  return <span ref={ref}>{value.toLocaleString("en-IN")}</span>;
+}
 
 const MODULES_PER_DISTRICT = 29;
 
@@ -253,19 +262,19 @@ export default function GlobalContributorsClient({ locale }: { locale: string })
           <div className="ftp-hero-stats" style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: 28, fontWeight: 800, color: "#2563EB", fontFamily: "var(--font-mono, monospace)" }}>
-                {totalContributors.toLocaleString("en-IN")}
+                <HeroStatNum target={totalContributors} />
               </div>
               <div style={{ fontSize: 11, color: "#9B9B9B" }}>Total Supporters</div>
             </div>
             <div>
               <div style={{ fontSize: 28, fontWeight: 800, color: "#16A34A", fontFamily: "var(--font-mono, monospace)" }}>
-                {activeSubscribers.toLocaleString("en-IN")}
+                <HeroStatNum target={activeSubscribers} />
               </div>
               <div style={{ fontSize: 11, color: "#9B9B9B" }}>Active Monthly</div>
             </div>
             <div>
               <div style={{ fontSize: 28, fontWeight: 800, color: "#D97706", fontFamily: "var(--font-mono, monospace)" }}>
-                {districtsSponsored.toLocaleString("en-IN")}
+                <HeroStatNum target={districtsSponsored} />
               </div>
               <div style={{ fontSize: 11, color: "#9B9B9B" }}>Districts Sponsored</div>
             </div>
