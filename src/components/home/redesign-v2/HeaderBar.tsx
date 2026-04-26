@@ -27,6 +27,7 @@ import {
   Briefcase,
   ChevronDown,
   Github,
+  Globe,
   Heart,
   Lock,
   Menu,
@@ -281,7 +282,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         zIndex: 30,
         background: "#FFFFFF",
         borderBottom: "1px solid #E8E8E4",
-        padding: "10px 16px",
+        padding: "8px 24px",
         display: "flex",
         alignItems: "center",
         gap: 12,
@@ -367,16 +368,23 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         }
         .ftp-search-row:hover { background: #F5F5F0; }
         .ftp-search-row .meta { color: #9B9B9B; font-size: 11px; margin-left: auto; }
+        /* Session 14 v8.1 Phase B Fix #4: Theme toggle gets an outline */
         .ftp-theme-locked {
           display: inline-flex; align-items: center; justify-content: center;
-          width: 36px; height: 36px;
-          border-radius: 8px;
-          background: transparent; border: none; cursor: not-allowed;
+          width: 32px; height: 32px;
+          border-radius: 6px;
+          background: #FFFFFF;
+          border: 1px solid #E8E8E4;
+          cursor: not-allowed;
           color: #6B7280;
           position: relative;
           font-size: 14px;
+          transition: background 150ms ease, border-color 150ms ease;
         }
-        .ftp-theme-locked:hover { background: #F5F5F0; }
+        .ftp-theme-locked:hover {
+          background: #FAFAF8;
+          border-color: #D1D5DB;
+        }
         .ftp-theme-locked .ftp-lock-overlay {
           position: absolute;
           right: 4px; bottom: 4px;
@@ -410,29 +418,82 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         }
         .ftp-mobile-panel a:hover, .ftp-mobile-panel button:hover { background: #F5F5F0; }
 
-        /* Session 13 v8 Fix #2: GitHub link with star count + tier color */
+        /* Session 14 v8.1 Phase B: outlined header items + yellow GitHub star */
         .ftp-github-link {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 10px;
+          padding: 6px 12px;
+          background: #FFFFFF;
+          border: 1px solid #E8E8E4;
           border-radius: 6px;
           color: #4B5563;
           text-decoration: none;
           font-size: 12px;
-          transition: background 150ms ease, color 150ms ease;
+          transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
         }
-        .ftp-github-link:hover { background: #F5F5F0; color: #1A1A1A; }
+        .ftp-github-link:hover {
+          background: #FAFAF8;
+          border-color: #D1D5DB;
+          color: #1A1A1A;
+          transform: translateY(-1px);
+        }
         .ftp-github-icon { width: 16px; height: 16px; }
         .ftp-github-stars {
           font-weight: 600;
           font-variant-numeric: tabular-nums;
+          color: #EAB308; /* default = gold/yellow */
         }
         .ftp-github-stars[data-tier="bronze"]   { color: #B45309; }
-        .ftp-github-stars[data-tier="silver"]   { color: #6B7280; }
-        .ftp-github-stars[data-tier="gold"]     { color: #CA8A04; }
+        .ftp-github-stars[data-tier="silver"]   { color: #94A3B8; }
+        .ftp-github-stars[data-tier="gold"]     { color: #EAB308; }
         .ftp-github-stars[data-tier="platinum"] { color: #7C3AED; }
         .ftp-github-stars[data-tier="diamond"]  { color: #2563EB; }
+
+        /* Session 14 v8.1 Phase B Fix #2: Vote on Features purple pill */
+        .ftp-vote-features-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 12px;
+          background: #EEEDFE;
+          color: #3C3489;
+          border: 1px solid #DDD6FE;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+        }
+        .ftp-vote-features-link:hover {
+          background: #DDD6FE;
+          border-color: #6E59C0;
+          transform: translateY(-1px);
+        }
+        .ftp-vote-features-emoji { font-size: 13px; line-height: 1; }
+
+        /* Session 14 v8.1 Phase B Fix #3: Language button — Globe icon + outline */
+        .ftp-language-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 10px;
+          background: #FFFFFF;
+          border: 1px solid #E8E8E4;
+          border-radius: 6px;
+          color: #4B5563;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 150ms ease, border-color 150ms ease;
+        }
+        .ftp-language-btn:hover {
+          background: #FAFAF8;
+          border-color: #D1D5DB;
+        }
+        .ftp-language-icon { width: 14px; height: 14px; color: #9B9B9B; }
+        .ftp-language-chevron { width: 12px; height: 12px; opacity: 0.6; }
 
         /* Session 13 v8 Fix #18: Support button — layered red */
         .ftp-support-btn {
@@ -688,10 +749,10 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       </a>
       <Link
         href={`/${locale}/features`}
-        className="ftp-link-btn ftp-desktop-only"
-        style={{ fontSize: 13 }}
+        className="ftp-vote-features-link ftp-desktop-only"
       >
-        🗳️ Vote on Features
+        <span className="ftp-vote-features-emoji" aria-hidden="true">🗳️</span>
+        <span>Vote on Features</span>
       </Link>
 
       {/* ── Language dropdown ── */}
@@ -701,11 +762,11 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           onClick={() => setLangOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={langOpen}
-          className="ftp-link-btn"
-          style={{ fontSize: 13 }}
+          className="ftp-language-btn"
         >
-          {activeLang.code.toUpperCase()}
-          <ChevronDown size={14} aria-hidden="true" />
+          <Globe className="ftp-language-icon" aria-hidden="true" />
+          <span>{activeLang.code.toUpperCase()}</span>
+          <ChevronDown className="ftp-language-chevron" aria-hidden="true" />
         </button>
         {langOpen && (
           <ul
