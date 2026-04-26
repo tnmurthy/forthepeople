@@ -34,7 +34,6 @@ import {
 import FinancialTicker from "@/components/home/redesign-v2/FinancialTicker";
 import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
-import LiveDistrictsList from "@/components/home/redesign-v2/LiveDistrictsList";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import ContributorsStrip from "@/components/home/redesign-v2/ContributorsStrip";
@@ -145,8 +144,7 @@ export default async function HomePage({
           comingDistricts={comingDistricts}
           mostRecentAt={mostRecentAt}
         />
-        <HeroSection locale={locale} />
-        <LiveDistrictsList locale={locale} activeDistricts={activeDistricts} />
+        <HeroSection locale={locale} districts={activeDistricts} />
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
         <HowItWorks />
         <ContributorsStrip locale={locale} />
