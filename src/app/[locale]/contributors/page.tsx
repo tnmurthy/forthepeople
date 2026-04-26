@@ -5,6 +5,7 @@
  */
 
 import type { Metadata } from "next";
+import ContributorsHero from "./ContributorsHero";
 import GlobalContributorsClient from "./GlobalContributorsClient";
 
 export const metadata: Metadata = {
@@ -18,5 +19,10 @@ interface Props {
 
 export default async function GlobalContributorsPage({ params }: Props) {
   const { locale } = await params;
-  return <GlobalContributorsClient locale={locale} />;
+  return (
+    <>
+      <ContributorsHero locale={locale} />
+      <GlobalContributorsClient locale={locale} />
+    </>
+  );
 }
