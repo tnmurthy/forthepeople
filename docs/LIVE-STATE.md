@@ -4,6 +4,63 @@ _Living document. Append new sections; don't rewrite history._
 
 ---
 
+## 2026-04-26 — Session 10.5: Full delegation (Razorpay + Sentry + audits) (PRE-PUSH)
+
+**Status:** 122 commits ahead of origin/main. 3 code commits this session
+(Razorpay plan_id, Sentry instrumentation migration, docs handoff update).
+🚨 LIVE Razorpay plan created (`plan_Si4gHceNb9Mz4w`, ₹999 monthly).
+
+### What changed
+- **Razorpay** — `POST /v1/plans` created `plan_Si4gHceNb9Mz4w` (live mode,
+  ₹999 monthly INR State Champion). `src/lib/razorpay/plans.ts` updated
+  with hardcoded fallback + `RAZORPAY_PLAN_STATE_CHAMPION` env override.
+- **Sentry** — migrated from deprecated `sentry.{client,server,edge}.config.ts`
+  (Apr 11 setup, never auto-loaded by Next.js 16) to the Sentry-v10/Next-16
+  convention: `src/instrumentation.ts` + `src/instrumentation-client.ts`.
+  Updated `withSentryConfig` org/project to match the dashboard
+  (`forthepeoplein/javascript-nextjs`) and added `authToken` for source-map
+  upload. Sampling preserved (5% traces, no Session Replay,
+  production-only enable).
+- **Audits** — verified existing 4 Razorpay plan IDs against env vars (all
+  present). Verified Razorpay webhook config (URL/events correct, but
+  webhook is DISABLED since Apr 19 — needs manual re-enable per HARD
+  RULE 8). Verified Resend key behavior (restricted-scope, send-only;
+  domain status check requires Jayanth's visual check).
+
+### What stays manual
+- Vercel env var paste (optional): `RAZORPAY_PLAN_STATE_CHAMPION=plan_Si4gHceNb9Mz4w`
+  — only needed if env override is preferred over the hardcoded fallback
+- Razorpay dashboard: re-enable webhook (disabled since 2026-04-19)
+- Hostinger DNS: 3 records for forthepeople.in (Resend domain verification)
+- Railway Hobby upgrade ($5/mo) — Jayanth doing in 2 days
+- Neon spending limit ($10/mo cap) — 30-second click
+
+### Anomaly noted (not blocking)
+Existing Vercel env vars `RAZORPAY_PLAN_STATE` (₹10,000 plan) and
+`RAZORPAY_PLAN_DISTRICT` (₹2,000 plan) point to plans whose amounts
+don't match the comments in `plans.ts` (which describe them as the
+₹1,999 legacy and ₹99 District tiers). These have been live for weeks;
+real subscribers may be charged amounts different from what UI labels
+imply. Not in scope for this session — flagged for a separate
+reconciliation prompt.
+
+### Reversibility (4 layers, intact)
+- Tag `pre-session-10.5-full-delegation-2026-04-26` at commit `f65de7c`
+- Branch `backend-backup-10.5-full-2026-04-26`
+- All Sentry config files removed (`sentry.{client,server,edge}.config.ts`)
+  are recoverable via `git checkout pre-session-10.5-* -- ...`
+- Razorpay plan_id is hardcoded in source (no rollback risk)
+
+### Verified locally
+- `npx tsc --noEmit` clean
+- Dev server restart with new instrumentation: HTTP 200 on `/en` + all API routes
+- `GET /v1/plans/plan_Si4gHceNb9Mz4w` 200 OK
+- `GET /v1/webhooks` returned the (disabled) webhook with correct URL + events
+- Email-rule grep clean (0 hits in src/prisma/scripts)
+- Git author: jayanthmbj@gmail.com only
+
+---
+
 ## 2026-04-26 — Session 10 Unified: cross-platform audit + homepage-stats fix (PRE-PUSH)
 
 **Status:** 116 commits ahead of origin/main. 3 code commits this session (1 snapshot, 1 fix, 1 docs) + Phase 1 instrumentation reverted cleanly. Pure presentation-layer fix; backend untouched.

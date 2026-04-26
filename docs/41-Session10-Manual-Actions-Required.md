@@ -31,17 +31,21 @@ Transfer feature in Settings.
 
 ## 🟠 IMPORTANT (this week)
 
-### 2. Razorpay ₹999 plan creation
-- Open Razorpay dashboard → Subscriptions → Plans → Create plan
-- Plan name: "State Champion" (or similar)
-- Amount: ₹999, monthly
-- Copy the resulting `plan_id` (format: `plan_XXXXXXXXXXXXXX`)
-- Paste into `src/lib/razorpay/plans.ts` line 42, replacing
-  `REPLACE_WITH_NEW_999_PLAN_ID`
-- Commit + include in unified push
+### 2. Razorpay ₹999 plan creation — ✓ RESOLVED in Session 10.5
 
-Confirmed by Phase 5 audit: placeholder `REPLACE_WITH_NEW_999_PLAN_ID`
-still present in `src/lib/razorpay/plans.ts:42`.
+- ✓ Created via Razorpay API (live mode) on 2026-04-26: `plan_Si4gHceNb9Mz4w`
+- ✓ `src/lib/razorpay/plans.ts` updated with hardcoded fallback +
+  `RAZORPAY_PLAN_STATE_CHAMPION` env override
+- ✓ `.env.local` appended with `RAZORPAY_PLAN_STATE_CHAMPION=plan_Si4gHceNb9Mz4w`
+- ✓ Verified existence via `GET /v1/plans/plan_Si4gHceNb9Mz4w` (200 OK)
+
+**Optional follow-up:** add to Vercel env vars (otherwise the hardcoded
+fallback kicks in and works fine):
+```
+RAZORPAY_PLAN_STATE_CHAMPION=plan_Si4gHceNb9Mz4w
+```
+Vercel dashboard → forthepeople project → Settings → Environment Variables
+→ All Environments → Save.
 
 ### 3. RESEND_API_KEY — verify domain in Resend dashboard
 
@@ -65,7 +69,33 @@ and wait for verification.
 If the key needs to be regenerated (e.g., for a full-permission token to
 manage domains via API), update both `.env.local` and Vercel env vars.
 
-### 4. Sentry SDK initialization (PARTIALLY-INSTALLED, needs decision)
+### 4. Sentry SDK initialization — ✓ RESOLVED in Session 10.5
+
+- ✓ Created `src/instrumentation.ts` (server + edge runtime, with
+  `register()` hook + `onRequestError` export per Sentry v10 + Next.js 16
+  convention)
+- ✓ Created `src/instrumentation-client.ts` (browser init +
+  `onRouterTransitionStart` export)
+- ✓ Removed deprecated `sentry.{client,server,edge}.config.ts` files
+  (not auto-loaded by Next.js 16)
+- ✓ Updated `next.config.ts` `withSentryConfig`:
+  org `forthepeople` → `forthepeoplein`
+  project `forthepeople-web` → `javascript-nextjs`
+  Added `authToken: process.env.SENTRY_AUTH_TOKEN`
+- ✓ TSC clean, dev server smoke test passed (HTTP 200)
+
+**Sampling preserved from legacy config:**
+- `tracesSampleRate: 0.05` (5%, saves quota)
+- `replaysSessionSampleRate: 0` (Session Replay disabled)
+- `enabled: process.env.NODE_ENV === "production"` (dev does NOT emit events)
+
+**After unified push + Vercel redeploy:** trigger a deliberate test
+error in production (e.g., visit a route that throws). Events should
+appear at https://forthepeoplein.sentry.io/issues/ within ~5 min.
+
+---
+
+### 4b. Sentry SDK — ARCHIVED (original Phase 4 verdict from Session 10)
 
 **Phase 4 verdict:**
 - ✓ `@sentry/nextjs ^10.48.0` is installed in `package.json`
@@ -103,6 +133,40 @@ After deploy: trigger a deliberate test error in production to verify
 events flow into Sentry within 5 min.
 
 ---
+
+### 4c. Razorpay webhook is DISABLED (NEW — found in Session 10.5)
+
+**Phase 8 of Session 10.5** — `GET /v1/webhooks` returned:
+```
+url:           https://forthepeople.in/api/webhooks/razorpay  ✓ matches handler
+secret_exists: true                                           ✓ secret stored
+events:        payment.captured + payment.failed +            ✓ correct events
+               subscription.charged + subscription.cancelled +
+               subscription.halted + subscription.paused
+active:        false                                          ❌ DISABLED
+disabled_at:   2026-04-19 12:31 UTC (~7 days ago)
+```
+
+**Impact:** for the past 7 days, Razorpay has not been delivering
+subscription/payment events to the app. New subscriptions and recurring
+charges since Apr 19 are not recorded server-side.
+
+**Action:** open Razorpay dashboard → Account & Settings → Webhooks →
+`forthepeople.in/api/webhooks/razorpay` → toggle to Active. Per HARD
+RULE 8, Antigravity will not auto-toggle webhook state.
+
+### 4d. RAZORPAY_WEBHOOK_SECRET missing from .env.local (NEW)
+
+`RAZORPAY_WEBHOOK_SECRET` was not present in `.env.local` (Phase 0
+audit). Razorpay confirms `secret_exists: true` on the webhook itself,
+so the secret IS configured on Razorpay's side. Likely set on Vercel
+prod env vars but not synced locally.
+
+**Action:**
+1. Confirm Vercel has `RAZORPAY_WEBHOOK_SECRET` set
+   (https://vercel.com/zurvoapps-projects/forthepeople/settings/environment-variables)
+2. Optional — copy that value into local `.env.local` for parity (not
+   required if you don't run the webhook handler locally)
 
 ## 🛡️ DEFAULTS to enable (cost/safety controls)
 
