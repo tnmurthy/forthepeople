@@ -140,172 +140,259 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
-        .ftp-livedata-card {
-          background: #FFFFFF;
-          border: 1px solid #E8E8E4;
-          border-radius: 12px;
-          padding: 14px;
+        /* Session 16 v10 Phase G (Fix #8): rich card design with accent stripes */
+        .ftp-livedata-header-row {
           display: flex;
-          flex-direction: column;
-          min-height: 130px;
-          transition: transform 150ms ease, border-color 150ms ease;
-          text-decoration: none;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: 16px;
+          gap: 16px;
+        }
+        .ftp-livedata-title {
+          margin: 0;
+          font-size: 20px;
+          font-weight: 700;
           color: #1A1A1A;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          line-height: 1.2;
         }
-        .ftp-livedata-card:hover { transform: translateY(-1px); border-color: #D1D5DB; }
-        @media (prefers-reduced-motion: reduce) {
-          .ftp-livedata-card { transition: none; }
-          .ftp-livedata-card:hover { transform: none; }
+        .ftp-live-pulse {
+          width: 8px; height: 8px;
+          background: #10B981;
+          border-radius: 50%;
+          flex-shrink: 0;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+          animation: ftp-livedata-live-pulse 2s ease-in-out infinite;
         }
+        @keyframes ftp-livedata-live-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50%      { transform: scale(0.85); opacity: 0.6; }
+        }
+        .ftp-livedata-sub {
+          font-size: 12px;
+          color: #6B7280;
+          margin: 4px 0 0;
+        }
+        .ftp-livedata-cta {
+          font-size: 13px;
+          font-weight: 600;
+          color: #2563EB;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .ftp-livedata-cta:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+        .ftp-livedata-tabs {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 16px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          padding-bottom: 4px;
+        }
+        .ftp-livedata-tabs::-webkit-scrollbar { height: 4px; }
+        .ftp-livedata-tab {
+          flex-shrink: 0;
+          padding: 6px 14px;
+          background: #F0F7FF;
+          border: 1px solid #DBEAFE;
+          border-radius: 16px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #4B5563;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+        }
+        .ftp-livedata-tab:hover {
+          background: #DBEAFE;
+          border-color: #2563EB;
+        }
+        .ftp-livedata-tab-active {
+          background: #2563EB;
+          border-color: #2563EB;
+          color: #FFFFFF;
+        }
+
         .ftp-livedata-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           gap: 12px;
         }
-        @media (max-width: 767px) {
-          .ftp-livedata-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .ftp-livedata-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
-          .ftp-livedata-chips { padding: 4px 0 !important; }
-        }
-        .ftp-livedata-chips {
-          display: flex; gap: 6px;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
-          padding: 4px 0 12px;
-        }
-        .ftp-livedata-chips::-webkit-scrollbar { display: none; }
-        .ftp-livedata-chip {
-          flex-shrink: 0;
-          padding: 5px 12px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 500;
-          border: 1px solid #E8E8E4;
+        .ftp-data-card {
+          display: flex;
+          flex-direction: column;
           background: #FFFFFF;
-          color: #6B7280;
-          cursor: pointer;
-          transition: background 150ms;
+          border: 1px solid #E8E8E4;
+          border-radius: 12px;
+          padding: 16px;
+          text-decoration: none;
+          color: #1A1A1A;
+          transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+          position: relative;
+          overflow: hidden;
+          min-height: 180px;
         }
-        .ftp-livedata-chip:hover { background: #F5F5F0; }
-        .ftp-livedata-chip[data-active="true"] {
-          background: #1A1A1A;
-          color: #FFFFFF;
-          border-color: #1A1A1A;
+        .ftp-data-card::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 3px;
+          background: var(--card-accent);
         }
-        .ftp-livedata-fade {
-          animation: ftp-livedata-fade 250ms ease-out;
+        .ftp-data-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 12px 24px var(--card-shadow);
+          border-color: var(--card-accent);
         }
+        .ftp-data-card-emerald { --card-accent: #10B981; --card-shadow: rgba(16,185,129,0.15); }
+        .ftp-data-card-blue    { --card-accent: #2563EB; --card-shadow: rgba(37,99,235,0.15); }
+        .ftp-data-card-amber   { --card-accent: #EAB308; --card-shadow: rgba(234,179,8,0.15); }
+        .ftp-data-card-cyan    { --card-accent: #06B6D4; --card-shadow: rgba(6,182,212,0.15); }
+
+        .ftp-data-card-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 12px;
+        }
+        .ftp-data-card-icon { font-size: 18px; line-height: 1; }
+        .ftp-data-card-title {
+          margin: 0;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--card-accent);
+        }
+        .ftp-data-card-body {
+          flex: 1;
+          font-size: 12px;
+          color: #1A1A1A;
+          line-height: 1.5;
+        }
+        .ftp-data-card-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          flex: 1;
+          text-align: center;
+          font-size: 12px;
+          color: #9B9B9B;
+          gap: 2px;
+        }
+        .ftp-data-card-empty-sub { font-size: 10px; color: #B5B5B5; }
+        .ftp-data-card-loading {
+          color: #9B9B9B;
+          font-style: italic;
+        }
+        .ftp-data-card-footer {
+          margin-top: 12px;
+          padding-top: 10px;
+          border-top: 1px solid #E5E7EB;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--card-accent);
+        }
+
+        .ftp-livedata-fade { animation: ftp-livedata-fade 250ms ease-out; }
         @keyframes ftp-livedata-fade {
           from { opacity: 0; }
           to   { opacity: 1; }
         }
+        @media (max-width: 767px) {
+          .ftp-livedata-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .ftp-livedata-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+          .ftp-data-card { padding: 12px; min-height: 140px; }
+          .ftp-data-card-title { font-size: 10px; }
+        }
         @media (prefers-reduced-motion: reduce) {
+          .ftp-data-card { transition: none; }
+          .ftp-data-card:hover { transform: none; }
           .ftp-livedata-fade { animation: none; }
+          .ftp-live-pulse { animation: none; }
         }
       `}</style>
 
       <div className="ftp-section-inner">
-      {/* ── Header row ── */}
-      <div
-        className="ftp-livedata-header"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 16,
-          marginBottom: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-          <DistrictAvatar slug={active.slug} hasSvg={hasSvg} />
-          <div style={{ minWidth: 0 }}>
-            <h2
-              id="livedata-heading"
-              style={{
-                margin: 0,
-                fontSize: 20,
-                fontWeight: 700,
-                color: "#1A1A1A",
-                lineHeight: 1.2,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              Live data right now — {active.name}
-            </h2>
-            <div style={{ marginTop: 2, fontSize: 12, color: "#6B7280" }}>
-              {active.nameLocal && (
-                <span style={{ fontFamily: "var(--font-regional, var(--font-sans))" }}>
-                  {active.nameLocal}
-                </span>
-              )}
-              {active.nameLocal && active.tagline && <span> · </span>}
-              {active.tagline && <span>{active.tagline}</span>}
-              {(active.nameLocal || active.tagline) && <span> · </span>}
-              <span>{active.stateName}</span>
+        {/* ── Header row ── */}
+        <div className="ftp-livedata-header-row">
+          <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+            <DistrictAvatar slug={active.slug} hasSvg={hasSvg} />
+            <div style={{ minWidth: 0 }}>
+              <h2 id="livedata-heading" className="ftp-livedata-title">
+                <span className="ftp-live-pulse" aria-hidden="true" />
+                Live data right now — {active.name}
+              </h2>
+              <p className="ftp-livedata-sub">
+                {active.nameLocal && (
+                  <span style={{ fontFamily: "var(--font-regional, var(--font-sans))" }}>
+                    {active.nameLocal}
+                  </span>
+                )}
+                {active.nameLocal && active.tagline && <span> · </span>}
+                {active.tagline && <span>{active.tagline}</span>}
+                {(active.nameLocal || active.tagline) && <span> · </span>}
+                <span>{active.stateName}</span>
+              </p>
             </div>
           </div>
+          <Link href={districtPageBase} className="ftp-livedata-cta">
+            View full district →
+          </Link>
         </div>
-        <Link
-          href={districtPageBase}
-          style={{
-            color: "#2563EB",
-            fontSize: 13,
-            fontWeight: 500,
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          View full district →
-        </Link>
-      </div>
 
-      {/* ── District chip tabs ── */}
-      <div className="ftp-livedata-chips" role="tablist" aria-label="Select district">
-        {districts.map((d, i) => (
-          <button
-            key={d.slug}
-            role="tab"
-            aria-selected={i === activeIdx}
-            data-active={i === activeIdx}
-            onClick={() => setActiveIdx(i)}
-            className="ftp-livedata-chip"
-            type="button"
-          >
-            {d.name}
-          </button>
-        ))}
-      </div>
+        {/* ── District tabs ── */}
+        <div className="ftp-livedata-tabs" role="tablist" aria-label="Select district">
+          {districts.map((d, i) => (
+            <button
+              key={d.slug}
+              role="tab"
+              aria-selected={i === activeIdx}
+              onClick={() => setActiveIdx(i)}
+              className={`ftp-livedata-tab ${i === activeIdx ? "ftp-livedata-tab-active" : ""}`}
+              type="button"
+            >
+              {d.name}
+            </button>
+          ))}
+        </div>
 
-      {/* ── 4 module cards ── */}
-      <div className="ftp-livedata-grid ftp-livedata-fade" key={active.slug}>
-        <ModuleCard
-          icon="🌾"
-          title="Crop prices"
-          data={set.crops}
-          href={`${districtPageBase}/crops`}
-        />
-        <ModuleCard
-          icon="🛣️"
-          title="Infrastructure"
-          data={set.infra}
-          href={`${districtPageBase}/infrastructure`}
-        />
-        <ModuleCard
-          icon="📰"
-          title="Local news"
-          data={set.news}
-          href={`${districtPageBase}/news`}
-        />
-        <ModuleCard
-          icon="🌦️"
-          title="Weather"
-          data={set.weather}
-          href={`${districtPageBase}/weather`}
-        />
-      </div>
+        {/* ── 4 module cards (color-coded accents) ── */}
+        <div className="ftp-livedata-grid ftp-livedata-fade" key={active.slug}>
+          <DataCard
+            accent="emerald"
+            icon="🌾"
+            title="Crop prices"
+            data={set.crops}
+            href={`${districtPageBase}/crops`}
+          />
+          <DataCard
+            accent="blue"
+            icon="🛣️"
+            title="Infrastructure"
+            data={set.infra}
+            href={`${districtPageBase}/infrastructure`}
+          />
+          <DataCard
+            accent="amber"
+            icon="📰"
+            title="Local news"
+            data={set.news}
+            href={`${districtPageBase}/news`}
+          />
+          <DataCard
+            accent="cyan"
+            icon="🌦️"
+            title="Weather"
+            data={set.weather}
+            href={`${districtPageBase}/weather`}
+          />
+        </div>
       </div>
     </section>
   );
@@ -357,46 +444,40 @@ function DistrictAvatar({ slug, hasSvg }: { slug: string; hasSvg: boolean }) {
   );
 }
 
-function ModuleCard({
+type AccentColor = "emerald" | "blue" | "amber" | "cyan";
+
+function DataCard({
+  accent,
   icon,
   title,
   data,
   href,
 }: {
+  accent: AccentColor;
   icon: string;
   title: string;
   data: ModuleData;
   href: string;
 }) {
   return (
-    <Link href={href} className="ftp-livedata-card">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#9B9B9B",
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-        }}
-      >
-        <span aria-hidden="true">{icon}</span>
-        {title}
+    <Link href={href} className={`ftp-data-card ftp-data-card-${accent}`}>
+      <div className="ftp-data-card-header">
+        <span className="ftp-data-card-icon" aria-hidden="true">{icon}</span>
+        <h3 className="ftp-data-card-title">{title}</h3>
       </div>
-      <div style={{ marginTop: 10, flex: 1, fontSize: 13, color: "#1A1A1A", lineHeight: 1.4 }}>
+      <div className="ftp-data-card-body">
         {data.loading ? (
-          <span style={{ color: "#9B9B9B", fontStyle: "italic" }}>Loading…</span>
+          <span className="ftp-data-card-loading">Loading…</span>
         ) : data.failed ? (
-          <span style={{ color: "#9B9B9B", fontStyle: "italic" }}>Data temporarily unavailable</span>
+          <div className="ftp-data-card-empty">
+            <span>📭 Data syncing</span>
+            <span className="ftp-data-card-empty-sub">Refreshing every 5–30 min</span>
+          </div>
         ) : (
           data.text
         )}
       </div>
-      <div style={{ marginTop: 10, fontSize: 12, color: "#2563EB", fontWeight: 500 }}>
-        View all →
-      </div>
+      <div className="ftp-data-card-footer">View all →</div>
     </Link>
   );
 }
