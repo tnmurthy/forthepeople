@@ -27,7 +27,8 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { DISTRICT_META } from "@/lib/data/district-meta";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -45,22 +46,21 @@ const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ),
 });
 
-// ── Curated rich intros (2-3 tags per district) ──
-// Design copy only — not data. Used to fill the inline district rows.
-const DISTRICT_INTROS: Record<string, { tags: string[] }> = {
-  "mandya":           { tags: ["Sugar capital", "KRS dam", "Cauvery basin"] },
-  "bengaluru-urban":  { tags: ["Silicon Valley of India", "IT capital", "Garden city"] },
-  "mysuru":           { tags: ["Heritage city", "Mysuru Palace", "Cultural capital"] },
-  "mumbai":           { tags: ["Financial capital", "Bollywood", "Gateway of India"] },
-  "pune":             { tags: ["Auto + IT hub", "Oxford of the East", "Khadakwasla"] },
-  "lucknow":          { tags: ["City of Nawabs", "Awadhi culture", "Capital of UP"] },
-  "hyderabad":        { tags: ["Cyberabad", "IT + biotech hub", "Charminar"] },
-  "new-delhi":        { tags: ["National capital", "India Gate", "Government seat"] },
-  "chennai":          { tags: ["Detroit of India", "IT hub", "Marina Beach"] },
-  "kolkata":          { tags: ["Cultural capital", "City of Joy", "Howrah Bridge"] },
-};
-
 const NEW_BADGE_COUNT = 3;
+
+// Live preview data per district (temperature, health grade) from
+// the existing /api/data/homepage-preview endpoint (5-min cache).
+interface PreviewLive {
+  temp: number | null;
+  grade: string | null;
+}
+type PreviewMap = Record<string, PreviewLive>;
+
+interface HomepagePreviewRow {
+  slug: string;
+  weather?: { temp: number | null } | null;
+  healthGrade?: string | null;
+}
 
 interface ActiveDistrict {
   slug: string;
@@ -86,6 +86,34 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
     });
     return new Set(sorted.slice(0, NEW_BADGE_COUNT).map((d) => d.slug));
   }, [districts]);
+
+  // Live preview enrichment (temp + grade) per district.
+  const [preview, setPreview] = useState<PreviewMap>({});
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/data/homepage-preview");
+        if (!res.ok) return;
+        const data = (await res.json()) as { districtPreviews?: HomepagePreviewRow[] };
+        if (cancelled) return;
+        const next: PreviewMap = {};
+        for (const r of data.districtPreviews ?? []) {
+          next[r.slug] = {
+            temp: r.weather?.temp ?? null,
+            grade: r.healthGrade ?? null,
+          };
+        }
+        setPreview(next);
+      } catch {
+        /* swallow — rows render without temp/grade */
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section
@@ -271,11 +299,12 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           padding-right: 4px;
           scrollbar-width: thin;
         }
+        /* Session 15 v9 Phase F (Fix #8): rich district row with rating + native + tags + temp */
         .ftp-district-row {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 10px;
-          padding: 10px 14px;
+          padding: 12px 14px;
           background: #FFFFFF;
           border: 1px solid #E5E7EB;
           border-radius: 8px;
@@ -290,13 +319,34 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           transform: translateX(2px);
           box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
         }
+        .ftp-district-rating {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 32px;
+          height: 28px;
+          padding: 0 8px;
+          background: #DBEAFE;
+          color: #1E40AF;
+          font-weight: 700;
+          font-size: 12px;
+          border-radius: 6px;
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+        }
         .ftp-district-row-main { flex: 1; min-width: 0; }
         .ftp-district-row-name {
-          font-size: 13px;
-          font-weight: 600;
           display: flex;
           align-items: center;
-          gap: 6px;
+          flex-wrap: wrap;
+          gap: 8px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .ftp-district-row-script {
+          font-size: 12px;
+          color: #9B9B9B;
+          font-weight: 400;
         }
         /* Session 13 v8 Fix #9: NEW as a small letter pill, NOT a background color. */
         .ftp-district-row-newbadge {
@@ -308,17 +358,35 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           border-radius: 3px;
           letter-spacing: 0.4px;
         }
-        .ftp-district-row-tags {
+        .ftp-district-row-tagline {
           font-size: 11px;
-          color: #6B7280;
+          color: #2563EB;
+          font-weight: 500;
           margin-top: 2px;
-          white-space: normal;
+        }
+        .ftp-district-row-bullets {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 4px;
+        }
+        .ftp-district-bullet {
+          font-size: 10px;
+          color: #6B7280;
           line-height: 1.4;
         }
-        .ftp-district-row-arrow {
-          font-size: 12px;
-          color: #9B9B9B;
+        .ftp-district-bullet:not(:last-child)::after {
+          content: " · ";
+          color: #D1D5DB;
+          margin-left: 4px;
+        }
+        .ftp-district-temp {
+          font-size: 11px;
+          color: #4B5563;
+          font-weight: 500;
           flex-shrink: 0;
+          align-self: center;
+          font-variant-numeric: tabular-nums;
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-district-row { transition: none; }
@@ -397,28 +465,46 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
 
             <div className="ftp-hero-districts-list">
             {districts.map((d) => {
-              const intro = DISTRICT_INTROS[d.slug];
+              const meta = DISTRICT_META[d.slug];
+              const live = preview[d.slug];
+              const grade = live?.grade ?? "C";
+              const temp = live?.temp ?? null;
               const isNew = newSlugs.has(d.slug);
-              const tags = (intro?.tags ?? []).join(" · ");
               return (
                 <Link
                   key={d.slug}
                   href={`/${locale}/${d.stateSlug}/${d.slug}`}
                   className="ftp-district-row"
                 >
+                  <span className="ftp-district-rating" aria-label={`Health grade ${grade}`}>
+                    {grade}
+                  </span>
                   <div className="ftp-district-row-main">
                     <div className="ftp-district-row-name">
-                      {d.name}
+                      <span>{d.name}</span>
+                      {meta?.nativeScript && (
+                        <span className="ftp-district-row-script">{meta.nativeScript}</span>
+                      )}
                       {isNew && (
                         <span className="ftp-district-row-newbadge">NEW</span>
                       )}
-                      <span style={{ color: "#9CA3AF", fontWeight: 400, fontSize: 11 }}>
-                        · {d.stateName}
-                      </span>
                     </div>
-                    {tags && <div className="ftp-district-row-tags">{tags}</div>}
+                    {meta?.tagline && (
+                      <div className="ftp-district-row-tagline">{meta.tagline}</div>
+                    )}
+                    {meta?.bullets && meta.bullets.length > 0 && (
+                      <div className="ftp-district-row-bullets">
+                        {meta.bullets.map((b, i) => (
+                          <span key={i} className="ftp-district-bullet">{b}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="ftp-district-row-arrow">→</span>
+                  {temp != null && (
+                    <span className="ftp-district-temp" title="Latest weather reading">
+                      🌡️ {temp}°C
+                    </span>
+                  )}
                 </Link>
               );
             })}
