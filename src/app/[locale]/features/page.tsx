@@ -6,14 +6,17 @@
 
 // ═══════════════════════════════════════════════════════════
 // Features page — /features
-// Two tabs: Vote on Features (existing) + Share Your Idea (2026-04-24)
+//
+// Session 15 v9 Phase I (Fix #13): unified into a single continuous
+// flow — Vote on existing ideas + Share Your Idea form + accepted-
+// suggestions list all on one page. The previous Vote / Suggest
+// tabs are gone. Form posts via the existing SuggestionForm
+// component which calls the existing /api/suggestions endpoint.
 // ═══════════════════════════════════════════════════════════
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { ThumbsUp, CheckCircle, Clock, Zap, Vote, MessageSquare } from "lucide-react";
+import { ThumbsUp, CheckCircle, Clock, Zap } from "lucide-react";
 import SuggestionForm from "@/components/features/SuggestionForm";
 
 interface Feature {
@@ -52,123 +55,57 @@ const STATUS_CONFIG = {
   completed:   { label: "Completed",   icon: CheckCircle, color: "#16A34A" },
 };
 
-type Tab = "vote" | "suggest";
-
 export default function FeaturesPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const initialTab: Tab = searchParams.get("tab") === "suggest" ? "suggest" : "vote";
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
-
-  const switchTab = (t: Tab) => {
-    setActiveTab(t);
-    const params = new URLSearchParams(searchParams.toString());
-    if (t === "suggest") params.set("tab", "suggest");
-    else params.delete("tab");
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  };
-
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 48px" }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>{activeTab === "vote" ? "🗳️" : "💬"}</div>
+        <div style={{ fontSize: 36, marginBottom: 8 }}>🗳️</div>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: "#1A1A1A", marginBottom: 8 }}>
           Help Shape ForThePeople.in
         </h1>
         <p style={{ fontSize: 15, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 500, margin: "0 auto" }}>
-          Vote for pre-defined features, or share your own idea. Citizen voices drive what we build next.
+          Vote for the features you want most, or share your own idea.
+          Citizen voices drive what we build next.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div style={{
-        display: "flex", gap: 4, marginBottom: 20, padding: 4,
-        background: "#F3F4F6", borderRadius: 10, maxWidth: 420, margin: "0 auto 20px",
-      }}>
-        <TabBtn active={activeTab === "vote"} onClick={() => switchTab("vote")} icon={<Vote size={15} />}>
-          Vote on Features
-        </TabBtn>
-        <TabBtn active={activeTab === "suggest"} onClick={() => switchTab("suggest")} icon={<MessageSquare size={15} />}>
-          Share Your Idea
-        </TabBtn>
-      </div>
+      {/* Section 1 — Vote on existing ideas */}
+      <section style={{ marginBottom: 48 }}>
+        <SectionHeading icon="📊" title="Vote on existing ideas" />
+        <VoteSection />
+      </section>
 
-      {/* Tab panels — both mounted, crossfade between them.
-          motion-safe via @media (prefers-reduced-motion: reduce) at page level. */}
-      <div style={{ position: "relative" }}>
-        <FadePanel visible={activeTab === "vote"}>
-          <VoteTab />
-        </FadePanel>
-        <FadePanel visible={activeTab === "suggest"}>
-          <SuggestTab />
-        </FadePanel>
-      </div>
+      {/* Section 2 — Share your idea */}
+      <section style={{ marginBottom: 48 }}>
+        <SectionHeading icon="💡" title="Share your idea" />
+        <SuggestSection />
+      </section>
     </div>
   );
 }
 
-function usePrefersReducedMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduce(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduce(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  return reduce;
-}
-
-function FadePanel({ visible, children }: { visible: boolean; children: React.ReactNode }) {
-  const reduceMotion = usePrefersReducedMotion();
-  const transition = reduceMotion
-    ? "none"
-    : "opacity 200ms ease-out, transform 200ms ease-out";
+function SectionHeading({ icon, title }: { icon: string; title: string }) {
   return (
-    <div
-      aria-hidden={!visible}
+    <h2
       style={{
-        opacity: visible ? 1 : 0,
-        transform: reduceMotion
-          ? undefined
-          : (visible ? "translateY(0)" : "translateY(6px)"),
-        transition,
-        pointerEvents: visible ? "auto" : "none",
-        position: visible ? "relative" : "absolute",
-        inset: visible ? undefined : 0,
-        width: "100%",
+        fontSize: 18,
+        fontWeight: 700,
+        color: "#1A1A1A",
+        margin: "0 0 16px",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
       }}
     >
-      {children}
-    </div>
+      <span aria-hidden="true">{icon}</span>
+      {title}
+    </h2>
   );
 }
 
-function TabBtn({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        flex: 1, padding: "8px 12px",
-        background: active ? "white" : "transparent",
-        color: active ? "#1A1A1A" : "#6B6B6B",
-        border: "none", borderRadius: 8,
-        fontSize: 13, fontWeight: active ? 600 : 500,
-        cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-        boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-      }}
-    >
-      {icon}{children}
-    </button>
-  );
-}
-
-// ═══ VOTE TAB (existing behaviour, unchanged) ═══════════════
-function VoteTab() {
+// ═══ Vote section (was VoteTab) ══════════════════════════════
+function VoteSection() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [voted, setVoted] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -299,25 +236,12 @@ function VoteTab() {
           })}
         </div>
       )}
-
-      <div style={{
-        marginTop: 32, padding: "16px 20px",
-        background: "#F8FAFC", borderRadius: 12,
-        border: "1px solid #E8E8E4", textAlign: "center",
-      }}>
-        <p style={{ fontSize: 13, color: "#6B6B6B", margin: 0 }}>
-          Have a feature idea not listed here?{" "}
-          <Link href="?tab=suggest" style={{ color: "#2563EB", textDecoration: "none", fontWeight: 600 }}>
-            Share your idea →
-          </Link>
-        </p>
-      </div>
     </>
   );
 }
 
-// ═══ SUGGEST TAB (NEW) ═══════════════════════════════════════
-function SuggestTab() {
+// ═══ Suggest section (was SuggestTab) ═══════════════════════
+function SuggestSection() {
   const [items, setItems] = useState<PublicSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -342,11 +266,8 @@ function SuggestTab() {
         padding: "20px 22px", background: "#FFFFFF",
         border: "1px solid #E8E8E4", borderRadius: 14,
       }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#1A1A1A", marginBottom: 4 }}>
-          Share your idea
-        </div>
         <div style={{ fontSize: 13, color: "#6B6B6B", marginBottom: 16 }}>
-          Spot something wrong? Want a new feature? Tell us — we read every one.
+          Have a feature in mind that&apos;s not listed? Suggest it below — we review every submission.
         </div>
         <SuggestionForm onSuccess={refreshList} />
       </div>
