@@ -31,7 +31,15 @@ export interface StatsBarProps {
   mostRecentAt?: string | null;
 }
 
-function StatTile({ target, label }: { target: number; label: string }) {
+function StatTile({
+  target,
+  label,
+  refresh,
+}: {
+  target: number;
+  label: string;
+  refresh: string;
+}) {
   const { value, ref } = useCountUp<HTMLDivElement>(target);
   return (
     <div className="ftp-stat-tile">
@@ -39,6 +47,7 @@ function StatTile({ target, label }: { target: number; label: string }) {
         {value.toLocaleString("en-IN")}
       </div>
       <div className="ftp-stat-label">{label}</div>
+      <div className="ftp-stat-refresh">{refresh}</div>
     </div>
   );
 }
@@ -104,6 +113,15 @@ export default function StatsBar({
           letter-spacing: 0.6px;
           font-weight: 500;
         }
+        /* Session 17 v11 Phase E (Fix #5): per-metric refresh frequency caption */
+        .ftp-stat-refresh {
+          font-size: 9px;
+          color: #9B9B9B;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+          margin-top: 2px;
+          font-style: italic;
+        }
         @media (max-width: 767px) {
           .ftp-stats-bar {
             grid-template-columns: repeat(2, 1fr);
@@ -121,15 +139,32 @@ export default function StatsBar({
         }
       `}</style>
 
-      <StatTile target={activeDistricts} label="Districts live" />
-      <StatTile target={dashboardsPerDistrict} label="Dashboards per district" />
-      <StatTile target={totalDataPoints} label="Data points tracked" />
-      <StatTile target={comingDistricts} label="Districts coming" />
+      <StatTile
+        target={activeDistricts}
+        label="Districts live"
+        refresh="as launched"
+      />
+      <StatTile
+        target={dashboardsPerDistrict}
+        label="Dashboards / district"
+        refresh="static"
+      />
+      <StatTile
+        target={totalDataPoints}
+        label="Data points tracked"
+        refresh="every 5–30 min"
+      />
+      <StatTile
+        target={comingDistricts}
+        label="Districts coming"
+        refresh="as launched"
+      />
 
       {/* Last-updated tile uses the same visual rhythm but renders text, not a number. */}
       <div className="ftp-stat-tile">
         <div className="ftp-stat-num-updated">{updatedDisplay}</div>
-        <div className="ftp-stat-label">Last updated</div>
+        <div className="ftp-stat-label">Last refresh</div>
+        <div className="ftp-stat-refresh">every cron cycle</div>
       </div>
     </div>
   );

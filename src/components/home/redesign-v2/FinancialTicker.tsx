@@ -20,7 +20,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
 type TickerItem = {
   symbol: string;
@@ -33,6 +32,33 @@ type TickerItem = {
 };
 
 type TickerResponse = { items?: TickerItem[]; tickers?: TickerItem[] };
+
+// Session 17 v11 Phase E (Fix #5): per-metric refresh cadence used in the
+// hover tooltip and as the bottom-right replacement for "Updated continuously".
+function refreshLabelFor(symbol: string): string {
+  switch (symbol) {
+    case "SENSEX":
+    case "NIFTY50":
+    case "NIFTYBANK":
+      return "1 min during market hours";
+    case "USD_INR":
+    case "EUR_INR":
+      return "1 min";
+    case "BTC_INR":
+    case "ETH_INR":
+      return "1 min";
+    case "CRUDE":
+      return "5 min";
+    case "GOLD":
+    case "SILVER":
+      return "5 min (IBJA)";
+    case "PETROL":
+    case "DIESEL":
+      return "daily";
+    default:
+      return "5 min";
+  }
+}
 
 // Session 13 v8 Fix #3: Indian markets — Mon-Fri, 09:15–15:30 IST.
 // IST is UTC+5:30 with no DST.
@@ -52,7 +78,6 @@ function getMarketStatus(nowMs: number): { status: "open" | "closed"; label: str
 export default function FinancialTicker() {
   const [items, setItems] = useState<TickerItem[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [mostRecentAt, setMostRecentAt] = useState<string | null>(null);
   // Lazy initializer reads Date.now() once on mount (no set-state-in-effect needed).
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
@@ -75,18 +100,7 @@ export default function FinancialTicker() {
         if (!cancelled) setLoaded(true);
       }
     }
-    async function fetchUpdated() {
-      try {
-        const res = await fetch("/api/data/homepage-stats");
-        if (!res.ok) return;
-        const data = (await res.json()) as { mostRecentAt?: string | null };
-        if (!cancelled) setMostRecentAt(data.mostRecentAt ?? null);
-      } catch {
-        /* ignore */
-      }
-    }
     fetchTicker();
-    fetchUpdated();
     // Re-evaluate market status every minute (cheap, no fetch).
     const tick = setInterval(() => setNowMs(Date.now()), 60_000);
     return () => {
@@ -98,7 +112,6 @@ export default function FinancialTicker() {
   if (loaded && items.length === 0) return null;
 
   const loop = items.length > 0 ? [...items, ...items] : [];
-  const updated = timeAgoLabel(mostRecentAt);
   const market = getMarketStatus(nowMs);
 
   return (
@@ -211,7 +224,11 @@ export default function FinancialTicker() {
         ) : (
           <div className="ftp-financial-track">
             {loop.map((it, i) => (
-              <span key={`${it.symbol}-${i}`} className="ftp-financial-item">
+              <span
+                key={`${it.symbol}-${i}`}
+                className="ftp-financial-item"
+                title={`${it.label} · refreshes ${refreshLabelFor(it.symbol)}`}
+              >
                 <strong>{it.label}</strong>
                 <span className="v">{it.value}</span>
                 <span className={`v ${it.direction}`}>
@@ -225,8 +242,11 @@ export default function FinancialTicker() {
         )}
       </div>
 
-      <span className="ftp-ticker-updated">
-        {updated.isLive ? "Updated continuously" : `Updated ${updated.label}`}
+      <span
+        className="ftp-ticker-updated"
+        title="Each metric refreshes on its own cadence — hover any item for its frequency"
+      >
+        Refreshes vary — hover for cadence
       </span>
     </div>
   );
