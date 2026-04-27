@@ -120,6 +120,12 @@ export default function DistrictBreadcrumb({
   useEffect(() => {
     if (!openMenu) return;
     function onClickOutside(e: MouseEvent) {
+      // On mobile the sheet (BreadcrumbBottomSheet) is portaled to body
+      // and handles its own close via backdrop click. Without this guard
+      // the mousedown on a sheet item would close the sheet via setOpenMenu(null)
+      // BEFORE the click event fires, cancelling the Link navigation.
+      const target = e.target as HTMLElement | null;
+      if (target?.closest(".ftp-m-sheet-backdrop")) return;
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
         setOpenMenu(null);
       }

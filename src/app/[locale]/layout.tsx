@@ -6,7 +6,6 @@
 
 import QueryProvider from "@/components/providers/QueryProvider";
 import MigrationBanner from "@/components/layout/MigrationBanner";
-import SuggestionFloatingButton from "@/components/common/SuggestionFloatingButton";
 import PageProgressBar from "@/components/common/PageProgressBar";
 
 // Session 11.1 — chrome swapped to redesign-v2 site-wide.
@@ -36,7 +35,6 @@ export default async function LocaleLayout({
       <HeaderBar locale={locale} />
       {children}
       <Footer locale={locale} />
-      <SuggestionFloatingButton />
     </QueryProvider>
   );
 }
