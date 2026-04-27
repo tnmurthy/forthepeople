@@ -333,6 +333,27 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         }
         .ftp-product-caret { transition: transform 200ms ease; }
         .ftp-product-caret.ftp-rotated { transform: rotate(180deg); }
+
+        /* Session 19 v13 Phase C (Fix #2): the product dropdown ALWAYS renders
+           all 3 products (verified — there's no filter in PRODUCTS.map). The
+           current page gets a subtle highlight via aria-current="page" so
+           users can confirm where they are without the entry being hidden. */
+        [role="menu"] [role="menuitem"][aria-current="page"] {
+          background: #EFF6FF;
+        }
+        [role="menu"] [role="menuitem"][aria-current="page"]::after {
+          content: "current";
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.4px;
+          text-transform: uppercase;
+          color: #2563EB;
+          background: #DBEAFE;
+          padding: 1px 5px;
+          border-radius: 3px;
+          margin-left: 4px;
+          flex-shrink: 0;
+        }
         .ftp-status-dot {
           display: inline-block;
           width: 7px; height: 7px; border-radius: 50%;
