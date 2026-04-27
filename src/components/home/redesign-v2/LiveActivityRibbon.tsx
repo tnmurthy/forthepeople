@@ -22,6 +22,20 @@
 import { useCountUp } from "@/lib/hooks/useCountUp";
 import { timeAgoLabel } from "@/lib/utils/timeAgo";
 
+// Session 18 v12 Phase C (Fix #2): recency tier drives the green/blue/gray
+// dot indicator on the 5th StatsBar tile.
+type RecencyTier = "fresh" | "recent" | "stale";
+
+function recencyTier(mostRecentAt: string | null | undefined): RecencyTier {
+  if (!mostRecentAt) return "stale";
+  const ts = new Date(mostRecentAt).getTime();
+  if (!Number.isFinite(ts)) return "stale";
+  const ageMin = (Date.now() - ts) / 60_000;
+  if (ageMin < 30) return "fresh";
+  if (ageMin < 180) return "recent";
+  return "stale";
+}
+
 export interface StatsBarProps {
   /** All optional — sensible defaults render if page.tsx hasn't wired props yet. */
   activeDistricts?: number;
@@ -61,6 +75,7 @@ export default function StatsBar({
 }: StatsBarProps) {
   const updated = timeAgoLabel(mostRecentAt ?? null);
   const updatedDisplay = updated.isLive ? "Live" : updated.label;
+  const tier = recencyTier(mostRecentAt ?? null);
 
   return (
     <div className="ftp-stats-bar" role="status" aria-live="polite">
@@ -100,11 +115,45 @@ export default function StatsBar({
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.02em;
         }
-        .ftp-stat-num-updated {
-          font-size: 14px;
-          font-weight: 600;
-          color: #2563EB;
-          line-height: 1.2;
+        /* Session 18 v12 Phase C: 5th-tile timestamp + dot wrap */
+        .ftp-stat-num-text-wrap {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        }
+        .ftp-stat-num-text {
+          font-size: 18px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          line-height: 1;
+        }
+        .ftp-stat-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .ftp-stat-dot-fresh {
+          background: #10B981;
+          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.20);
+          animation: ftp-stat-pulse 2s ease-in-out infinite;
+        }
+        .ftp-stat-dot-recent {
+          background: #2563EB;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+        }
+        .ftp-stat-dot-stale {
+          background: #6B7280;
+        }
+        .ftp-stat-tile-fresh  .ftp-stat-num-text { color: #047857; }
+        .ftp-stat-tile-recent .ftp-stat-num-text { color: #2563EB; }
+        .ftp-stat-tile-stale  .ftp-stat-num-text { color: #4B5563; }
+        @keyframes ftp-stat-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50%      { transform: scale(0.85); opacity: 0.6; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-stat-dot-fresh { animation: none; }
         }
         .ftp-stat-label {
           font-size: 11px;
@@ -160,9 +209,12 @@ export default function StatsBar({
         refresh="as launched"
       />
 
-      {/* Last-updated tile uses the same visual rhythm but renders text, not a number. */}
-      <div className="ftp-stat-tile">
-        <div className="ftp-stat-num-updated">{updatedDisplay}</div>
+      {/* Session 18 v12 Phase C: dynamic Xm-ago + recency dot indicator. */}
+      <div className={`ftp-stat-tile ftp-stat-tile-updated ftp-stat-tile-${tier}`}>
+        <div className="ftp-stat-num-text-wrap">
+          <span className={`ftp-stat-dot ftp-stat-dot-${tier}`} aria-hidden="true" />
+          <span className="ftp-stat-num-text">{updatedDisplay}</span>
+        </div>
         <div className="ftp-stat-label">Last refresh</div>
         <div className="ftp-stat-refresh">every cron cycle</div>
       </div>
