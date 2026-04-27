@@ -21,34 +21,30 @@
 
 import React from "react";
 
+// Mobile-revert: 3 steps to match the production layout — citizens read
+// these as the simple "input → output → for them" story. Source attribution
+// caption below carries the longer "where the data comes from" detail.
 const STEPS = [
   {
     num: "01",
-    icon: "📥",
-    title: "Aggregate",
-    desc: "From official government portals (NDSAP), accredited research institutions, and verified public sources. Nothing fabricated — every data point is traceable to its origin.",
+    icon: "📡",
+    title: "We Collect",
+    desc: "Data from official .gov.in portals every 5–30 minutes. NDSAP-licensed, traceable to the source.",
     accent: "blue" as const,
   },
   {
     num: "02",
-    icon: "🤖",
-    title: "Process",
-    desc: "Automated pipeline classifies, summarises, and structures the incoming data and news so it's easy to read.",
+    icon: "📊",
+    title: "We Organize",
+    desc: "Into 29 dashboards per district with charts, maps, news, and live updates.",
     accent: "purple" as const,
   },
   {
     num: "03",
-    icon: "📊",
-    title: "Surface",
-    desc: "Organised into district-level dashboards — 32 modules covering health, infrastructure, agriculture, schemes, courts, RTI.",
+    icon: "👁",
+    title: "You See",
+    desc: "Real-time district data. Free. Open source. Yours.",
     accent: "emerald" as const,
-  },
-  {
-    num: "04",
-    icon: "🤝",
-    title: "Sustain",
-    desc: "Citizen-built, citizen-funded. No corporate sponsorship. No ads. Open-source code on GitHub.",
-    accent: "amber" as const,
   },
 ];
 
@@ -88,10 +84,10 @@ export default function HowItWorks() {
           margin: 0;
         }
 
-        /* Pipeline: card · → · card · → · card · → · card */
+        /* Pipeline: card · → · card · → · card (3 steps) */
         .ftp-how-pipeline {
           display: grid;
-          grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+          grid-template-columns: 1fr auto 1fr auto 1fr;
           gap: 0;
           align-items: stretch;
           margin-bottom: 24px;
@@ -213,7 +209,8 @@ export default function HowItWorks() {
         }
 
         @media (max-width: 1024px) {
-          .ftp-how-pipeline { grid-template-columns: 1fr 1fr; gap: 12px; }
+          /* 3 cards in 3-col layout, drop arrow connectors */
+          .ftp-how-pipeline { grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
           .ftp-how-connector { display: none; }
         }
         @media (max-width: 600px) {
