@@ -292,29 +292,31 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           background: #D1D5DB;
           border-radius: 3px;
         }
+        /* Session 19 v13 Phase H: Vote-next-district uses AMBER (was indigo
+           which conflicted with state-tier indigo + features-purple). */
         .ftp-vote-next-district-cta {
           flex-shrink: 0;
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 12px 14px;
-          background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-          border: 1px solid #C7D2FE;
+          background: linear-gradient(135deg, var(--ftp-color-vote-district-bg) 0%, #FEF3C7 100%);
+          border: 1px solid var(--ftp-color-vote-district-border);
           border-radius: 8px;
           text-decoration: none;
-          color: #1E3A8A;
+          color: #92400E;
           margin-top: 8px;
           transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
         }
         .ftp-vote-next-district-cta:hover {
-          border-color: #6366F1;
+          border-color: var(--ftp-color-vote-district);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
         }
         .ftp-vote-next-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
         .ftp-vote-next-text { flex: 1; min-width: 0; }
-        .ftp-vote-next-title { font-size: 13px; font-weight: 700; }
-        .ftp-vote-next-sub { font-size: 11px; color: #4F46E5; margin-top: 1px; }
+        .ftp-vote-next-title { font-size: 13px; font-weight: 700; color: #92400E; }
+        .ftp-vote-next-sub { font-size: 11px; color: #B45309; margin-top: 1px; }
         @media (prefers-reduced-motion: reduce) {
           .ftp-vote-next-district-cta { transition: none; }
           .ftp-vote-next-district-cta:hover { transform: none; }

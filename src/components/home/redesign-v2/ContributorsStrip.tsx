@@ -292,9 +292,10 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
           border-color: var(--cat-accent, #2563EB);
           box-shadow: 0 4px 12px var(--cat-shadow, rgba(37, 99, 235, 0.06));
         }
-        .ftp-cat-india    { --cat-accent: #DC2626; --cat-shadow: rgba(220, 38, 38, 0.08); }
-        .ftp-cat-state    { --cat-accent: #6E59C0; --cat-shadow: rgba(110, 89, 192, 0.08); }
-        .ftp-cat-district { --cat-accent: #10B981; --cat-shadow: rgba(16, 185, 129, 0.08); }
+        /* Session 19 v13 Phase H: tier color audit (saffron / indigo / teal) */
+        .ftp-cat-india    { --cat-accent: var(--ftp-color-tier-india);    --cat-shadow: rgba(251, 146, 60, 0.10); }
+        .ftp-cat-state    { --cat-accent: var(--ftp-color-tier-state);    --cat-shadow: rgba(79, 70, 229, 0.10); }
+        .ftp-cat-district { --cat-accent: var(--ftp-color-tier-district); --cat-shadow: rgba(13, 148, 136, 0.10); }
         .ftp-supporter-category-header {
           display: flex;
           align-items: center;
@@ -416,11 +417,27 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
           white-space: nowrap;
         }
 
-        .ftp-sup-founder   { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
-        .ftp-sup-all-india { background: #FCEBEB; color: #791F1F; border-color: #E24B4A; }
-        .ftp-sup-state     { background: #EEEDFE; color: #3C3489; border-color: #6E59C0; }
-        .ftp-sup-district  { background: #D1FAE5; color: #065F46; border-color: #10B981; }
-        .ftp-sup-one-time  { background: #F3F4F6; color: #4B5563; border-color: #E5E7EB; }
+        /* Session 19 v13 Phase H: supporter tier color audit.
+           - India tier  → SAFFRON (was yellow that conflicted with NEW-yellow)
+           - State tier  → INDIGO  (was features-purple — broke discipline)
+           - District tier → TEAL  (was live-green — broke discipline) */
+        .ftp-sup-founder,
+        .ftp-sup-all-india {
+          background: var(--ftp-color-tier-india-bg);
+          color: #9A3412;
+          border-color: var(--ftp-color-tier-india-border);
+        }
+        .ftp-sup-state {
+          background: var(--ftp-color-tier-state-bg);
+          color: #312E81;
+          border-color: var(--ftp-color-tier-state-border);
+        }
+        .ftp-sup-district {
+          background: var(--ftp-color-tier-district-bg);
+          color: #134E4A;
+          border-color: var(--ftp-color-tier-district-border);
+        }
+        .ftp-sup-one-time { background: #F3F4F6; color: #4B5563; border-color: #E5E7EB; }
 
         @keyframes ftp-supporters-marquee {
           0%   { transform: translateX(0); }

@@ -80,6 +80,95 @@
   border: var(--ftp-border-section);
 }
 
+/*
+ * ─── COLOR DISCIPLINE — IMPORTANT (Session 19 v13 Phase H) ─────────────
+ * Each color has a reserved semantic meaning. Do NOT reuse for unrelated UI:
+ *
+ *   BLUE     → Brand primary, district data, "Explore India" CTA, info
+ *   PURPLE   → Features voting / ideas only (Vote on Features, Top Voted)
+ *   GREEN    → LIVE / fresh data / NEW badge / market open indicator only
+ *   RED      → Support / donate / ♥ button only
+ *   AMBER    → "Vote for next district" CTA (action distinct from features)
+ *   SAFFRON  → India Patrons supporter tier (Indian flag top stripe)
+ *   INDIGO   → State Champions supporter tier
+ *   TEAL     → District Sponsors supporter tier
+ *
+ * Adding new UI? Pick the semantically closest reserved color or propose
+ * a new token in the :root block before scattering hex values.
+ */
+:root {
+  /* Brand primary — district data, info, "Explore India" */
+  --ftp-color-brand:               #2563EB;
+  --ftp-color-brand-light:         #3B82F6;
+  --ftp-color-brand-deep:          #1E3A8A;
+
+  /* Features voting / ideas — strictly limited to /features and Top Voted */
+  --ftp-color-features:            #6E59C0;
+  --ftp-color-features-light:      #A78BFA;
+  --ftp-color-features-bg:         #EEEDFE;
+
+  /* LIVE / fresh data / market open — strictly for live indicators */
+  --ftp-color-live:                #10B981;
+  --ftp-color-live-deep:           #047857;
+  --ftp-color-live-bg:             #ECFDF5;
+
+  /* Support / donate — strictly for ♥ Support button + donation banners */
+  --ftp-color-support:             #E11D48;
+  --ftp-color-support-bg:          #FFF1F2;
+  --ftp-color-support-border:      #FECDD3;
+
+  /* Vote for next district — distinct from features-voting purple */
+  --ftp-color-vote-district:       #F59E0B;
+  --ftp-color-vote-district-bg:    #FFFBEB;
+  --ftp-color-vote-district-border:#FCD34D;
+
+  /* NEW badge — uses LIVE green semantics ("new" = "fresh") */
+  --ftp-color-new-badge:           #10B981;
+
+  /* Supporter tiers — distinct, non-conflicting with reserved palette */
+  --ftp-color-tier-india:          #FB923C;       /* SAFFRON — flag top */
+  --ftp-color-tier-india-bg:       #FFF7ED;
+  --ftp-color-tier-india-border:   #FDBA74;
+
+  --ftp-color-tier-state:          #4F46E5;       /* INDIGO — distinct from features-purple */
+  --ftp-color-tier-state-bg:       #EEF2FF;
+  --ftp-color-tier-state-border:   #A5B4FC;
+
+  --ftp-color-tier-district:       #0D9488;       /* TEAL — distinct from live-green */
+  --ftp-color-tier-district-bg:    #F0FDFA;
+  --ftp-color-tier-district-border:#5EEAD4;
+}
+
+/* Consumer rules keep Tailwind v4 from purging unused color tokens.
+   Each token gets at least one valid consumer property so the bundler
+   keeps it in the production CSS. These selectors are never rendered;
+   they exist purely to anchor the var declarations. */
+.ftp-color-host-1  { color: var(--ftp-color-brand); }
+.ftp-color-host-2  { color: var(--ftp-color-brand-light); }
+.ftp-color-host-3  { color: var(--ftp-color-brand-deep); }
+.ftp-color-host-4  { color: var(--ftp-color-features); }
+.ftp-color-host-5  { color: var(--ftp-color-features-light); }
+.ftp-color-host-6  { background-color: var(--ftp-color-features-bg); }
+.ftp-color-host-7  { color: var(--ftp-color-live); }
+.ftp-color-host-8  { color: var(--ftp-color-live-deep); }
+.ftp-color-host-9  { background-color: var(--ftp-color-live-bg); }
+.ftp-color-host-10 { color: var(--ftp-color-support); }
+.ftp-color-host-11 { background-color: var(--ftp-color-support-bg); }
+.ftp-color-host-12 { border-color: var(--ftp-color-support-border); }
+.ftp-color-host-13 { color: var(--ftp-color-vote-district); }
+.ftp-color-host-14 { background-color: var(--ftp-color-vote-district-bg); }
+.ftp-color-host-15 { border-color: var(--ftp-color-vote-district-border); }
+.ftp-color-host-16 { background-color: var(--ftp-color-new-badge); }
+.ftp-color-host-17 { color: var(--ftp-color-tier-india); }
+.ftp-color-host-18 { background-color: var(--ftp-color-tier-india-bg); }
+.ftp-color-host-19 { border-color: var(--ftp-color-tier-india-border); }
+.ftp-color-host-20 { color: var(--ftp-color-tier-state); }
+.ftp-color-host-21 { background-color: var(--ftp-color-tier-state-bg); }
+.ftp-color-host-22 { border-color: var(--ftp-color-tier-state-border); }
+.ftp-color-host-23 { color: var(--ftp-color-tier-district); }
+.ftp-color-host-24 { background-color: var(--ftp-color-tier-district-bg); }
+.ftp-color-host-25 { border-color: var(--ftp-color-tier-district-border); }
+
 /* ── Base ── */
 *,
 *::before,
