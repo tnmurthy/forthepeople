@@ -193,12 +193,16 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-hero-banner-cta:hover .ftp-banner-arrow { transform: translateX(3px); }
 
-        /* Session 17 v11 Phase C: 50/50 map+districts row, map fills frame naturally */
+        /* Session 17 v11 Phase C → Session 19 v13 Phase E: map dominates 60/40
+           default, 65/35 on ≥1440px (matches production scale ~1054×1186) */
         .ftp-hero-row {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 60% 40%;
           gap: 24px;
           align-items: start;
+        }
+        @media (min-width: 1440px) {
+          .ftp-hero-row { grid-template-columns: 65% 35%; }
         }
         .ftp-hero-map-col {
           display: flex;
