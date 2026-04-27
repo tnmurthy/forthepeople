@@ -240,6 +240,15 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
           letter-spacing: -0.01em;
           display: inline-block;
         }
+        /* Session 19.3 Phase D: opt the trophy emoji out of the gradient
+           text-clip so it renders in full colour, not as transparent text. */
+        .ftp-supporters-trophy {
+          background: none;
+          -webkit-text-fill-color: initial;
+          color: initial;
+          margin-right: 8px;
+          font-weight: normal;
+        }
         .ftp-supporters-sub {
           font-size: 13px;
           color: #6B7280;
@@ -479,11 +488,16 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
         {compact ? (
           <div className="ftp-supporters-header-compact">
             <h2 id="supporters-heading" className="ftp-supporters-h2 ftp-supporters-h2-compact">
-              {contributors === null
-                ? "Loading supporters…"
-                : total === 0
-                  ? "Be the first to back us"
-                  : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
+              {contributors === null ? (
+                "Loading supporters…"
+              ) : total === 0 ? (
+                "Be the first to back us"
+              ) : (
+                <>
+                  <span className="ftp-supporters-trophy" aria-hidden="true">🏆</span>
+                  Backed by {total} citizen{total === 1 ? "" : "s"}
+                </>
+              )}
             </h2>
             <Link href={`/${locale}/contributors`} className="ftp-supporters-cta-inline">
               View all &amp; how to join →
@@ -492,11 +506,16 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
         ) : (
           <div className="ftp-supporters-header">
             <h2 id="supporters-heading" className="ftp-supporters-h2">
-              {contributors === null
-                ? "Loading supporters…"
-                : total === 0
-                  ? "Be the first to back us"
-                  : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
+              {contributors === null ? (
+                "Loading supporters…"
+              ) : total === 0 ? (
+                "Be the first to back us"
+              ) : (
+                <>
+                  <span className="ftp-supporters-trophy" aria-hidden="true">🏆</span>
+                  Backed by {total} citizen{total === 1 ? "" : "s"}
+                </>
+              )}
             </h2>
             <p className="ftp-supporters-sub">
               No corporate funding. No ads. Just citizens backing citizens.
