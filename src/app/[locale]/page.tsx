@@ -35,6 +35,7 @@ import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
 import { MobileHero } from "@/components/home/mobile/MobileHero";
 import { MobileDistrictCarousel } from "@/components/home/mobile/MobileDistrictCarousel";
+import { MobileIndiaMap } from "@/components/home/mobile/MobileIndiaMap";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
@@ -158,6 +159,8 @@ export default async function HomePage({
         <HeroSection locale={locale} districts={activeDistricts} />
         {/* Mobile-only horizontal swipe carousel of live districts (Phase D) */}
         <MobileDistrictCarousel locale={locale} districts={activeDistricts} />
+        {/* Mobile-only India map — full-width, lazy-loaded (Phase E) */}
+        <MobileIndiaMap locale={locale} />
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
         <HowItWorks />
         <CommunitySection locale={locale} />

@@ -293,6 +293,35 @@
     width: 16px;
     border-radius: 3px;
   }
+
+  /* ============================================================
+   * MobileIndiaMap — Phase E
+   * ============================================================ */
+  .ftp-m-map-section { background: white; }
+  .ftp-m-map-frame {
+    margin: 0 16px;
+    aspect-ratio: 1 / 1;
+    max-height: 360px;
+    background: #F0F7FF;
+    border: 1px solid #DBEAFE;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ftp-m-map-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #9CA3AF;
+    font-size: 13px;
+  }
+  .ftp-m-map-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #9CA3AF;
+    margin: 8px 16px 0;
+  }
 }
 
 @media (max-width: 360px) {
