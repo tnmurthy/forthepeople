@@ -616,3 +616,74 @@ on local `main`. Reversibility tag:
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-16-v10-final-2026-04-26` exists; all v10 commits sit on local `main`. After Jayanth's well-deserved sleep + manual review, `git push origin main` ships ~218 commits via Vercel (~5–7 min build).
+
+---
+
+# Session 17 — v11 hero restructure + final polish (2026-04-27, NOT pushed)
+
+7 surgical fixes from Jayanth's localhost DOM inspection. Intended as
+the final polish session before push. ~5 commits, all on local `main`.
+Reversibility tag: `pre-session-17-v11-restructure-2026-04-27`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| HeroSection — title block | Centered, full-width block on top: H1 with 3 phrases each in its own 2-shade gradient (blue → purple → emerald), tiny gray subtitle, gradient-pill banner CTA "Explore the whole India". H1 38px desktop / 28px mobile, weight 800. | #1, #2 |
+| HeroSection — bottom row | 50/50 grid (was 65/35) holding map + 10 districts side-by-side. Tablet ≤1024px stacks to 1 col. | #3 |
+| HeroSection — map frame | Container uses `aspect-ratio: 800 / 900` to MATCH the SVG natural viewBox; SVG renders at 100%×100% with no `transform: scale`. India fills the frame edge-to-edge with no empty space at top and no ocean cropping. | #3 |
+| HeroSection — district rows | `min-height: 76px` + `overflow: hidden`. ALL content (head + tagline + bullets + freshness meta) ALWAYS rendered. Hover only changes border + soft shadow + bg — NO transform, NO z-index, NO height shift. Each line uses white-space:nowrap + text-overflow:ellipsis. Mysuru hover bleed onto New Delhi resolved. | #4 |
+| StatsBar | Each tile gets a third line below the label with its per-metric refresh cadence (italic, 9px, uppercase tracking): "as launched" / "static" / "every 5–30 min" / "every cron cycle". | #5 |
+| FinancialTicker | Bottom-right "Updated continuously" → "Refreshes vary — hover for cadence". Each ticker item gets a `title=` tooltip showing per-metric cadence (Sensex/Nifty/Bank "1 min during market hours", USD/EUR/BTC/ETH "1 min", Crude/Gold/Silver "5 min", Petrol/Diesel "daily"). Drops now-unused timeAgoLabel + mostRecentAt state. | #5 |
+| VoteFeaturesCTA — homepage | Replaced full-page combined Vote+Share card with ~140px compact: thin "💡 Share your thoughts… →" bar (links to /features#share-idea) + mini white card with top-3 voted features + "View all features →" footer. | #6 |
+| /features page | Restored Share-Your-Idea section at the bottom anchored at `id="share-idea"` with `scroll-margin-top:80`. Reused SuggestionForm component → existing /api/suggestions endpoint. Subtitle: "Vote for the features you want most, or scroll down to share your own idea." | #6 |
+| ContributorsStrip — h2 | "Backed by N citizens" gets blue→purple gradient (#1E40AF → #5B21B6) via background-clip:text. Weight bumped to 800. | #7 |
+| ContributorsStrip — motto | Small yellow capsule below the subtitle: "✨ 100% citizen-funded · Open source · Forever free" (#FEF3C7 bg, #92400E text). | #7 |
+| ContributorsStrip — categories | Subtle gradient container (#FAFAF8 → #F4F3FE), 16px radius. Each category card gets a 3px vertical accent stripe on its left edge in the tier color: India red #DC2626 / State purple #6E59C0 / District emerald #10B981. Hover takes on the tier color for border + soft shadow. | #7 |
+
+## v11 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />
+<MigrationBanner />
+<DisclaimerBanner />
+<HeaderBar />
+<main>
+  <FinancialTicker />               — Market Open/Closed pill + per-item title= cadence + "Refreshes vary"
+  <StatsBar />                       — 5 outlined tiles, each with per-metric refresh caption
+  <HeroSection />                    — TOP: gradient H1 + subtitle + banner CTA
+                                       BOTTOM: 50/50 map (aspect-ratio fills) + 10 stable rows
+  <LiveDataShowcase />               — color-coded module cards
+  <HowItWorks />                     — 4 steps with gradient hover stripe
+  <ContributorsStrip />              — gradient h2 + motto + per-category accent bars
+  <VoteFeaturesCTA />                — thin share bar + 3-line top voted (was full-page form)
+</main>
+<Footer />
+```
+
+## Verification
+
+| | Before Session 17 | After Session 17 |
+|---|---|---|
+| Total problems | 107 | **107** |
+| Errors | 61 | 61 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (1 better than 108 baseline — same as end-of-Session-16).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` all 200.
+- DrillDownMap component file untouched (Hard Rule 7 honored).
+- prefers-reduced-motion respected on every new animation.
+
+## v11 commits (5 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `b11c28f` | B+C+D | Hero — gradient h1 + banner CTA + 50/50 row + aspect-ratio map + stable rows |
+| 2 | `2f51836` | E | StatsBar + ticker — per-metric refresh frequency captions |
+| 3 | `d489dae` | F | VoteFeaturesCTA compact thin-bar + 3-line list; /features regains anchored Share Your Idea |
+| 4 | `be7540f` | G | Supporters — gradient h2 + motto pill + per-category accent bars |
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-17-v11-restructure-2026-04-27` exists; all v11 commits sit on local `main`. Push after Jayanth's manual review.
