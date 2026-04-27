@@ -357,10 +357,13 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           min-width: 0;
           overflow: hidden;
         }
-        /* Session 19 v13 Phase D: per-district SVG icon */
+        /* Session 19 v13 Phase D + 19.1 Phase F: per-district SVG icon
+           bumped to 28×28 (was 18×18 — too small to register visually). */
         .ftp-district-row-icon {
           flex-shrink: 0;
-          margin-right: 2px;
+          margin-right: 8px;
+          width: 28px !important;
+          height: 28px !important;
         }
         .ftp-district-row-name {
           font-size: 14px;
@@ -498,7 +501,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                   >
                     <div className="ftp-district-row-head">
                       <div className="ftp-district-row-name-line">
-                        {Icon && <Icon size={18} className="ftp-district-row-icon" />}
+                        {Icon && <Icon size={28} className="ftp-district-row-icon" />}
                         <span className="ftp-district-row-name">{d.name}</span>
                         {meta?.nativeScript && (
                           <span className="ftp-district-row-script">
