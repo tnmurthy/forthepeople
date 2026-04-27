@@ -5,12 +5,12 @@
  * Session 19 v13 Phase I (Fix #9) — red support banner above footer.
  *
  * Production has this between the last content section and the footer:
- * "❤️ Support — ₹1.50/day serves one district". Localhost was missing
- * it; this restores parity. Links to /<locale>/support.
+ * "❤️ Support — ₹3.30/day serves one district". Restores parity.
+ * Links to /<locale>/support.
  *
- * The "₹1.50/day" figure matches production copy. If pricing logic
- * ever needs to drive this dynamically, swap the strong contents
- * for a server-side computed value.
+ * Session 19.2 Phase I: ₹1.50/day → ₹3.30/day (matches the ₹99/month
+ * entry tier: 99 ÷ 30 = 3.30). Was inconsistent with the actual
+ * pricing on /support page.
  */
 
 import Link from "next/link";
@@ -66,7 +66,7 @@ export default function SupportBanner({ locale }: SupportBannerProps) {
       `}</style>
       <span className="ftp-support-banner-heart" aria-hidden="true">❤️</span>
       <span className="ftp-support-banner-text">
-        Support — <strong>₹1.50/day</strong> serves one district
+        Support — <strong>₹3.30/day</strong> serves one district
       </span>
       <span className="ftp-support-banner-arrow" aria-hidden="true">→</span>
     </Link>

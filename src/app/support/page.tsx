@@ -60,7 +60,7 @@ async function loadSupportContent(): Promise<SupportPageContent> {
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
 export const metadata: Metadata = {
-  title: "Support ForThePeople.in — ₹1.50/day serves one district",
+  title: "Support ForThePeople.in — ₹3.30/day serves one district",
   description: "Help keep India's citizen transparency platform running. ₹12 lakh/year to serve 780+ districts. Every rupee keeps government data free and accessible.",
   alternates: { canonical: `${BASE_URL}/en/support` },
 };
@@ -107,7 +107,7 @@ export default async function SupportPage() {
             }}
           >
             <div style={{ fontSize: 28, fontWeight: 800, color: "#2563EB", fontFamily: "var(--font-mono, monospace)", letterSpacing: "-1px" }}>
-              ₹1.50 / district / day
+              ₹3.30 / district / day
             </div>
             <div style={{ fontSize: 13, color: "#6B6B6B", marginTop: 4 }}>
               Target cost at full scale (780 districts)

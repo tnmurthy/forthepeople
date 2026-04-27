@@ -282,7 +282,7 @@ export default function HomeDrilldown({ locale, heroShown = false }: HomeDrilldo
               textDecoration: "none", minHeight: 44,
             }}
           >
-            ❤️ Support — ₹1.50/day serves one district
+            ❤️ Support — ₹3.30/day serves one district
           </Link>
         </div>
 
