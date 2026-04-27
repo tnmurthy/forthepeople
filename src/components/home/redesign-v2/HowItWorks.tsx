@@ -66,8 +66,10 @@ export default function HowItWorks() {
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
-        /* Session 19 v13 Phase J (Fix #11): compact spacing */
-        .ftp-how-wrap { background: #FAFAF8; padding: 28px 0; }
+        /* Session 19 v13 Phase J (Fix #11): compact spacing.
+           Session 19.8 Phase F: top padding 28→16 to tighten the gap from
+           the now-visually-distinct Live Data section above. */
+        .ftp-how-wrap { background: #FAFAF8; padding: 16px 0 28px; }
 
         .ftp-how-header {
           text-align: center;

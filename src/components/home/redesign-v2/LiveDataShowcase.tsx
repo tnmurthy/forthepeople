@@ -144,6 +144,9 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
+        /* Session 19.8 Phase F: tighten bottom padding so the gap to
+           the next section (HowItWorks) shrinks. */
+        .ftp-livedata-wrap { padding-bottom: 12px; }
         /* Session 16 v10 Phase G (Fix #8): rich card design with accent stripes */
         .ftp-livedata-header-row {
           display: flex;
@@ -221,36 +224,36 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
           color: #FFFFFF;
         }
 
+        /* Session 19.8 Phase F: Live Data row visually distinct from
+           "How it works" — sits on a soft blue tint, cards are flat
+           (no border, no top accent stripe) and shorter, so it reads as
+           a snapshot strip rather than a stack of feature cards. */
         .ftp-livedata-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 12px;
+          gap: 8px;
+          background: #F0F7FF;
+          border: 1px solid #DBEAFE;
+          border-radius: 14px;
+          padding: 12px;
         }
         .ftp-data-card {
           display: flex;
           flex-direction: column;
           background: #FFFFFF;
-          border: 1px solid #E8E8E4;
-          border-radius: 12px;
-          padding: 16px;
+          border: none;
+          border-radius: 10px;
+          padding: 12px 14px;
           text-decoration: none;
           color: #1A1A1A;
-          transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+          transition: transform 150ms ease, box-shadow 150ms ease;
           position: relative;
           overflow: hidden;
-          min-height: 180px;
-        }
-        .ftp-data-card::before {
-          content: "";
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 3px;
-          background: var(--card-accent);
+          min-height: 120px;
         }
         .ftp-data-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 24px var(--card-shadow);
-          border-color: var(--card-accent);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 14px var(--card-shadow);
         }
         .ftp-data-card-emerald { --card-accent: #10B981; --card-shadow: rgba(16,185,129,0.15); }
         .ftp-data-card-blue    { --card-accent: #2563EB; --card-shadow: rgba(37,99,235,0.15); }
@@ -309,9 +312,9 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
           to   { opacity: 1; }
         }
         @media (max-width: 767px) {
-          .ftp-livedata-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .ftp-livedata-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
           .ftp-livedata-header-row { flex-direction: column; align-items: flex-start; gap: 8px; }
-          .ftp-data-card { padding: 12px; min-height: 140px; }
+          .ftp-data-card { padding: 10px; min-height: 110px; }
           .ftp-data-card-title { font-size: 10px; }
         }
         @media (prefers-reduced-motion: reduce) {
