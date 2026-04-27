@@ -238,25 +238,15 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
     routeStateData &&
     routeDistrictData
   );
-  // Session 19.5: send the full list of states/districts (live + coming-soon)
-  // so the breadcrumb dropdowns can render coming-soon items in muted grey.
-  // Sorted live-first, then alphabetically within each group.
-  const peerLiveStates = useMemo(() => {
-    const decorated = INDIA_STATES.map((s) => ({
-      slug: s.slug,
-      name: s.name,
-      isLive: s.districts.some((d) => d.active),
-    }));
-    decorated.sort((a, b) => {
-      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
-    return decorated;
-  }, []);
+  // Session 19.5: send the full list of districts (live + coming-soon) so the
+  // breadcrumb dropdowns can render coming-soon items in muted grey. Sorted
+  // live-first, then alphabetically within each group.
+  // Session 19.7: include nameLocal so menus can show native script.
   const peerLiveDistricts = useMemo(() => {
     const decorated = (routeStateData?.districts ?? []).map((d) => ({
       slug: d.slug,
       name: d.name,
+      nameLocal: d.nameLocal,
       isLive: d.active === true,
     }));
     decorated.sort((a, b) => {
@@ -270,6 +260,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       (routeDistrictData?.taluks ?? []).map((t) => ({
         slug: t.slug,
         name: t.name,
+        nameLocal: t.nameLocal,
       })),
     [routeDistrictData],
   );
@@ -814,7 +805,6 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             stateName={routeStateData.name}
             districtSlug={routeDistrictSlug!}
             districtName={routeDistrictData.name}
-            peerLiveStates={peerLiveStates}
             peerLiveDistricts={peerLiveDistricts}
             taluks={taluksForBreadcrumb}
             currentTalukSlug={routeTalukData?.slug}

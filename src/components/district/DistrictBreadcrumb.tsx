@@ -21,6 +21,8 @@ interface Peer {
   slug: string;
   name: string;
   isLive?: boolean; // present on state/district peers; missing/true for sub-districts
+  /** Native-script name (Kannada/Hindi/Marathi/Telugu/etc.) — optional. */
+  nameLocal?: string | null;
 }
 
 export interface DistrictBreadcrumbProps {
@@ -29,9 +31,6 @@ export interface DistrictBreadcrumbProps {
   stateName: string;
   districtSlug: string;
   districtName: string;
-  /** All states (Session 19.5: live + coming-soon). Live ones get a green
-   *  dot, coming-soon get a muted grey dot. Sorted live-first by the caller. */
-  peerLiveStates: Peer[];
   /** All districts in the current state (Session 19.5: live + coming-soon). */
   peerLiveDistricts: Peer[];
   /** Sub-districts (taluks/tehsils/mandals) of the current district. */
@@ -50,7 +49,6 @@ export default function DistrictBreadcrumb({
   stateName,
   districtSlug,
   districtName,
-  peerLiveStates,
   peerLiveDistricts,
   taluks,
   currentTalukSlug,
@@ -219,22 +217,40 @@ export default function DistrictBreadcrumb({
           background: #D1D5DB;
           box-shadow: none;
         }
-        /* Session 19.5: current item — muted with "Current" badge, no click. */
+        /* Session 19.5/19.7: current item — muted with inline "Current" badge,
+           no click. The ::after pseudo-element was replaced by an inline
+           <span> so it composes with the new nameLocal label without
+           fighting for the same margin-left:auto slot. */
         .ftp-breadcrumb-menu-item[data-current="true"] {
           background: #F9FAFB;
           color: #6B7280;
           cursor: default;
           pointer-events: none;
         }
-        .ftp-breadcrumb-menu-item[data-current="true"]::after {
-          content: "Current";
-          margin-left: auto;
+        /* Session 19.7: native-script label rendered alongside English. */
+        .ftp-breadcrumb-menu-item-local {
+          font-size: 11px;
+          color: #9CA3AF;
+          font-weight: 400;
+          flex-shrink: 0;
+          margin-left: 8px;
+        }
+        .ftp-breadcrumb-menu-item[data-current="true"] .ftp-breadcrumb-menu-item-local {
+          color: #D1D5DB;
+        }
+        .ftp-breadcrumb-menu-item[data-live="false"] .ftp-breadcrumb-menu-item-local {
+          color: #D1D5DB;
+        }
+        /* "Current" badge — replaces the old ::after rule so it composes
+           with the optional nameLocal span. */
+        .ftp-breadcrumb-menu-item-current {
           font-size: 10px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
           color: #2563EB;
           font-weight: 700;
           flex-shrink: 0;
+          margin-left: 8px;
         }
         .ftp-breadcrumb-menu-empty {
           padding: 10px 12px;
@@ -319,6 +335,7 @@ export default function DistrictBreadcrumb({
               href={`/${locale}/${stateSlug}/${d.slug}`}
               isLive={d.isLive !== false}
               isCurrent={d.slug === districtSlug}
+              nameLocal={d.nameLocal ?? undefined}
               onClick={close}
             >
               {d.name}
@@ -353,6 +370,7 @@ export default function DistrictBreadcrumb({
               href={`/${locale}/${stateSlug}/${d.slug}`}
               isLive={d.isLive !== false}
               isCurrent={d.slug === districtSlug}
+              nameLocal={d.nameLocal ?? undefined}
               onClick={close}
             >
               {d.name}
@@ -387,6 +405,7 @@ export default function DistrictBreadcrumb({
               href={`/${locale}/${stateSlug}/${districtSlug}/${t.slug}`}
               isLive
               isCurrent={t.slug === currentTalukSlug}
+              nameLocal={t.nameLocal ?? undefined}
               onClick={close}
             >
               {t.name}
@@ -403,6 +422,8 @@ interface PeerMenuItemProps {
   isLive: boolean;
   isCurrent: boolean;
   onClick: () => void;
+  /** Native-script label rendered alongside English (Session 19.7). */
+  nameLocal?: string | null;
   children: React.ReactNode;
 }
 
@@ -410,14 +431,27 @@ interface PeerMenuItemProps {
  *  - Coming-soon (isLive=false): muted text + grey dot, still clickable
  *    (target route already has a LockedDistrictPreview).
  *  - Current (isCurrent=true): muted with a "Current" badge, click does
- *    nothing (CSS pointer-events: none — kept as <a> for screen readers). */
+ *    nothing (CSS pointer-events: none — kept as <a> for screen readers).
+ *
+ *  Session 19.7: optional `nameLocal` (Kannada/Hindi/Marathi/Telugu) shows
+ *  in muted grey on the right edge. The "Current" badge is now an inline
+ *  <span> instead of a CSS ::after, so it composes cleanly with nameLocal. */
 function PeerMenuItem({
   href,
   isLive,
   isCurrent,
   onClick,
+  nameLocal,
   children,
 }: PeerMenuItemProps) {
+  // Suppress nameLocal when it's just an English-fallback duplicate of the
+  // primary name (e.g. some districts set nameLocal: "Nagpur" when no
+  // native-script entry exists yet).
+  const showLocal =
+    typeof nameLocal === "string" &&
+    nameLocal.trim().length > 0 &&
+    (typeof children !== "string" || nameLocal.trim() !== children.trim());
+
   return (
     <Link
       href={href}
@@ -429,6 +463,12 @@ function PeerMenuItem({
     >
       <span className="ftp-breadcrumb-dot" aria-hidden="true" />
       <span className="ftp-breadcrumb-menu-item-label">{children}</span>
+      {showLocal && (
+        <span className="ftp-breadcrumb-menu-item-local">{nameLocal}</span>
+      )}
+      {isCurrent && (
+        <span className="ftp-breadcrumb-menu-item-current">Current</span>
+      )}
     </Link>
   );
 }
