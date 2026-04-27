@@ -291,11 +291,48 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           background: transparent; border: none; cursor: pointer;
         }
         .ftp-link-btn:hover { background: #F5F5F0; }
-        .ftp-product-trigger:hover { background: #F5F5F0; }
+
+        /* Session 19 v13 Phase B: logo link + caret button */
+        .ftp-logo-group {
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+        }
+        .ftp-logo-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-weight: 700;
+          font-size: 16px;
+          color: #1A1A1A;
+          letter-spacing: -0.01em;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 150ms ease;
+        }
+        .ftp-logo-link:hover { background: #F5F5F0; }
+        .ftp-logo-icon { color: #2563EB; flex-shrink: 0; }
+        .ftp-product-trigger {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 4px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          color: #6B7280;
+          border-radius: 4px;
+          transition: background 150ms ease, color 150ms ease;
+        }
+        .ftp-product-trigger:hover { background: #F5F5F0; color: #1A1A1A; }
         .ftp-product-trigger:focus-visible {
           outline: 2px solid #2563EB;
           outline-offset: 2px;
         }
+        .ftp-product-caret { transition: transform 200ms ease; }
+        .ftp-product-caret.ftp-rotated { transform: rotate(180deg); }
         .ftp-status-dot {
           display: inline-block;
           width: 7px; height: 7px; border-radius: 50%;
@@ -562,45 +599,35 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       `}</style>
 
       {/* ── Logo + product dropdown trigger ── */}
-      <div ref={productRef} style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => setProductOpen((v) => !v)}
-          aria-haspopup="menu"
-          aria-expanded={productOpen}
-          aria-label="ForThePeople product menu"
-          className="ftp-product-trigger"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 10px",
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: 16,
-            color: "#1A1A1A",
-            letterSpacing: "-0.01em",
-            whiteSpace: "nowrap",
-          }}
+      {/* Session 19 v13 Phase B (Fix #1): logo TEXT navigates home; only the
+          chevron caret button opens the product dropdown. Citizens were
+          stuck before — clicking the logo only opened the product menu. */}
+      <div ref={productRef} className="ftp-logo-group" style={{ position: "relative" }}>
+        <Link
+          href={`/${locale}`}
+          className="ftp-logo-link"
+          aria-label="ForThePeople.in home"
         >
-          <Users size={18} aria-hidden="true" style={{ color: "#2563EB", flexShrink: 0 }} />
+          <Users size={18} aria-hidden="true" className="ftp-logo-icon" />
           <span className="ftp-logo-full">
             ForThePeople<span style={{ color: "#2563EB" }}>.in</span>
           </span>
           <span className="ftp-logo-short">
             FTP<span style={{ color: "#2563EB" }}>.in</span>
           </span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setProductOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={productOpen}
+          aria-label="Open product menu"
+          className="ftp-product-trigger"
+        >
           <ChevronDown
             size={14}
             aria-hidden="true"
-            style={{
-              color: "#9B9B9B",
-              transform: productOpen ? "rotate(180deg)" : "none",
-              transition: "transform 150ms ease",
-            }}
+            className={`ftp-product-caret${productOpen ? " ftp-rotated" : ""}`}
           />
         </button>
         {productOpen && (
