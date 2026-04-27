@@ -326,7 +326,9 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
           .ftp-header-bar { padding: 10px 20px !important; }
         }
         @media (max-width: 767px) {
-          .ftp-header-bar { padding: 8px 12px !important; gap: 8px !important; }
+          /* Mobile-revert: tighter padding + gap so the single-row layout
+             (logo + search + 5 icons) fits within 375px. */
+          .ftp-header-bar { padding: 6px 6px !important; gap: 4px !important; }
           .ftp-header-bar .ftp-desktop-only { display: none !important; }
           /* Mobile-revert: keep the full "ForThePeople.in" wordmark on
              mobile too. The .ftp-logo-short abbreviation never renders

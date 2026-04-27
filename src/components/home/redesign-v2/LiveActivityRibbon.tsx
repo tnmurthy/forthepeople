@@ -184,7 +184,10 @@ export default function StatsBar({
           }
           .ftp-stat-tile { padding: 14px 16px; }
           .ftp-stat-num { font-size: 22px; }
-          .ftp-stat-tile:last-child { grid-column: 1 / -1; }
+          /* Mobile-revert: removed the .ftp-stat-tile:last-child grid-column
+             rule that forced the Last Refresh tile to span both columns —
+             the user wants a clean 2x2 with Last Refresh in the row-2-right
+             slot (replacing the hidden Districts Coming tile). */
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-stat-tile { transition: none; }
