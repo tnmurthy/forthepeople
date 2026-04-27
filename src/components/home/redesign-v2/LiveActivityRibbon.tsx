@@ -73,8 +73,12 @@ export default function StatsBar({
   comingDistricts = 770,
   mostRecentAt,
 }: StatsBarProps) {
-  const updated = timeAgoLabel(mostRecentAt ?? null);
-  const updatedDisplay = updated.isLive ? "Live" : updated.label;
+  // Session 18.1 Phase B (Fix #1): always show the real Xm/Xh-ago label.
+  // Pass a very-large staleThreshold so timeAgoLabel never falls back to "Live"
+  // — the recency dot below already conveys staleness; Jayanth wants the
+  // raw timestamp string visible, not the friendly fallback.
+  const updated = timeAgoLabel(mostRecentAt ?? null, { staleThresholdMinutes: 60 * 24 * 365 });
+  const updatedDisplay = mostRecentAt ? updated.label : "—";
   const tier = recencyTier(mostRecentAt ?? null);
 
   return (
