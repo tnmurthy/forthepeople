@@ -45,7 +45,16 @@ const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ),
 });
 
-const NEW_BADGE_COUNT = 3;
+// Session 18 v12 Phase G (Fix #7): NEW badge valid 30 days from goLiveDate.
+const NEW_BADGE_DAYS = 30;
+
+function isWithin30Days(date: string | null | undefined): boolean {
+  if (!date) return false;
+  const ts = new Date(date).getTime();
+  if (!Number.isFinite(ts)) return false;
+  const ageDays = (Date.now() - ts) / 86_400_000;
+  return ageDays <= NEW_BADGE_DAYS;
+}
 
 interface PreviewLive {
   temp: number | null;
@@ -73,13 +82,13 @@ export interface HeroSectionProps {
 }
 
 export default function HeroSection({ locale, districts = [] }: HeroSectionProps) {
-  const newSlugs = useMemo(() => {
-    const sorted = [...districts].sort((a, b) => {
+  // Session 18 v12 Phase G: districts ordered newest-first (was alphabetical).
+  const sortedDistricts = useMemo(() => {
+    return [...districts].sort((a, b) => {
       const ax = a.goLiveDate ? new Date(a.goLiveDate).getTime() : 0;
       const bx = b.goLiveDate ? new Date(b.goLiveDate).getTime() : 0;
       return bx - ax;
     });
-    return new Set(sorted.slice(0, NEW_BADGE_COUNT).map((d) => d.slug));
   }, [districts]);
 
   const [preview, setPreview] = useState<PreviewMap>({});
@@ -257,10 +266,52 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           0%, 100% { opacity: 1; transform: scale(1); }
           50%      { opacity: 0.5; transform: scale(0.85); }
         }
-        .ftp-hero-districts-list {
+        /* Session 18 v12 Phase G: internal scroll + static Vote-next CTA */
+        .ftp-hero-districts-scroll {
+          flex: 1;
           display: flex;
           flex-direction: column;
           gap: 8px;
+          margin-top: 12px;
+          margin-bottom: 8px;
+          overflow-y: auto;
+          max-height: 480px;
+          scrollbar-width: thin;
+          scrollbar-color: #D1D5DB transparent;
+          padding-right: 4px;
+        }
+        .ftp-hero-districts-scroll::-webkit-scrollbar { width: 6px; }
+        .ftp-hero-districts-scroll::-webkit-scrollbar-track { background: transparent; }
+        .ftp-hero-districts-scroll::-webkit-scrollbar-thumb {
+          background: #D1D5DB;
+          border-radius: 3px;
+        }
+        .ftp-vote-next-district-cta {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+          border: 1px solid #C7D2FE;
+          border-radius: 8px;
+          text-decoration: none;
+          color: #1E3A8A;
+          margin-top: 8px;
+          transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+        }
+        .ftp-vote-next-district-cta:hover {
+          border-color: #6366F1;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+        .ftp-vote-next-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+        .ftp-vote-next-text { flex: 1; min-width: 0; }
+        .ftp-vote-next-title { font-size: 13px; font-weight: 700; }
+        .ftp-vote-next-sub { font-size: 11px; color: #4F46E5; margin-top: 1px; }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-vote-next-district-cta { transition: none; }
+          .ftp-vote-next-district-cta:hover { transform: none; }
         }
 
         /* Session 17 v11 Phase D: stable district rows, all content always visible */
@@ -312,8 +363,9 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        /* Session 18 v12 Phase G (Fix #7): green NEW badge (was yellow) */
         .ftp-district-row-newbadge {
-          background: #EAB308;
+          background: #10B981;
           color: #FFFFFF;
           font-size: 8px;
           font-weight: 700;
@@ -363,6 +415,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-hero-map-frame { aspect-ratio: 4 / 5; }
           .ftp-district-row-script { display: none; }
           .ftp-district-row { padding: 10px 12px; min-height: 70px; }
+          .ftp-hero-districts-scroll { max-height: none; }
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-hero-banner-cta { transition: none; }
@@ -404,21 +457,21 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
             <div className="ftp-hero-map-hint">👆 Click a state to explore</div>
           </div>
 
-          {/* RIGHT — 10 districts (50%) */}
+          {/* RIGHT — districts (50%, internal scroll + Vote-next CTA pinned) */}
           <div className="ftp-hero-districts-col">
             <div className="ftp-hero-districts-header">
               <span className="ftp-live-pill">
                 <span className="ftp-live-dot" aria-hidden="true" /> LIVE
               </span>
-              <span>{districts.length} districts</span>
+              <span>{sortedDistricts.length} districts</span>
             </div>
 
-            <div className="ftp-hero-districts-list">
-              {districts.map((d) => {
+            <div className="ftp-hero-districts-scroll">
+              {sortedDistricts.map((d) => {
                 const meta = DISTRICT_META[d.slug];
                 const live = preview[d.slug];
                 const temp = live?.temp ?? null;
-                const isNew = newSlugs.has(d.slug);
+                const isNew = isWithin30Days(d.goLiveDate);
                 const updated = timeAgoLabel(live?.mostRecentAt ?? null);
                 return (
                   <Link
@@ -461,6 +514,18 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                 );
               })}
             </div>
+
+            {/* Static "Vote for next district" CTA pinned at bottom of column */}
+            <Link
+              href={`/${locale}/vote-district`}
+              className="ftp-vote-next-district-cta"
+            >
+              <span className="ftp-vote-next-icon" aria-hidden="true">🗳️</span>
+              <div className="ftp-vote-next-text">
+                <div className="ftp-vote-next-title">Vote for the next district</div>
+                <div className="ftp-vote-next-sub">Tell us which district to launch next →</div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
