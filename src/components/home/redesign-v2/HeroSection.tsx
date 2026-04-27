@@ -134,29 +134,12 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           font-weight: 800;
           line-height: 1.15;
           letter-spacing: -0.025em;
-          display: flex;
-          align-items: baseline;
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 4px 8px;
+          color: #0F172A;
+          text-align: center;
         }
-        .ftp-h1-phrase { display: inline-block; }
-        .ftp-h1-blue {
-          background: linear-gradient(135deg, #60A5FA 0%, #1E40AF 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-        }
-        .ftp-h1-purple {
-          background: linear-gradient(135deg, #A78BFA 0%, #5B21B6 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          color: transparent;
-        }
-        .ftp-h1-emerald {
-          background: linear-gradient(135deg, #34D399 0%, #047857 100%);
+        /* Session 18 v12 Phase E (Fix #4): single navy color + one blue accent on "data" */
+        .ftp-h1-accent {
+          background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -165,6 +148,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         .ftp-h1-flag {
           font-size: 0.9em;
           -webkit-text-fill-color: initial;
+          color: initial;
         }
         .ftp-hero-subtitle {
           margin: 0;
@@ -372,7 +356,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-hero-row { grid-template-columns: 1fr; gap: 16px; }
         }
         @media (max-width: 767px) {
-          .ftp-hero-h1 { font-size: 28px; gap: 2px 6px; }
+          .ftp-hero-h1 { font-size: 28px; }
           .ftp-hero-subtitle { font-size: 13px; padding: 0 16px; }
           .ftp-hero-banner-cta { padding: 10px 20px; font-size: 13px; }
           .ftp-hero-titleblock { margin-bottom: 20px; }
@@ -393,9 +377,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         {/* TOP: Title block */}
         <div className="ftp-hero-titleblock">
           <h1 id="hero-heading" className="ftp-hero-h1">
-            <span className="ftp-h1-phrase ftp-h1-blue">Your district.</span>
-            <span className="ftp-h1-phrase ftp-h1-purple">Your data.</span>
-            <span className="ftp-h1-phrase ftp-h1-emerald">Your right.</span>
+            Your district. Your <span className="ftp-h1-accent">data</span>. Your right.{" "}
             <span className="ftp-h1-flag" aria-label="India">🇮🇳</span>
           </h1>
           <p className="ftp-hero-subtitle">
