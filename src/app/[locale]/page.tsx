@@ -35,8 +35,7 @@ import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
-import ContributorsStrip from "@/components/home/redesign-v2/ContributorsStrip";
-import VoteFeaturesCTA from "@/components/home/redesign-v2/VoteFeaturesCTA";
+import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -146,8 +145,7 @@ export default async function HomePage({
         <HeroSection locale={locale} districts={activeDistricts} />
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
         <HowItWorks />
-        <ContributorsStrip locale={locale} />
-        <VoteFeaturesCTA locale={locale} />
+        <CommunitySection locale={locale} />
       </main>
     </>
   );

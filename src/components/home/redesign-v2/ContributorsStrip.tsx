@@ -165,9 +165,13 @@ function CategorySection({
 
 export interface ContributorsStripProps {
   locale: string;
+  /** Session 18 v12 Phase I: when rendered inside CommunitySection's 50% column,
+   *  use a denser layout — smaller H2, "View all" inline with header (no bottom CTA),
+   *  reduced spacing so the section fits next to VoteFeaturesCTA. */
+  compact?: boolean;
 }
 
-export default function ContributorsStrip({ locale }: ContributorsStripProps) {
+export default function ContributorsStrip({ locale, compact = false }: ContributorsStripProps) {
   const [contributors, setContributors] = useState<ContributorItem[] | null>(null);
 
   useEffect(() => {
@@ -345,6 +349,31 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
         }
         .ftp-supporters-cta:hover { text-decoration: underline; }
 
+        /* Session 18 v12 Phase I: compact mode (used by CommunitySection) */
+        .ftp-supporters-header-compact {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 12px;
+        }
+        .ftp-supporters-h2-compact {
+          font-size: 18px;
+          margin-bottom: 0;
+        }
+        .ftp-supporters-cta-inline {
+          font-size: 12px;
+          color: #2563EB;
+          font-weight: 600;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .ftp-supporters-cta-inline:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
         /* Pills */
         .ftp-sup-pill {
           display: inline-flex;
@@ -430,22 +459,37 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
       `}</style>
 
       <div className="ftp-section-inner">
-        <div className="ftp-supporters-header">
-          <h2 id="supporters-heading" className="ftp-supporters-h2">
-            {contributors === null
-              ? "Loading supporters…"
-              : total === 0
-                ? "Be the first to back us"
-                : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
-          </h2>
-          <p className="ftp-supporters-sub">
-            No corporate funding. No ads. Just citizens backing citizens.
-          </p>
-          <div className="ftp-supporters-motto">
-            <span aria-hidden="true">✨</span>
-            100% citizen-funded · Open source · Forever free
+        {compact ? (
+          <div className="ftp-supporters-header-compact">
+            <h2 id="supporters-heading" className="ftp-supporters-h2 ftp-supporters-h2-compact">
+              {contributors === null
+                ? "Loading supporters…"
+                : total === 0
+                  ? "Be the first to back us"
+                  : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
+            </h2>
+            <Link href={`/${locale}/contributors`} className="ftp-supporters-cta-inline">
+              View all &amp; how to join →
+            </Link>
           </div>
-        </div>
+        ) : (
+          <div className="ftp-supporters-header">
+            <h2 id="supporters-heading" className="ftp-supporters-h2">
+              {contributors === null
+                ? "Loading supporters…"
+                : total === 0
+                  ? "Be the first to back us"
+                  : `Backed by ${total} citizen${total === 1 ? "" : "s"}`}
+            </h2>
+            <p className="ftp-supporters-sub">
+              No corporate funding. No ads. Just citizens backing citizens.
+            </p>
+            <div className="ftp-supporters-motto">
+              <span aria-hidden="true">✨</span>
+              100% citizen-funded · Open source · Forever free
+            </div>
+          </div>
+        )}
 
         {buckets && total > 0 && (
           <div className="ftp-supporters-categories">
@@ -470,9 +514,11 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           </div>
         )}
 
-        <Link href={`/${locale}/contributors`} className="ftp-supporters-cta">
-          View all supporters &amp; how to join →
-        </Link>
+        {!compact && (
+          <Link href={`/${locale}/contributors`} className="ftp-supporters-cta">
+            View all supporters &amp; how to join →
+          </Link>
+        )}
       </div>
     </section>
   );
