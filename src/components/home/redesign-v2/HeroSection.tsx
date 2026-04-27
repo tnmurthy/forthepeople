@@ -196,11 +196,12 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
 
         /* Session 17 v11 Phase C → Session 19 v13 Phase E: map dominates 60/40
            default, 65/35 on ≥1440px (matches production scale ~1054×1186) */
+        /* Session 19.2 Phase E: stretch so map + district list match heights */
         .ftp-hero-row {
           display: grid;
           grid-template-columns: 60% 40%;
           gap: 24px;
-          align-items: start;
+          align-items: stretch;
         }
         @media (min-width: 1440px) {
           .ftp-hero-row { grid-template-columns: 65% 35%; }
@@ -251,6 +252,9 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           border: 1px solid #E5E7EB;
           border-radius: 12px;
           padding: 16px;
+          /* Session 19.2 Phase E: fill row height so column matches map */
+          height: 100%;
+          min-height: 0;
         }
         .ftp-hero-districts-header {
           display: flex;
@@ -284,16 +288,17 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           0%, 100% { opacity: 1; transform: scale(1); }
           50%      { opacity: 0.5; transform: scale(0.85); }
         }
-        /* Session 18 v12 Phase G: internal scroll + static Vote-next CTA */
+        /* Session 18 v12 Phase G: internal scroll + static Vote-next CTA
+           Session 19.2 Phase E: drop max-height cap so flex:1 fills column */
         .ftp-hero-districts-scroll {
           flex: 1;
+          min-height: 0;
           display: flex;
           flex-direction: column;
           gap: 8px;
           margin-top: 12px;
           margin-bottom: 8px;
           overflow-y: auto;
-          max-height: 480px;
           scrollbar-width: thin;
           scrollbar-color: #D1D5DB transparent;
           padding-right: 4px;
