@@ -27,7 +27,7 @@ import {
   Briefcase,
   ChevronDown,
   Github,
-  Globe,
+  Languages,
   Heart,
   Lock,
   Network,
@@ -675,7 +675,7 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
         }
         .ftp-vote-features-emoji { font-size: 13px; line-height: 1; }
 
-        /* Session 14 v8.1 Phase B Fix #3: Language button — Globe icon + outline */
+        /* Session 14 v8.1 Phase B Fix #3: Language button — Languages icon + outline */
         .ftp-language-btn {
           display: inline-flex;
           align-items: center;
@@ -954,7 +954,7 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
           aria-expanded={langOpen}
           className="ftp-language-btn"
         >
-          <Globe className="ftp-language-icon" aria-hidden="true" />
+          <Languages className="ftp-language-icon" aria-hidden="true" />
           <span>{activeLang.code.toUpperCase()}</span>
           <ChevronDown className="ftp-language-chevron" aria-hidden="true" />
         </button>
