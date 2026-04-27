@@ -20,14 +20,25 @@ interface Props {
   locale: string;
   /** Provided on district pages — opens the LEFT module drawer. */
   onModuleMenuClick?: () => void;
+  /** Marks the variant so CSS can hide the global one when a district
+   *  chrome instance is also mounted on the same page. */
+  variant?: "global" | "district";
 }
 
-export function MobileHeader({ locale, onModuleMenuClick }: Props) {
+export function MobileHeader({
+  locale,
+  onModuleMenuClick,
+  variant = "global",
+}: Props) {
   const pathname = usePathname() ?? "";
   const isDistrictPage = /^\/[^/]+\/[^/]+\/[^/]+/.test(pathname);
 
   return (
-    <header className="ftp-m-header" role="banner">
+    <header
+      className="ftp-m-header"
+      role="banner"
+      data-mobile-header={variant}
+    >
       {isDistrictPage && onModuleMenuClick ? (
         <button
           type="button"

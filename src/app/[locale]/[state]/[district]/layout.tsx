@@ -10,6 +10,7 @@ import Script from "next/script";
 import Sidebar from "@/components/layout/Sidebar";
 import DistrictStatusBar from "@/components/layout/DistrictStatusBar";
 import { MobileBreadcrumbStrip } from "@/components/district/MobileBreadcrumbStrip";
+import { MobileDistrictChrome } from "@/components/district/MobileDistrictChrome";
 import FeedbackFloatingButton from "@/components/common/FeedbackFloatingButton";
 import { getDistrict, getState } from "@/lib/constants/districts";
 
@@ -101,6 +102,16 @@ export default async function DistrictLayout({
           the inline breadcrumb, but the live timestamp + Live indicator are
           information users actually rely on. The breadcrumb-in-header still
           handles navigation; the sub-bar handles "when was this updated". */}
+      {/* Mobile chrome — hamburger header that opens the LEFT module
+          drawer. CSS hides this on desktop. The plain MobileHeader from
+          the global locale layout is suppressed inside this district
+          chrome via CSS to avoid two headers stacking on mobile. */}
+      <MobileDistrictChrome
+        locale={locale}
+        stateSlug={stateSlug}
+        districtSlug={districtSlug}
+        districtName={districtData!.name}
+      />
       <DistrictStatusBar
         districtName={districtData!.name}
         stateName={stateData?.name ?? ""}
