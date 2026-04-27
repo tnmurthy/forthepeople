@@ -33,11 +33,6 @@ import {
 import FinancialTicker from "@/components/home/redesign-v2/FinancialTicker";
 import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
-import { MobileHero } from "@/components/home/mobile/MobileHero";
-import { MobileDistrictCarousel } from "@/components/home/mobile/MobileDistrictCarousel";
-import { MobileIndiaMap } from "@/components/home/mobile/MobileIndiaMap";
-import { MobileLiveData } from "@/components/home/mobile/MobileLiveData";
-import { MobileHowItWorks } from "@/components/home/mobile/MobileHowItWorks";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
@@ -141,16 +136,6 @@ export default async function HomePage({
 
       <main role="main">
         <FinancialTicker />
-        {/* Mobile-only hero — CSS hides StatsBar + HeroSection at ≤767px
-            and shows this single-column block instead (Session M1 Phase C). */}
-        <MobileHero
-          locale={locale}
-          activeDistricts={activeCount}
-          dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
-          totalDataPoints={totalDataPoints}
-          comingDistricts={comingDistricts}
-          mostRecentAt={mostRecentAt}
-        />
         <StatsBar
           activeDistricts={activeCount}
           dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
@@ -159,25 +144,8 @@ export default async function HomePage({
           mostRecentAt={mostRecentAt}
         />
         <HeroSection locale={locale} districts={activeDistricts} />
-        {/* Mobile-only horizontal swipe carousel of live districts (Phase D) */}
-        <MobileDistrictCarousel locale={locale} districts={activeDistricts} />
-        {/* Mobile-only India map — full-width, lazy-loaded (Phase E) */}
-        <MobileIndiaMap locale={locale} />
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
-        {/* Mobile-only Live Data inline list (Phase F) */}
-        {activeDistricts[0] && (
-          <MobileLiveData
-            locale={locale}
-            district={{
-              slug: activeDistricts[0].slug,
-              name: activeDistricts[0].name,
-              stateSlug: activeDistricts[0].stateSlug,
-            }}
-          />
-        )}
         <HowItWorks />
-        {/* Mobile-only vertical 4-step How It Works (Phase F) */}
-        <MobileHowItWorks />
         <CommunitySection locale={locale} />
         <SupportBanner locale={locale} />
       </main>
