@@ -416,6 +416,17 @@
     margin: 0;
     line-height: 1.5;
   }
+
+  /* ============================================================
+   * Supporters — Phase G
+   * Slower marquee on mobile so pills are readable on a small screen,
+   * categories stack to a single column.
+   * ============================================================ */
+  .ftp-supporter-marquee-track { animation-duration: 60s !important; }
+  .ftp-community-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
 }
 
 @media (max-width: 360px) {

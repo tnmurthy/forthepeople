@@ -28,6 +28,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Linkedin, Github, Instagram, Twitter, Globe } from "lucide-react";
 import { STATE_FULL_NAMES } from "@/lib/data/district-meta";
 
 interface ContributorItem {
@@ -88,11 +89,27 @@ function isActiveSubscriber(c: ContributorItem, tier: SupTier): boolean {
   return c.isRecurring === true && c.subscriptionStatus === "active";
 }
 
+// Session M1 Phase G: surface a small platform icon on linked pills so
+// users can see at-a-glance whether the supporter has a LinkedIn/GitHub/
+// Instagram/Twitter/website. Falls back to Globe for unknown platforms.
+function getSocialIcon(platform: string | null | undefined) {
+  switch ((platform || "").toLowerCase()) {
+    case "linkedin": return Linkedin;
+    case "github":   return Github;
+    case "instagram": return Instagram;
+    case "twitter":
+    case "x":         return Twitter;
+    case "website":
+    default:          return Globe;
+  }
+}
+
 function SupporterPill({ contributor }: { contributor: ContributorItem }) {
   const tier = classifyTier(contributor);
   const link = safeExternalLink(contributor.socialLink);
   const badge = badgeFor(contributor, tier);
   const className = `ftp-sup-pill ftp-sup-${tier}${link ? " ftp-sup-link" : ""}`;
+  const PlatformIcon = link ? getSocialIcon(contributor.socialPlatform) : null;
 
   const inner = (
     <>
@@ -111,6 +128,13 @@ function SupporterPill({ contributor }: { contributor: ContributorItem }) {
         title={contributor.socialPlatform ? `${contributor.displayName} on ${contributor.socialPlatform}` : contributor.displayName}
       >
         {inner}
+        {PlatformIcon && (
+          <PlatformIcon
+            size={11}
+            className="ftp-sup-platform-icon"
+            aria-hidden="true"
+          />
+        )}
         <span className="ftp-sup-link-icon" aria-hidden="true">↗</span>
       </a>
     );
@@ -397,6 +421,15 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
           text-decoration: underline;
           text-underline-offset: 3px;
         }
+
+        /* Session M1 Phase G: small platform icon (LinkedIn/GitHub/Instagram/
+           Twitter/Globe) sits between name and the ↗ external-link arrow. */
+        .ftp-sup-platform-icon {
+          margin-left: 4px;
+          opacity: 0.7;
+          flex-shrink: 0;
+        }
+        .ftp-sup-pill-clickable:hover .ftp-sup-platform-icon { opacity: 1; }
 
         /* Pills */
         .ftp-sup-pill {
