@@ -238,21 +238,33 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
     routeStateData &&
     routeDistrictData
   );
-  const peerLiveStates = useMemo(
-    () =>
-      INDIA_STATES.filter((s) => s.districts.some((d) => d.active)).map((s) => ({
-        slug: s.slug,
-        name: s.name,
-      })),
-    [],
-  );
-  const peerLiveDistricts = useMemo(
-    () =>
-      (routeStateData?.districts ?? [])
-        .filter((d) => d.active)
-        .map((d) => ({ slug: d.slug, name: d.name })),
-    [routeStateData],
-  );
+  // Session 19.5: send the full list of states/districts (live + coming-soon)
+  // so the breadcrumb dropdowns can render coming-soon items in muted grey.
+  // Sorted live-first, then alphabetically within each group.
+  const peerLiveStates = useMemo(() => {
+    const decorated = INDIA_STATES.map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      isLive: s.districts.some((d) => d.active),
+    }));
+    decorated.sort((a, b) => {
+      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return decorated;
+  }, []);
+  const peerLiveDistricts = useMemo(() => {
+    const decorated = (routeStateData?.districts ?? []).map((d) => ({
+      slug: d.slug,
+      name: d.name,
+      isLive: d.active === true,
+    }));
+    decorated.sort((a, b) => {
+      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return decorated;
+  }, [routeStateData]);
   const taluksForBreadcrumb = useMemo(
     () =>
       (routeDistrictData?.taluks ?? []).map((t) => ({

@@ -20,6 +20,7 @@ import Link from "next/link";
 interface Peer {
   slug: string;
   name: string;
+  isLive?: boolean; // present on state/district peers; missing/true for sub-districts
 }
 
 export interface DistrictBreadcrumbProps {
@@ -28,9 +29,13 @@ export interface DistrictBreadcrumbProps {
   stateName: string;
   districtSlug: string;
   districtName: string;
-  peerLiveStates: Peer[]; // all states with ≥1 active district (including current)
-  peerLiveDistricts: Peer[]; // all active districts in current state (including current)
-  taluks: Peer[]; // taluks of current district
+  /** All states (Session 19.5: live + coming-soon). Live ones get a green
+   *  dot, coming-soon get a muted grey dot. Sorted live-first by the caller. */
+  peerLiveStates: Peer[];
+  /** All districts in the current state (Session 19.5: live + coming-soon). */
+  peerLiveDistricts: Peer[];
+  /** Sub-districts (taluks/tehsils/mandals) of the current district. */
+  taluks: Peer[];
   currentTalukSlug?: string; // when on a taluk page, the active taluk
   currentTalukName?: string;
   /** Compact mode: strips wrapper chrome so the breadcrumb fits inline in the header row. */
@@ -176,8 +181,8 @@ export default function DistrictBreadcrumb({
           top: calc(100% + 6px);
           left: 0;
           z-index: 40;
-          min-width: 180px;
-          max-height: 320px;
+          min-width: 240px;
+          max-height: 360px;
           overflow-y: auto;
           background: #FFFFFF;
           border: 1px solid #E5E5E0;
@@ -198,11 +203,38 @@ export default function DistrictBreadcrumb({
           white-space: nowrap;
           transition: background 120ms ease;
         }
+        .ftp-breadcrumb-menu-item-label {
+          flex: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         .ftp-breadcrumb-menu-item:hover { background: #F4F4F0; }
+        /* Session 19.5: coming-soon items render in the same list, muted.
+           Click still routes to the locked-district preview page. */
+        .ftp-breadcrumb-menu-item[data-live="false"] {
+          color: #9CA3AF;
+        }
+        .ftp-breadcrumb-menu-item[data-live="false"] .ftp-breadcrumb-dot {
+          background: #D1D5DB;
+          box-shadow: none;
+        }
+        /* Session 19.5: current item — muted with "Current" badge, no click. */
         .ftp-breadcrumb-menu-item[data-current="true"] {
-          background: #ECFDF5;
-          color: #047857;
-          font-weight: 600;
+          background: #F9FAFB;
+          color: #6B7280;
+          cursor: default;
+          pointer-events: none;
+        }
+        .ftp-breadcrumb-menu-item[data-current="true"]::after {
+          content: "Current";
+          margin-left: auto;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #2563EB;
+          font-weight: 700;
+          flex-shrink: 0;
         }
         .ftp-breadcrumb-menu-empty {
           padding: 10px 12px;
@@ -255,7 +287,7 @@ export default function DistrictBreadcrumb({
         }
       `}</style>
 
-      {/* India crumb */}
+      {/* India crumb — caret opens the full state list (live + coming-soon) */}
       <BreadcrumbCrumb
         emoji="🇮🇳"
         label="India"
@@ -263,21 +295,28 @@ export default function DistrictBreadcrumb({
         isCurrent={false}
         menuOpen={openMenu === "india"}
         onCaretClick={() => setOpenMenu(openMenu === "india" ? null : "india")}
-        ariaCaretLabel="Switch country (India only)"
+        ariaCaretLabel="Open state switcher"
       >
-        <Link
-          href={`/${locale}`}
-          className="ftp-breadcrumb-menu-item"
-          data-current="true"
-          onClick={close}
-        >
-          🇮🇳 India (home)
-        </Link>
+        {peerLiveStates.length === 0 ? (
+          <div className="ftp-breadcrumb-menu-empty">No states listed</div>
+        ) : (
+          peerLiveStates.map((s) => (
+            <PeerMenuItem
+              key={s.slug}
+              href={`/${locale}/${s.slug}`}
+              isLive={s.isLive !== false}
+              isCurrent={s.slug === stateSlug}
+              onClick={close}
+            >
+              {s.name}
+            </PeerMenuItem>
+          ))
+        )}
       </BreadcrumbCrumb>
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* State crumb */}
+      {/* State crumb — caret opens all districts of the current state */}
       <BreadcrumbCrumb
         dot
         label={stateName}
@@ -285,29 +324,31 @@ export default function DistrictBreadcrumb({
         isCurrent={false}
         menuOpen={openMenu === "state"}
         onCaretClick={() => setOpenMenu(openMenu === "state" ? null : "state")}
-        ariaCaretLabel={`Switch state (currently ${stateName})`}
+        ariaCaretLabel={`Open districts of ${stateName}`}
       >
-        {peerLiveStates.length === 0 ? (
-          <div className="ftp-breadcrumb-menu-empty">No other live states yet</div>
+        {peerLiveDistricts.length === 0 ? (
+          <div className="ftp-breadcrumb-menu-empty">
+            No districts listed for {stateName}
+          </div>
         ) : (
-          peerLiveStates.map((s) => (
-            <Link
-              key={s.slug}
-              href={`/${locale}/${s.slug}`}
-              className="ftp-breadcrumb-menu-item"
-              data-current={s.slug === stateSlug ? "true" : "false"}
+          peerLiveDistricts.map((d) => (
+            <PeerMenuItem
+              key={d.slug}
+              href={`/${locale}/${stateSlug}/${d.slug}`}
+              isLive={d.isLive !== false}
+              isCurrent={d.slug === districtSlug}
               onClick={close}
             >
-              <span className="ftp-breadcrumb-dot" aria-hidden="true" />
-              {s.name}
-            </Link>
+              {d.name}
+            </PeerMenuItem>
           ))
         )}
       </BreadcrumbCrumb>
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* District crumb (current unless a taluk is selected) */}
+      {/* District crumb (current unless a taluk is selected) — caret shows
+          all districts in the same state, current marked, coming-soon greyed. */}
       <BreadcrumbCrumb
         dot
         label={districtName}
@@ -319,22 +360,21 @@ export default function DistrictBreadcrumb({
         }
         ariaCaretLabel={`Switch district (currently ${districtName})`}
       >
-        {peerLiveDistricts.length <= 1 ? (
+        {peerLiveDistricts.length === 0 ? (
           <div className="ftp-breadcrumb-menu-empty">
-            No other live districts in {stateName} yet
+            No districts listed for {stateName}
           </div>
         ) : (
           peerLiveDistricts.map((d) => (
-            <Link
+            <PeerMenuItem
               key={d.slug}
               href={`/${locale}/${stateSlug}/${d.slug}`}
-              className="ftp-breadcrumb-menu-item"
-              data-current={d.slug === districtSlug ? "true" : "false"}
+              isLive={d.isLive !== false}
+              isCurrent={d.slug === districtSlug}
               onClick={close}
             >
-              <span className="ftp-breadcrumb-dot" aria-hidden="true" />
               {d.name}
-            </Link>
+            </PeerMenuItem>
           ))
         )}
       </BreadcrumbCrumb>
@@ -360,19 +400,54 @@ export default function DistrictBreadcrumb({
           <div className="ftp-breadcrumb-menu-empty">No sub-districts listed</div>
         ) : (
           taluks.map((t) => (
-            <Link
+            <PeerMenuItem
               key={t.slug}
               href={`/${locale}/${stateSlug}/${districtSlug}/${t.slug}`}
-              className="ftp-breadcrumb-menu-item"
-              data-current={t.slug === currentTalukSlug ? "true" : "false"}
+              isLive
+              isCurrent={t.slug === currentTalukSlug}
               onClick={close}
             >
               {t.name}
-            </Link>
+            </PeerMenuItem>
           ))
         )}
       </BreadcrumbCrumb>
     </nav>
+  );
+}
+
+interface PeerMenuItemProps {
+  href: string;
+  isLive: boolean;
+  isCurrent: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}
+
+/** Session 19.5: shared menu-item renderer.
+ *  - Coming-soon (isLive=false): muted text + grey dot, still clickable
+ *    (target route already has a LockedDistrictPreview).
+ *  - Current (isCurrent=true): muted with a "Current" badge, click does
+ *    nothing (CSS pointer-events: none — kept as <a> for screen readers). */
+function PeerMenuItem({
+  href,
+  isLive,
+  isCurrent,
+  onClick,
+  children,
+}: PeerMenuItemProps) {
+  return (
+    <Link
+      href={href}
+      className="ftp-breadcrumb-menu-item"
+      data-live={isLive ? "true" : "false"}
+      data-current={isCurrent ? "true" : "false"}
+      aria-current={isCurrent ? "true" : undefined}
+      onClick={onClick}
+    >
+      <span className="ftp-breadcrumb-dot" aria-hidden="true" />
+      <span className="ftp-breadcrumb-menu-item-label">{children}</span>
+    </Link>
   );
 }
 
