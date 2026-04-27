@@ -38,8 +38,16 @@ function DistrictSVG({ slug, p }: { slug: string; p: Palette }) {
       // Session 18 v12 Phase J (Fix #10): sugar cane is now the PRIMARY visual,
       // not the dam. Mandya is the sugar capital of Karnataka — that's the
       // recognizable industry. KRS dam stays as a small background detail.
+      // Session 18.1 Phase E: aria-label so DOM verification can find this SVG.
       return (
-        <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
+        <svg
+          viewBox="0 0 400 300"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{ width: "100%", height: "100%" }}
+          role="img"
+          aria-label="Sugar cane — Mandya's primary industry"
+        >
           {/* Soft hills backdrop */}
           <ellipse cx="320" cy="290" rx="150" ry="30" fill={p.accent} opacity="0.45" />
           <ellipse cx="80" cy="290" rx="120" ry="28" fill={p.accent} opacity="0.45" />
