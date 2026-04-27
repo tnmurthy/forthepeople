@@ -52,7 +52,10 @@ const STEPS = [
   },
 ];
 
+// Session 19 v13 Phase J: shorter inline caption + full text in title= tooltip.
 const SOURCES_CAPTION =
+  "Sources: data.gov.in · censusindia.gov.in · agmarknet · ejalshakti · NFHS-5 · SHRUG · PRS · Harvard Dataverse · & more";
+const SOURCES_FULL_TITLE =
   "Sources include data.gov.in, censusindia.gov.in, agmarknet.gov.in, ejalshakti.gov.in, NFHS-5 mirrors, SHRUG, PRS Legislative Research, Harvard Dataverse, and other public datasets. Full source attribution on every module.";
 
 export default function HowItWorks() {
@@ -63,21 +66,22 @@ export default function HowItWorks() {
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
-        .ftp-how-wrap { background: #FAFAF8; padding: 48px 0; }
+        /* Session 19 v13 Phase J (Fix #11): compact spacing */
+        .ftp-how-wrap { background: #FAFAF8; padding: 28px 0; }
 
         .ftp-how-header {
           text-align: center;
-          margin-bottom: 32px;
+          margin-bottom: 20px;
         }
         .ftp-how-h2 {
-          font-size: 28px;
+          font-size: 22px;
           font-weight: 800;
           color: #0F172A;
           letter-spacing: -0.02em;
-          margin: 0 0 4px 0;
+          margin: 0 0 2px 0;
         }
         .ftp-how-subtitle {
-          font-size: 14px;
+          font-size: 12px;
           color: #6B7280;
           margin: 0;
         }
@@ -94,11 +98,11 @@ export default function HowItWorks() {
         .ftp-how-step {
           background: #FFFFFF;
           border: 1px solid #E5E7EB;
-          border-radius: 14px;
-          padding: 20px 18px;
+          border-radius: 12px;
+          padding: 14px 14px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 6px;
           position: relative;
           transition: transform 200ms ease, box-shadow 200ms ease;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -131,11 +135,11 @@ export default function HowItWorks() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          height: 22px;
-          padding: 0 8px;
+          height: 18px;
+          padding: 0 7px;
           background: var(--tint-deep);
           color: var(--text-deep);
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 800;
           letter-spacing: 0.4px;
           border-radius: 4px;
@@ -147,23 +151,23 @@ export default function HowItWorks() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 56px; height: 56px;
+          width: 40px; height: 40px;
           background: var(--tint);
-          border-radius: 14px;
+          border-radius: 10px;
           border: 1px solid var(--tint-deep);
         }
-        .ftp-how-step-icon { font-size: 28px; line-height: 1; }
+        .ftp-how-step-icon { font-size: 22px; line-height: 1; }
 
         .ftp-how-step-title {
-          font-size: 16px;
+          font-size: 14px;
           font-weight: 700;
           color: var(--text-deep);
-          margin: 4px 0 0 0;
+          margin: 2px 0 0 0;
         }
         .ftp-how-step-desc {
-          font-size: 12px;
+          font-size: 11px;
           color: #4B5563;
-          line-height: 1.55;
+          line-height: 1.5;
           margin: 0;
           flex: 1;
         }
@@ -180,16 +184,26 @@ export default function HowItWorks() {
           align-self: center;
         }
 
+        /* Session 19 v13 Phase J: caption forced to one line on desktop */
         .ftp-how-caption {
-          font-size: 11px;
-          color: #6B7280;
-          line-height: 1.6;
+          font-size: 10px;
+          color: #9CA3AF;
+          line-height: 1.4;
           text-align: center;
           font-style: italic;
-          max-width: 900px;
-          margin: 0 auto;
-          padding-top: 16px;
+          max-width: 100%;
+          margin: 14px auto 0;
+          padding-top: 10px;
           border-top: 1px solid #E5E7EB;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        @media (max-width: 1024px) {
+          .ftp-how-caption {
+            white-space: normal;
+            line-height: 1.5;
+          }
         }
 
         @keyframes ftp-how-card-reveal {
@@ -241,7 +255,7 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <p className="ftp-how-caption">{SOURCES_CAPTION}</p>
+        <p className="ftp-how-caption" title={SOURCES_FULL_TITLE}>{SOURCES_CAPTION}</p>
       </div>
     </section>
   );
