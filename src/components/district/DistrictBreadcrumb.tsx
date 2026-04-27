@@ -4,7 +4,7 @@
  *
  * Session 19.3 Phase B — visual breadcrumb + peer switcher.
  *
- * Pattern: 🇮🇳 India ▼ › 🟢 Karnataka ▼ › 🟢 Mandya ▼ › Select Taluk ▼
+ * Pattern: 🇮🇳 India ▼ › 🟢 Karnataka ▼ › 🟢 Mandya ▼ › Select sub-district ▼
  *
  * Each crumb is BOTH a clickable link (jump to that level) AND a caret
  * dropdown for switching to peer entities at the same level — so a user
@@ -344,7 +344,7 @@ export default function DistrictBreadcrumb({
       {/* Taluk crumb — current when on a taluk page, placeholder otherwise */}
       <BreadcrumbCrumb
         dot={!!currentTalukSlug}
-        label={currentTalukName ?? "Select Taluk"}
+        label={currentTalukName ?? "Select sub-district"}
         href={
           currentTalukSlug
             ? `/${locale}/${stateSlug}/${districtSlug}/${currentTalukSlug}`
@@ -354,10 +354,10 @@ export default function DistrictBreadcrumb({
         isCurrent={!!currentTalukSlug}
         menuOpen={openMenu === "taluk"}
         onCaretClick={() => setOpenMenu(openMenu === "taluk" ? null : "taluk")}
-        ariaCaretLabel={`Choose a taluk in ${districtName}`}
+        ariaCaretLabel={`Choose a sub-district in ${districtName}`}
       >
         {taluks.length === 0 ? (
-          <div className="ftp-breadcrumb-menu-empty">No taluks listed</div>
+          <div className="ftp-breadcrumb-menu-empty">No sub-districts listed</div>
         ) : (
           taluks.map((t) => (
             <Link
