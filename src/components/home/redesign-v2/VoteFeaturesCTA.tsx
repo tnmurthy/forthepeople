@@ -3,23 +3,24 @@
  * © 2026 Jayanth M B. MIT License with Attribution.
  * https://github.com/jayanthmb14/forthepeople
  *
- * Session 16 v10 Phase J (Fix #11b) — combined Vote + Share Your Idea card.
+ * Session 17 v11 Phase F (Fix #6) — compact "Share your thoughts" bar
+ * + 3-line top voted list.
  *
- * Two-column purple gradient card:
- *   LEFT  — top 3 voted features (links to /features)
- *   RIGHT — Share-Your-Idea form (existing SuggestionForm component,
- *           POSTs to existing /api/suggestions endpoint)
+ * Replaces the full-page combined Vote+Share card. The component now
+ * occupies ~140px of vertical space:
+ *   - Thin pill-shaped bar that scrolls visitors to /features#share-idea
+ *   - Mini card showing top 3 voted features + "View all features →"
  *
- * The /features page is now voting-only again (Session 16 Phase J Fix #11);
- * idea submission lives here on the homepage so visitors can shape the
- * roadmap without navigating away.
+ * The Share-Your-Idea form lives EXCLUSIVELY on /features now (anchored
+ * at #share-idea). No form inline on the homepage.
+ *
+ * Pulls live from /api/features (existing endpoint, no schema change).
  */
 
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import SuggestionForm from "@/components/features/SuggestionForm";
 
 interface FeatureRow {
   id: string;
@@ -66,129 +67,133 @@ export default function VoteFeaturesCTA({ locale }: VoteFeaturesCTAProps) {
       style={{ borderTop: "1px solid #F0F0EC" }}
     >
       <style>{`
-        .ftp-vote-features {
-          background: linear-gradient(135deg, #EEEDFE 0%, #F4F3FE 100%);
+        .ftp-vote-wrap {
+          background: #F0F7FF;
+          padding: 24px 0;
+        }
+        .ftp-features-compact {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          max-width: 720px;
+          margin: 0 auto;
+        }
+
+        /* Thin "Share your thoughts" bar */
+        .ftp-share-bar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 18px;
+          background: #FFFFFF;
           border: 1px solid #DDD6FE;
-          border-radius: 16px;
-          padding: 24px 28px;
-          position: relative;
+          border-radius: 10px;
+          text-decoration: none;
+          color: #4B5563;
+          font-size: 13px;
+          transition: border-color 150ms ease, background 150ms ease, transform 150ms ease, box-shadow 200ms ease;
+        }
+        .ftp-share-bar:hover {
+          border-color: #6E59C0;
+          background: #FAFAFE;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(110, 89, 192, 0.08);
+        }
+        .ftp-share-bar-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+        .ftp-share-bar-text {
+          flex: 1;
+          white-space: nowrap;
           overflow: hidden;
+          text-overflow: ellipsis;
         }
-        .ftp-vote-features::before {
-          content: "🗳️";
-          position: absolute;
-          top: -10px;
-          right: -10px;
-          font-size: 96px;
-          opacity: 0.06;
-          pointer-events: none;
-          line-height: 1;
+        .ftp-share-bar-arrow {
+          color: #6E59C0;
+          font-weight: 700;
+          flex-shrink: 0;
         }
-        .ftp-vote-features-header {
+
+        /* Mini top-voted list */
+        .ftp-features-mini {
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 10px;
+          padding: 14px 18px;
+        }
+        .ftp-features-mini-header {
           display: flex;
           justify-content: space-between;
           align-items: baseline;
-          margin-bottom: 20px;
-          gap: 12px;
+          margin-bottom: 8px;
+          gap: 8px;
           flex-wrap: wrap;
         }
-        .ftp-vote-features-h2 {
-          margin: 0;
-          font-size: 18px;
+        .ftp-features-mini-title {
+          font-size: 12px;
           font-weight: 700;
           color: #3C3489;
-          display: flex;
-          align-items: center;
-          gap: 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
-        .ftp-vote-features-stats {
-          font-size: 13px;
-          color: #6E59C0;
-        }
-        .ftp-vote-features-stats strong { color: #3C3489; }
-
-        /* Session 16 v10 Phase J: 2-col grid (vote left, share-idea right) */
-        .ftp-features-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 24px;
-        }
-        .ftp-features-subhead {
-          font-size: 13px;
-          font-weight: 700;
-          color: #3C3489;
-          margin: 0 0 10px;
-        }
-        .ftp-features-share-sub {
+        .ftp-features-mini-stats {
           font-size: 11px;
-          color: #6E59C0;
-          margin: 0 0 12px;
+          color: #9B9B9B;
+          font-variant-numeric: tabular-nums;
         }
-
-        .ftp-vote-features-list {
+        .ftp-features-mini-list {
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          margin: 0 0 12px;
-          padding: 0;
-          list-style: none;
+          gap: 4px;
+          margin-bottom: 8px;
         }
-        .ftp-vote-feature-row {
+        .ftp-features-mini-row {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 10px 12px;
-          background: #FFFFFF;
-          border-radius: 8px;
-          font-size: 12px;
-          color: #1A1A1A;
+          padding: 6px 8px;
+          border-radius: 6px;
           text-decoration: none;
-          border: 1px solid #DDD6FE;
-          transition: transform 150ms ease, border-color 150ms ease;
+          color: #1A1A1A;
+          font-size: 12px;
+          transition: background 100ms ease;
         }
-        .ftp-vote-feature-row:hover {
-          transform: translateX(2px);
-          border-color: #6E59C0;
-        }
-        .ftp-vote-feature-count {
+        .ftp-features-mini-row:hover { background: #F4F3FE; }
+        .ftp-features-mini-vote {
           background: #6E59C0;
           color: #FFFFFF;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          font-weight: 700;
-          font-variant-numeric: tabular-nums;
-          min-width: 50px;
+          padding: 1px 7px;
+          border-radius: 3px;
+          font-size: 10px;
+          font-weight: 600;
+          min-width: 42px;
           text-align: center;
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
         }
-        .ftp-vote-feature-title {
+        .ftp-features-mini-title-text {
+          flex: 1;
+          white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap;
-          flex: 1;
         }
-        .ftp-vote-features-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 12px;
-          font-weight: 600;
+        .ftp-features-mini-cta {
+          display: inline-block;
+          font-size: 11px;
           color: #6E59C0;
+          font-weight: 600;
           text-decoration: none;
         }
-        .ftp-vote-features-cta:hover {
+        .ftp-features-mini-cta:hover {
           text-decoration: underline;
           text-underline-offset: 3px;
         }
 
         @media (max-width: 767px) {
-          .ftp-features-grid { grid-template-columns: 1fr; gap: 16px; }
-          .ftp-vote-features { padding: 20px; }
-          .ftp-vote-features-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+          .ftp-features-compact { gap: 10px; }
+          .ftp-share-bar { padding: 10px 14px; font-size: 12px; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .ftp-vote-feature-row { transition: none; }
-          .ftp-vote-feature-row:hover { transform: none; }
+          .ftp-share-bar { transition: none; }
+          .ftp-share-bar:hover { transform: none; }
         }
       `}</style>
 
@@ -197,61 +202,51 @@ export default function VoteFeaturesCTA({ locale }: VoteFeaturesCTAProps) {
           Help shape what&apos;s next
         </h2>
 
-        <div className="ftp-vote-features">
-          <div className="ftp-vote-features-header">
-            <h3 className="ftp-vote-features-h2">
-              <span aria-hidden="true">🗳️</span>
-              Help shape what&apos;s next
-            </h3>
-            <span className="ftp-vote-features-stats">
-              {features === null ? (
-                "Loading…"
-              ) : (
-                <>
-                  <strong>{totalVotes.toLocaleString("en-IN")}</strong>{" "}
-                  vote{totalVotes === 1 ? "" : "s"} across{" "}
-                  <strong>{totalIdeas}</strong>{" "}
-                  idea{totalIdeas === 1 ? "" : "s"}
-                </>
-              )}
+        <div className="ftp-features-compact">
+          {/* Thin share-thoughts bar — links to /features#share-idea */}
+          <Link href={`/${locale}/features#share-idea`} className="ftp-share-bar">
+            <span className="ftp-share-bar-icon" aria-hidden="true">💡</span>
+            <span className="ftp-share-bar-text">
+              Share your thoughts on what we should build next…
             </span>
-          </div>
+            <span className="ftp-share-bar-arrow" aria-hidden="true">→</span>
+          </Link>
 
-          <div className="ftp-features-grid">
-            {/* LEFT — top 3 voted */}
-            <div>
-              <h4 className="ftp-features-subhead">Top voted</h4>
-              {top3.length > 0 ? (
-                <ul className="ftp-vote-features-list">
-                  {top3.map((f) => (
-                    <li key={f.id}>
-                      <Link href={`/${locale}/features`} className="ftp-vote-feature-row">
-                        <span className="ftp-vote-feature-count">
-                          ▲ {f.votes.toLocaleString("en-IN")}
-                        </span>
-                        <span className="ftp-vote-feature-title">{f.title}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div style={{ fontSize: 12, color: "#6E59C0", marginBottom: 12 }}>
-                  No ideas yet — be the first.
-                </div>
-              )}
-              <Link href={`/${locale}/features`} className="ftp-vote-features-cta">
-                Vote on all features →
-              </Link>
+          {/* Mini top-3 voted */}
+          <div className="ftp-features-mini">
+            <div className="ftp-features-mini-header">
+              <span className="ftp-features-mini-title">🗳️ Top voted</span>
+              <span className="ftp-features-mini-stats">
+                {features === null
+                  ? "Loading…"
+                  : `${totalVotes.toLocaleString("en-IN")} vote${totalVotes === 1 ? "" : "s"} · ${totalIdeas} idea${totalIdeas === 1 ? "" : "s"}`}
+              </span>
             </div>
 
-            {/* RIGHT — share your idea (existing SuggestionForm component) */}
-            <div>
-              <h4 className="ftp-features-subhead">💡 Share your idea</h4>
-              <p className="ftp-features-share-sub">
-                Have a feature in mind that&apos;s not listed? Suggest it.
-              </p>
-              <SuggestionForm />
-            </div>
+            {top3.length > 0 ? (
+              <div className="ftp-features-mini-list">
+                {top3.map((f) => (
+                  <Link
+                    key={f.id}
+                    href={`/${locale}/features`}
+                    className="ftp-features-mini-row"
+                  >
+                    <span className="ftp-features-mini-vote">
+                      ▲ {f.votes.toLocaleString("en-IN")}
+                    </span>
+                    <span className="ftp-features-mini-title-text">{f.title}</span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: "#6E59C0", marginBottom: 8 }}>
+                No ideas yet — be the first.
+              </div>
+            )}
+
+            <Link href={`/${locale}/features`} className="ftp-features-mini-cta">
+              View all features →
+            </Link>
           </div>
         </div>
       </div>

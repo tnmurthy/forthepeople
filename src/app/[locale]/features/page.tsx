@@ -7,16 +7,17 @@
 // ═══════════════════════════════════════════════════════════
 // Features page — /features
 //
-// Session 15 v9 Phase I (Fix #13): unified into a single continuous
-// flow — Vote on existing ideas + Share Your Idea form + accepted-
-// suggestions list all on one page. The previous Vote / Suggest
-// tabs are gone. Form posts via the existing SuggestionForm
-// component which calls the existing /api/suggestions endpoint.
+// Session 17 v11 Phase F: Vote on existing ideas (top) + Share
+// Your Idea form (bottom, anchored at #share-idea so the homepage
+// thin-bar can deep-link to it). The form lives EXCLUSIVELY here
+// — the homepage VoteFeaturesCTA is a compact thin bar + 3-line
+// list that scrolls visitors to /features#share-idea.
 // ═══════════════════════════════════════════════════════════
 "use client";
 
 import { useEffect, useState } from "react";
 import { ThumbsUp, CheckCircle, Clock, Zap } from "lucide-react";
+import SuggestionForm from "@/components/features/SuggestionForm";
 
 interface Feature {
   id: string;
@@ -44,8 +45,6 @@ const STATUS_CONFIG = {
 };
 
 export default function FeaturesPage() {
-  // Session 16 v10 Phase J (Fix #11): /features is voting-only again.
-  // The Share-Your-Idea form moved to the homepage VoteFeaturesCTA card.
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 48px" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
@@ -54,12 +53,34 @@ export default function FeaturesPage() {
           Help Shape ForThePeople.in
         </h1>
         <p style={{ fontSize: 15, color: "#6B6B6B", lineHeight: 1.6, maxWidth: 500, margin: "0 auto" }}>
-          Vote for the features you want most. The highest-voted features
-          get built first.
+          Vote for the features you want most, or scroll down to share
+          your own idea. The highest-voted features get built first.
         </p>
       </div>
 
       <VoteSection />
+
+      <section
+        id="share-idea"
+        style={{
+          marginTop: 48,
+          scrollMarginTop: 80,
+          padding: "20px 22px",
+          background: "#FFFFFF",
+          border: "1px solid #E8E8E4",
+          borderRadius: 14,
+        }}
+      >
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: "#1A1A1A", margin: "0 0 4px", display: "flex", alignItems: "center", gap: 8 }}>
+          <span aria-hidden="true">💡</span>
+          Share your idea
+        </h2>
+        <p style={{ fontSize: 13, color: "#6B6B6B", margin: "0 0 16px" }}>
+          Have a feature in mind that&apos;s not listed? Suggest it below — we
+          review every submission.
+        </p>
+        <SuggestionForm />
+      </section>
     </div>
   );
 }
