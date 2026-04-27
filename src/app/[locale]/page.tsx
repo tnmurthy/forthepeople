@@ -33,6 +33,7 @@ import {
 import FinancialTicker from "@/components/home/redesign-v2/FinancialTicker";
 import StatsBar from "@/components/home/redesign-v2/LiveActivityRibbon";
 import HeroSection from "@/components/home/redesign-v2/HeroSection";
+import { MobileHero } from "@/components/home/mobile/MobileHero";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
@@ -136,6 +137,16 @@ export default async function HomePage({
 
       <main role="main">
         <FinancialTicker />
+        {/* Mobile-only hero — CSS hides StatsBar + HeroSection at ≤767px
+            and shows this single-column block instead (Session M1 Phase C). */}
+        <MobileHero
+          locale={locale}
+          activeDistricts={activeCount}
+          dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
+          totalDataPoints={totalDataPoints}
+          comingDistricts={comingDistricts}
+          mostRecentAt={mostRecentAt}
+        />
         <StatsBar
           activeDistricts={activeCount}
           dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
