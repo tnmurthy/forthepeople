@@ -31,6 +31,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DISTRICT_META } from "@/lib/data/district-meta";
 import { timeAgoLabel } from "@/lib/utils/timeAgo";
 import { getDistrictIcon } from "@/components/district/icons";
+import HeroShareIdea from "./HeroShareIdea";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -451,6 +452,9 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
             <span className="ftp-banner-label">Explore the whole India</span>
             <span className="ftp-banner-arrow" aria-hidden="true">→</span>
           </Link>
+
+          {/* Session 19 v13 Phase F: thin expandable Share-Your-Idea bar */}
+          <HeroShareIdea />
         </div>
 
         {/* BOTTOM: Map + districts row */}

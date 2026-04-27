@@ -203,14 +203,8 @@ export default function VoteFeaturesCTA({ locale }: VoteFeaturesCTAProps) {
         </h2>
 
         <div className="ftp-features-compact">
-          {/* Thin share-thoughts bar — links to /features#share-idea */}
-          <Link href={`/${locale}/features#share-idea`} className="ftp-share-bar">
-            <span className="ftp-share-bar-icon" aria-hidden="true">💡</span>
-            <span className="ftp-share-bar-text">
-              Share your thoughts on what we should build next…
-            </span>
-            <span className="ftp-share-bar-arrow" aria-hidden="true">→</span>
-          </Link>
+          {/* Session 19 v13 Phase F: share-bar moved to hero (HeroShareIdea).
+              VoteFeaturesCTA now hosts only the Top Voted mini list. */}
 
           {/* Mini top-3 voted */}
           <div className="ftp-features-mini">
