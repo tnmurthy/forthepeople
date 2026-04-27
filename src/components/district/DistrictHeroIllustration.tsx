@@ -35,29 +35,89 @@ export const DEFAULT_PALETTE: Palette = { primary: "#9B9B9B", secondary: "#7a7a7
 function DistrictSVG({ slug, p }: { slug: string; p: Palette }) {
   switch (slug) {
     case "mandya":
+      // Session 18 v12 Phase J (Fix #10): sugar cane is now the PRIMARY visual,
+      // not the dam. Mandya is the sugar capital of Karnataka — that's the
+      // recognizable industry. KRS dam stays as a small background detail.
       return (
         <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "100%", height: "100%" }}>
-          {/* Hills */}
-          <ellipse cx="320" cy="280" rx="120" ry="40" fill={p.accent} opacity="0.5" />
-          <ellipse cx="350" cy="260" rx="80" ry="30" fill={p.accent} opacity="0.6" />
-          {/* KRS Dam */}
-          <rect x="260" y="140" width="120" height="80" rx="4" fill={p.primary} opacity="0.5" />
-          <rect x="265" y="145" width="22" height="70" rx="2" fill={p.secondary} opacity="0.5" />
-          <rect x="292" y="145" width="22" height="70" rx="2" fill={p.secondary} opacity="0.5" />
-          <rect x="319" y="145" width="22" height="70" rx="2" fill={p.secondary} opacity="0.5" />
-          <rect x="346" y="145" width="22" height="70" rx="2" fill={p.secondary} opacity="0.5" />
-          {/* Water spillway */}
-          <path d="M270 220 Q290 250 310 220 Q330 250 350 220 Q370 250 390 220" stroke={p.primary} strokeWidth="2" fill="none" opacity="0.4" />
-          {/* Sugarcane */}
-          {[200, 215, 230, 245].map((x) => (
-            <g key={x}>
-              <line x1={x} y1="280" x2={x} y2="240" stroke={p.primary} strokeWidth="2" opacity="0.3" />
-              <path d={`M${x - 5} ${245} Q${x} ${235} ${x + 5} ${245}`} fill={p.primary} opacity="0.25" />
-            </g>
-          ))}
+          {/* Soft hills backdrop */}
+          <ellipse cx="320" cy="290" rx="150" ry="30" fill={p.accent} opacity="0.45" />
+          <ellipse cx="80" cy="290" rx="120" ry="28" fill={p.accent} opacity="0.45" />
+
+          {/* KRS Dam — small background element on the far right */}
+          <g opacity="0.35">
+            <rect x="320" y="180" width="60" height="40" rx="2" fill={p.primary} />
+            <rect x="324" y="184" width="11" height="32" rx="1" fill={p.secondary} />
+            <rect x="338" y="184" width="11" height="32" rx="1" fill={p.secondary} />
+            <rect x="352" y="184" width="11" height="32" rx="1" fill={p.secondary} />
+            <rect x="366" y="184" width="11" height="32" rx="1" fill={p.secondary} />
+            <path d="M325 220 Q340 232 355 220 Q370 232 385 220" stroke={p.primary} strokeWidth="1.2" fill="none" />
+          </g>
+
+          {/* SUGAR CANE — primary visual, 5 stalks centered/left */}
+          {[
+            { x: 80, h: 200, lean: -2 },
+            { x: 130, h: 220, lean: 0 },
+            { x: 180, h: 235, lean: 1 },
+            { x: 230, h: 215, lean: -1 },
+            { x: 280, h: 195, lean: 2 },
+          ].map((stalk) => {
+            const baseY = 290;
+            const topY = baseY - stalk.h;
+            const stalkColor = stalk.h > 220 ? p.secondary : p.primary;
+            return (
+              <g key={stalk.x}>
+                {/* Stalk body — slim rectangle with subtle lean */}
+                <rect
+                  x={stalk.x - 4}
+                  y={topY}
+                  width="8"
+                  height={stalk.h}
+                  rx="3"
+                  fill={stalkColor}
+                  opacity="0.85"
+                  transform={`rotate(${stalk.lean} ${stalk.x} ${baseY})`}
+                />
+                {/* Segment bands — every 24px */}
+                {Array.from({ length: Math.floor(stalk.h / 24) }).map((_, i) => {
+                  const segY = topY + 12 + i * 24;
+                  return (
+                    <line
+                      key={i}
+                      x1={stalk.x - 5}
+                      y1={segY}
+                      x2={stalk.x + 5}
+                      y2={segY}
+                      stroke="#365314"
+                      strokeWidth="1.2"
+                      opacity="0.55"
+                      transform={`rotate(${stalk.lean} ${stalk.x} ${baseY})`}
+                    />
+                  );
+                })}
+                {/* Leaves at top — fan out left and right */}
+                <path
+                  d={`M${stalk.x - 3} ${topY + 4} Q${stalk.x - 22} ${topY - 14} ${stalk.x - 30} ${topY - 6} Q${stalk.x - 18} ${topY + 2} ${stalk.x - 3} ${topY + 4}`}
+                  fill="#16A34A"
+                  opacity="0.75"
+                />
+                <path
+                  d={`M${stalk.x + 3} ${topY + 4} Q${stalk.x + 22} ${topY - 14} ${stalk.x + 30} ${topY - 6} Q${stalk.x + 18} ${topY + 2} ${stalk.x + 3} ${topY + 4}`}
+                  fill="#16A34A"
+                  opacity="0.75"
+                />
+                <path
+                  d={`M${stalk.x} ${topY + 2} Q${stalk.x - 6} ${topY - 22} ${stalk.x + 4} ${topY - 24} Q${stalk.x + 6} ${topY - 6} ${stalk.x} ${topY + 2}`}
+                  fill="#15803D"
+                  opacity="0.85"
+                />
+              </g>
+            );
+          })}
+
           {/* Birds */}
-          <path d="M180 80 Q185 75 190 80" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.3" />
-          <path d="M200 65 Q204 61 208 65" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.25" />
+          <path d="M180 70 Q185 65 190 70" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.4" />
+          <path d="M210 55 Q214 51 218 55" stroke={p.secondary} strokeWidth="1.2" fill="none" opacity="0.35" />
         </svg>
       );
 
