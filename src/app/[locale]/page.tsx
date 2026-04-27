@@ -36,6 +36,8 @@ import HeroSection from "@/components/home/redesign-v2/HeroSection";
 import { MobileHero } from "@/components/home/mobile/MobileHero";
 import { MobileDistrictCarousel } from "@/components/home/mobile/MobileDistrictCarousel";
 import { MobileIndiaMap } from "@/components/home/mobile/MobileIndiaMap";
+import { MobileLiveData } from "@/components/home/mobile/MobileLiveData";
+import { MobileHowItWorks } from "@/components/home/mobile/MobileHowItWorks";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
@@ -162,7 +164,20 @@ export default async function HomePage({
         {/* Mobile-only India map — full-width, lazy-loaded (Phase E) */}
         <MobileIndiaMap locale={locale} />
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
+        {/* Mobile-only Live Data inline list (Phase F) */}
+        {activeDistricts[0] && (
+          <MobileLiveData
+            locale={locale}
+            district={{
+              slug: activeDistricts[0].slug,
+              name: activeDistricts[0].name,
+              stateSlug: activeDistricts[0].stateSlug,
+            }}
+          />
+        )}
         <HowItWorks />
+        {/* Mobile-only vertical 4-step How It Works (Phase F) */}
+        <MobileHowItWorks />
         <CommunitySection locale={locale} />
         <SupportBanner locale={locale} />
       </main>

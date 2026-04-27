@@ -322,6 +322,100 @@
     color: #9CA3AF;
     margin: 8px 16px 0;
   }
+
+  /* ============================================================
+   * MobileLiveData + MobileHowItWorks — Phase F
+   * Hide their desktop equivalents at the same breakpoint.
+   * ============================================================ */
+  .ftp-livedata-wrap,
+  .ftp-how-wrap { display: none !important; }
+
+  .ftp-m-section-head-pill {
+    display: inline-block;
+    background: #EFF6FF;
+    color: #2563EB;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+  .ftp-m-data-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 16px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .ftp-m-data-list li {
+    border-bottom: 1px solid #F3F4F6;
+  }
+  .ftp-m-data-list li:last-child { border-bottom: none; }
+  .ftp-m-data-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #1A1A1A;
+    min-height: 56px;
+  }
+  .ftp-m-data-row:active { background: #F9FAFB; }
+  .ftp-m-data-icon { font-size: 18px; flex-shrink: 0; width: 28px; text-align: center; }
+  .ftp-m-data-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .ftp-m-data-label { font-weight: 600; color: #1A1A1A; font-size: 14px; }
+  .ftp-m-data-hint { color: #6B7280; font-size: 12px; }
+  .ftp-m-data-arrow { color: #9CA3AF; flex-shrink: 0; }
+
+  .ftp-m-how-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ftp-m-how-list li {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+  }
+  .ftp-m-how-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: #EFF6FF;
+    color: #2563EB;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .ftp-m-how-list h3 {
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: #1A1A1A;
+    font-weight: 700;
+  }
+  .ftp-m-how-list p {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.5;
+  }
 }
 
 @media (max-width: 360px) {
