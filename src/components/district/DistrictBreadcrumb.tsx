@@ -129,8 +129,17 @@ export default function DistrictBreadcrumb({
           font-weight: 500;
           line-height: 1;
           transition: background 150ms ease;
+          /* Session 19.10: when the placeholder crumb renders as a <button>
+             (so users can click "Select Taluka" to open the menu), reset
+             native button styling so it looks identical to the link case. */
+          font-family: inherit;
+          font-size: inherit;
+          background: transparent;
+          border: none;
+          cursor: pointer;
         }
         .ftp-breadcrumb-link:hover { background: #F4F4F0; }
+        .ftp-breadcrumb-link[data-placeholder="true"] { cursor: pointer; }
         .ftp-breadcrumb-link[data-current="true"] {
           color: #047857;
           font-weight: 600;
@@ -558,12 +567,21 @@ function BreadcrumbCrumb({
           {labelContent}
         </Link>
       ) : (
-        <span
+        // Session 19.10: placeholder crumb (e.g. "Select Taluka") is now a
+        // BUTTON that opens the menu when clicked anywhere on its label.
+        // Previously the only hit-target was the 18×18 ▼ caret next to it,
+        // which was almost impossible to hit precisely.
+        <button
+          type="button"
           className="ftp-breadcrumb-link"
           data-placeholder={placeholder ? "true" : undefined}
+          aria-label={ariaCaretLabel}
+          aria-expanded={menuOpen}
+          aria-haspopup="menu"
+          onClick={onCaretClick}
         >
           {labelContent}
-        </span>
+        </button>
       )}
       <button
         type="button"

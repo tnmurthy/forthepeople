@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import Sidebar from "@/components/layout/Sidebar";
+import DistrictStatusBar from "@/components/layout/DistrictStatusBar";
 import FeedbackFloatingButton from "@/components/common/FeedbackFloatingButton";
 import { getDistrict, getState } from "@/lib/constants/districts";
 
@@ -93,15 +94,22 @@ export default async function DistrictLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
-      {/* Session 19.4 Phase B: DistrictStatusBar + standalone DistrictBreadcrumb
-          removed from this layout. Their jobs are now covered by the inline
-          breadcrumb in the global HeaderBar (which sources its data from
-          INDIA_STATES via the pathname). Saves ~75px of vertical chrome. */}
+      {/* Session 19.10: DistrictStatusBar restored — sticky bar under the
+          header showing "Pune, Maharashtra · Monday, 27 April 2026 · 18:16:04
+          IST · Live". Was removed in S19.4 in favour of consolidating into
+          the inline breadcrumb, but the live timestamp + Live indicator are
+          information users actually rely on. The breadcrumb-in-header still
+          handles navigation; the sub-bar handles "when was this updated". */}
+      <DistrictStatusBar
+        districtName={districtData!.name}
+        stateName={stateData?.name ?? ""}
+      />
+
       <div
         style={{
           display: "flex",
           alignItems: "flex-start",
-          minHeight: "calc(100vh - 56px - 28px)", // viewport - header - disclaimer
+          minHeight: "calc(100vh - 56px - 32px - 28px)", // viewport - header - status bar - disclaimer
         }}
       >
         {/* Sidebar — desktop only */}
