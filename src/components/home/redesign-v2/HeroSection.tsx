@@ -354,7 +354,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           color: #1A1A1A;
           overflow: hidden;
           position: relative;
-          min-height: 88px;
+          min-height: 72px;
           transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
         }
         .ftp-district-row:hover {
@@ -389,6 +389,17 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           font-weight: 700;
           color: #1A1A1A;
           white-space: nowrap;
+        }
+        /* Session 19.3 Phase C: small green pulsing dot replaces the
+           "🕐 Live" meta line — saves ~16px vertical per row. */
+        .ftp-district-row-live-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #22C55E;
+          box-shadow: 0 0 0 2px rgba(34,197,94,0.20);
+          flex-shrink: 0;
+          animation: ftp-pulse-dot 2s ease-in-out infinite;
         }
         .ftp-district-row-script {
           font-size: 12px;
@@ -438,12 +449,6 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .ftp-district-row-meta {
-          font-size: 9px;
-          color: #9B9B9B;
-          font-style: italic;
-        }
-
         @media (max-width: 1024px) {
           .ftp-hero-row { grid-template-columns: 1fr; gap: 16px; }
         }
@@ -461,7 +466,8 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           .ftp-hero-banner-cta { transition: none; }
           .ftp-hero-banner-cta:hover { transform: none; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25); }
           .ftp-hero-banner-cta:hover .ftp-banner-arrow { transform: none; }
-          .ftp-live-dot { animation: none; }
+          .ftp-live-dot,
+          .ftp-district-row-live-dot { animation: none; }
           .ftp-district-row { transition: none; }
         }
       `}</style>
@@ -526,6 +532,13 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                     <div className="ftp-district-row-head">
                       <div className="ftp-district-row-name-line">
                         {Icon && <Icon size={28} className="ftp-district-row-icon" />}
+                        {updated.isLive && (
+                          <span
+                            className="ftp-district-row-live-dot"
+                            aria-label="Live data"
+                            title="Live data — recent reading"
+                          />
+                        )}
                         <span className="ftp-district-row-name">{d.name}</span>
                         {meta?.nativeScript && (
                           <span className="ftp-district-row-script">
@@ -548,11 +561,6 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                     {meta?.bullets && meta.bullets.length > 0 && (
                       <div className="ftp-district-row-bullets">
                         {meta.bullets.join(" · ")}
-                      </div>
-                    )}
-                    {live?.mostRecentAt && (
-                      <div className="ftp-district-row-meta">
-                        🕐 {updated.isLive ? "Live" : `Updated ${updated.label}`}
                       </div>
                     )}
                   </Link>
