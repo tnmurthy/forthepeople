@@ -42,16 +42,16 @@ type ModuleData = {
 
 type DistrictModuleSet = {
   crops: ModuleData;
-  infra: ModuleData;
+  schemes: ModuleData;
   news: ModuleData;
-  weather: ModuleData;
+  budget: ModuleData;
 };
 
 const EMPTY_SET: DistrictModuleSet = {
   crops:   { loading: true, failed: false, text: "" },
-  infra:   { loading: true, failed: false, text: "" },
+  schemes: { loading: true, failed: false, text: "" },
   news:    { loading: true, failed: false, text: "" },
-  weather: { loading: true, failed: false, text: "" },
+  budget:  { loading: true, failed: false, text: "" },
 };
 
 export default function LiveDataShowcase({ locale, districts }: LiveDataShowcaseProps) {
@@ -81,19 +81,22 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
     }
 
     async function loadAll() {
-      const [cropsR, weatherR, newsR, infraR] = await Promise.all([
+      // Session 19.2 Phase G: schemes + budget instead of weather + infrastructure-projects
+      // (weather and infra often empty for non-major districts; schemes & budget consistently
+      // have data across all 10 active districts).
+      const [cropsR, schemesR, newsR, budgetR] = await Promise.all([
         fetchModule("crops"),
-        fetchModule("weather"),
+        fetchModule("schemes"),
         fetchModule("news"),
-        fetchModule("infrastructure-projects"),
+        fetchModule("budget"),
       ]);
       if (cancelled) return;
 
       const set: DistrictModuleSet = {
         crops:   summarizeCrops(cropsR),
-        weather: summarizeWeather(weatherR),
+        schemes: summarizeSchemes(schemesR),
         news:    summarizeNews(newsR),
-        infra:   summarizeInfra(infraR),
+        budget:  summarizeBudget(budgetR),
       };
 
       setModuleData((prev) => ({ ...prev, [slug]: set }));
@@ -374,10 +377,10 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
           />
           <DataCard
             accent="blue"
-            icon="🛣️"
-            title="Infrastructure"
-            data={set.infra}
-            href={`${districtPageBase}/infrastructure`}
+            icon="🏛️"
+            title="Schemes"
+            data={set.schemes}
+            href={`${districtPageBase}/schemes`}
           />
           <DataCard
             accent="amber"
@@ -388,10 +391,10 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
           />
           <DataCard
             accent="cyan"
-            icon="🌦️"
-            title="Weather"
-            data={set.weather}
-            href={`${districtPageBase}/weather`}
+            icon="💰"
+            title="Budget"
+            data={set.budget}
+            href={`${districtPageBase}/finance`}
           />
         </div>
       </div>
@@ -533,13 +536,21 @@ function summarizeCrops(r: { ok: boolean; data: unknown }): ModuleData {
   return { loading: false, failed: false, text };
 }
 
-function summarizeInfra(r: { ok: boolean; data: unknown }): ModuleData {
+// Session 19.2 Phase G: schemes summarizer (replaces Infrastructure)
+function summarizeSchemes(r: { ok: boolean; data: unknown }): ModuleData {
   if (!r.ok) return { loading: false, failed: true, text: "" };
-  const d = r.data as { items?: Array<unknown>; projects?: Array<unknown>; total?: number };
-  const projects = d.items ?? d.projects ?? [];
-  const total = d.total ?? projects.length;
-  if (total === 0) return { loading: false, failed: false, text: "No active projects logged." };
-  return { loading: false, failed: false, text: `${total} active project${total === 1 ? "" : "s"} on record.` };
+  const d = r.data as {
+    items?: Array<{ name?: string; title?: string; beneficiaries?: number }>;
+    schemes?: Array<{ name?: string; title?: string; beneficiaries?: number }>;
+    total?: number;
+  };
+  const list = d.items ?? d.schemes ?? [];
+  const total = d.total ?? list.length;
+  if (total === 0) return { loading: false, failed: false, text: "No active schemes listed." };
+  const top = list.slice(0, 2).map((s) => s.name ?? s.title).filter(Boolean) as string[];
+  if (top.length === 0) return { loading: false, failed: false, text: `${total} scheme${total === 1 ? "" : "s"} on record.` };
+  const truncated = top.map((t) => (t.length > 40 ? t.slice(0, 37) + "…" : t));
+  return { loading: false, failed: false, text: `${total} scheme${total === 1 ? "" : "s"} · ${truncated.join(" · ")}` };
 }
 
 function summarizeNews(r: { ok: boolean; data: unknown }): ModuleData {
@@ -550,6 +561,27 @@ function summarizeNews(r: { ok: boolean; data: unknown }): ModuleData {
   if (top2.length === 0) return { loading: false, failed: false, text: "No fresh stories today." };
   const truncated = top2.map((t) => (t.length > 50 ? t.slice(0, 47) + "…" : t));
   return { loading: false, failed: false, text: `${items.length} stor${items.length === 1 ? "y" : "ies"} · ${truncated.join(" · ")}` };
+}
+
+// Session 19.2 Phase G: budget summarizer (replaces Weather)
+function summarizeBudget(r: { ok: boolean; data: unknown }): ModuleData {
+  if (!r.ok) return { loading: false, failed: true, text: "" };
+  const d = r.data as {
+    items?: Array<{ category?: string; allocated?: number; spent?: number }>;
+    entries?: Array<{ category?: string; allocated?: number; spent?: number }>;
+    totalAllocated?: number;
+    totalSpent?: number;
+  };
+  const list = d.items ?? d.entries ?? [];
+  if (list.length === 0 && d.totalAllocated == null) {
+    return { loading: false, failed: false, text: "No budget entries logged." };
+  }
+  const totalAlloc = d.totalAllocated ?? list.reduce((s, e) => s + (e.allocated ?? 0), 0);
+  const totalSpent = d.totalSpent ?? list.reduce((s, e) => s + (e.spent ?? 0), 0);
+  const fmt = (n: number) =>
+    n >= 10_000_000 ? `₹${(n / 10_000_000).toFixed(1)}Cr` : n >= 100_000 ? `₹${(n / 100_000).toFixed(1)}L` : `₹${n.toLocaleString("en-IN")}`;
+  if (totalAlloc === 0) return { loading: false, failed: false, text: `${list.length} budget categor${list.length === 1 ? "y" : "ies"} tracked.` };
+  return { loading: false, failed: false, text: `${fmt(totalAlloc)} allocated · ${fmt(totalSpent)} spent` };
 }
 
 function summarizeWeather(r: { ok: boolean; data: unknown }): ModuleData {
