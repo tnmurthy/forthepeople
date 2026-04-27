@@ -37,7 +37,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
-import { timeAgoLabel, type TimeAgoResult } from "@/lib/utils/timeAgo";
 
 // ── Product dropdown items ────────────────────────────────
 // Session 13 v8 Fix #12, #13: Lucide icons in brand colors (no apple emoji),
@@ -145,40 +144,8 @@ function flattenDistricts(): FlatDistrict[] {
   return out;
 }
 
-// ── "Updated X ago" pill — uses shared timeAgoLabel utility ──
-function useUpdatedPill(): TimeAgoResult {
-  const [mostRecentAt, setMostRecentAt] = useState<string | null>(null);
-  const [now, setNow] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchStat() {
-      try {
-        const res = await fetch("/api/data/homepage-stats");
-        if (!res.ok) return;
-        const data = (await res.json()) as { mostRecentAt?: string | null };
-        if (cancelled) return;
-        setMostRecentAt(data.mostRecentAt ?? null);
-      } catch {
-        /* ignore */
-      }
-    }
-    fetchStat();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setNow(Date.now());
-    const tick = setInterval(() => {
-      fetchStat();
-      setNow(Date.now());
-    }, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(tick);
-    };
-  }, []);
-
-  if (now == null) return { label: "—", isStale: false, isLive: false };
-  return timeAgoLabel(mostRecentAt, { nowMs: now });
-}
+// Session 18 v12 Phase B: useUpdatedPill removed (the consuming pill moved
+// to StatsBar's 5th tile; that tile sources its own timestamp via props).
 
 function useClickOutside(ref: React.RefObject<HTMLElement | null>, onOutside: () => void) {
   useEffect(() => {
@@ -199,7 +166,6 @@ export interface HeaderBarProps {
 export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const updated = useUpdatedPill();
   const githubStars = useGithubStars();
   const githubStarsTier = githubTier(githubStars);
 
@@ -667,24 +633,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         )}
       </div>
 
-      {/* ── "Live · Updated X ago" pill ── */}
-      <span
-        className="ftp-pill ftp-desktop-only"
-        title={
-          updated.isLive
-            ? "Live — most recent data write was over 2 hours ago"
-            : "Most recent fresh data write"
-        }
-        style={{
-          background: "#F0FDF4",
-          color: "#166534",
-          border: "1px solid #BBF7D0",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <span className="ftp-pulse-dot" aria-hidden="true" />
-        {updated.isLive ? "Live" : `Updated ${updated.label}`}
-      </span>
+      {/* Session 18 v12 Phase B: "Updated Xm ago" pill removed — moved to StatsBar 5th tile. */}
 
       {/* ── Search — Session 16 v10 Phase B Fix #1: blue-tinted with affordance ── */}
       <div ref={searchRef} className="ftp-desktop-only ftp-search-shell">
