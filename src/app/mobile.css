@@ -16,7 +16,8 @@
 .ftp-m-header,
 .ftp-m-bottom-nav,
 .ftp-m-hero,
-.ftp-m-section {
+.ftp-m-section,
+.ftp-m-breadcrumb-strip {
   display: none;
 }
 
@@ -427,6 +428,136 @@
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
+
+  /* ============================================================
+   * Breadcrumb bottom sheet — Phase H
+   * Hide the desktop floating menu on mobile (the sheet replaces it).
+   * ============================================================ */
+  .ftp-breadcrumb-menu { display: none !important; }
+
+  /* Mobile-only sticky breadcrumb strip on district pages. */
+  .ftp-m-breadcrumb-strip {
+    display: block;
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+    background: white;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .ftp-m-breadcrumb-strip::-webkit-scrollbar { display: none; }
+  /* The compact breadcrumb inside the strip needs a transparent bg
+     since the strip already provides one. */
+  .ftp-m-breadcrumb-strip .ftp-district-breadcrumb {
+    padding: 0;
+    background: transparent;
+    border-bottom: none;
+  }
+}
+
+
+/* The sheet itself is portaled to body, so its rules live OUTSIDE
+   the @media query (the component only mounts on mobile via JS). */
+.ftp-m-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  animation: ftp-m-fade-in 200ms ease-out;
+}
+.ftp-m-sheet {
+  width: 100%;
+  max-height: 75vh;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  padding: 8px 16px max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  animation: ftp-m-slide-up 280ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ftp-m-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 2px;
+  margin: 8px auto 12px;
+}
+.ftp-m-sheet-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 12px;
+}
+.ftp-m-sheet-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ftp-m-sheet-list li { border-bottom: 1px solid #F3F4F6; }
+.ftp-m-sheet-list li:last-child { border-bottom: none; }
+.ftp-m-sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  text-decoration: none;
+  color: #1A1A1A;
+  font-size: 15px;
+  min-height: 52px;
+}
+.ftp-m-sheet-item:active { background: #F4F3FE; }
+.ftp-m-sheet-item.is-soon { color: #9CA3AF; }
+.ftp-m-sheet-item.is-current {
+  background: #F9FAFB;
+  pointer-events: none;
+}
+.ftp-m-sheet-dot {
+  width: 6px;
+  height: 6px;
+  background: #10B981;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+}
+.ftp-m-sheet-lock { color: #9CA3AF; flex-shrink: 0; }
+.ftp-m-sheet-name { flex: 1; }
+.ftp-m-sheet-local { font-size: 12px; color: #9CA3AF; }
+.ftp-m-sheet-current-badge {
+  font-size: 10px;
+  color: #2563EB;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ftp-m-sheet-cancel {
+  padding: 14px;
+  background: #F3F4F6;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  min-height: 52px;
+  cursor: pointer;
+  color: #1A1A1A;
+}
+
+@keyframes ftp-m-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes ftp-m-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 360px) {

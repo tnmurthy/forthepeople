@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 import Sidebar from "@/components/layout/Sidebar";
 import DistrictStatusBar from "@/components/layout/DistrictStatusBar";
+import { MobileBreadcrumbStrip } from "@/components/district/MobileBreadcrumbStrip";
 import FeedbackFloatingButton from "@/components/common/FeedbackFloatingButton";
 import { getDistrict, getState } from "@/lib/constants/districts";
 
@@ -104,6 +105,10 @@ export default async function DistrictLayout({
         districtName={districtData!.name}
         stateName={stateData?.name ?? ""}
       />
+      {/* Mobile-only breadcrumb strip — desktop has its breadcrumb inside
+          HeaderBar (hidden on mobile). CSS in mobile.css hides this strip
+          on viewport ≥ 768px. */}
+      <MobileBreadcrumbStrip locale={locale} />
 
       <div
         style={{

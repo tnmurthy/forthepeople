@@ -16,6 +16,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { BreadcrumbBottomSheet, type SheetItem } from "./BreadcrumbBottomSheet";
 
 interface Peer {
   slug: string;
@@ -64,8 +66,56 @@ export default function DistrictBreadcrumb({
   compact = false,
 }: DistrictBreadcrumbProps) {
   const subLabel = subdivisionLabel ?? "Sub-district";
+  const isMobile = useIsMobile();
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const navRef = useRef<HTMLElement>(null);
+
+  // Build sheet items + title for whichever menu is currently open.
+  // Must run AFTER openMenu state is declared (TDZ).
+  function getSheetData(): { title: string; items: SheetItem[] } | null {
+    if (!openMenu) return null;
+    if (openMenu === "state") {
+      return {
+        title: `Switch state · currently ${stateName}`,
+        items: peerLiveStates.map((s) => ({
+          slug: s.slug,
+          href: `/${locale}/${s.slug}`,
+          name: s.name,
+          nameLocal: s.nameLocal ?? null,
+          isLive: s.isLive !== false,
+          isCurrent: s.slug === stateSlug,
+        })),
+      };
+    }
+    if (openMenu === "district") {
+      return {
+        title: `Switch district · currently ${districtName}`,
+        items: peerLiveDistricts.map((d) => ({
+          slug: d.slug,
+          href: `/${locale}/${stateSlug}/${d.slug}`,
+          name: d.name,
+          nameLocal: d.nameLocal ?? null,
+          isLive: d.isLive !== false,
+          isCurrent: d.slug === districtSlug,
+        })),
+      };
+    }
+    if (openMenu === "taluk") {
+      return {
+        title: `Choose a ${subLabel.toLowerCase()} in ${districtName}`,
+        items: taluks.map((t) => ({
+          slug: t.slug,
+          href: `/${locale}/${stateSlug}/${districtSlug}/${t.slug}`,
+          name: t.name,
+          nameLocal: t.nameLocal ?? null,
+          isLive: true,
+          isCurrent: t.slug === currentTalukSlug,
+        })),
+      };
+    }
+    return null;
+  }
+  const sheet = isMobile ? getSheetData() : null;
 
   useEffect(() => {
     if (!openMenu) return;
@@ -452,6 +502,13 @@ export default function DistrictBreadcrumb({
           ))
         )}
       </BreadcrumbCrumb>
+      {sheet && (
+        <BreadcrumbBottomSheet
+          title={sheet.title}
+          items={sheet.items}
+          onClose={close}
+        />
+      )}
     </nav>
   );
 }
