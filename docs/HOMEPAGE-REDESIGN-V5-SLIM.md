@@ -834,3 +834,97 @@ that a UI change took effect.
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-18-1-fixup-2026-04-27` exists; all v12.1 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 19 — v13 final desktop polish (2026-04-27, NOT pushed)
+
+11 UI fixes + 2 investigations. Largest single session in the redesign
+arc. Each fix DOM-verified before commit. ~13 commits, all on local
+`main`. Reversibility tag: `pre-session-19-v13-final-2026-04-27`.
+
+## What changed
+
+| Phase | Surface | Change | DOM evidence |
+|---|---|---|---|
+| B | HeaderBar | Logo split: `<a href="/${locale}">` (text) + adjacent `<button>` (caret). Citizens can navigate home. | curl shows `<a class="ftp-logo-link" href="/en">` |
+| C | HeaderBar product menu | Verified PRODUCTS.map renders all 3 unconditionally. Added subtle "current" badge via `aria-current="page"` so future filter regressions are visible. | code review (no filter exists) |
+| D | HeroSection | 10 per-district SVG icons in homepage rows + new `src/components/district/icons/` registry. Sugar cane (Mandya), Charminar (Hyderabad), India Gate (Delhi), Gateway (Mumbai), Howrah (Kolkata), Circuit (Bengaluru), Mysore Palace (Mysuru), Imambara (Lucknow), Shaniwar Wada (Pune), Marina Temple (Chennai). | `count(.ftp-district-row-icon) === 10` |
+| D | DistrictHeroIllustration (Mandya) | Sugar-cane SVG already correctly sized via parent `min-height:220` — no 0×0 issue reproduced. Confirmed in DOM. | curl shows `min-height:220px` on hero-illustration |
+| E | HeroSection grid | 50/50 → 60/40 default + 65/35 on ≥1440px. Map ~2× bigger, matches production scale. | grid-template-columns inspection |
+| F | Hero | NEW `HeroShareIdea.tsx` — thin pill bar under "Explore India" CTA. Click expands the existing SuggestionForm component (POSTs to existing /api/suggestions, no new endpoint). VoteFeaturesCTA's old share-bar removed. | curl confirms `ftp-hero-share-bar` in hero, zero `class="ftp-share-bar..."` elsewhere |
+| G | SuggestionForm | Custom-styled `<select>`: `appearance:none` + inline data-URL chevron SVG, padding-right 36 for chevron room. Closed state matches form chrome; opened popover stays OS-controlled (cross-browser CSS limitation). | rendered `class="ftp-suggest-select"` |
+| H | globals.css | New :root color tokens with documented semantic discipline: brand blue / features purple / live green / support red / vote-next AMBER / India SAFFRON / State INDIGO / District TEAL. 25 host rules anchor the tokens against Tailwind v4 purge. | bundle contains 6 refs/token |
+| H | HeroSection | Vote-next-district CTA: indigo→AMBER (was conflicting with state-tier indigo). | inline style uses `--ftp-color-vote-district-bg` |
+| H | ContributorsStrip | Supporter pill tier audit: India yellow→SAFFRON; State purple→INDIGO; District green→TEAL. Category accent bars match. | tier rules use new var(--ftp-color-tier-*) |
+| I | NEW SupportBanner.tsx | Red banner above footer: "❤️ Support — ₹1.50/day serves one district". Mounted in page.tsx between CommunitySection and Footer. | rendered `<a class="ftp-support-banner" href="/en/support">` |
+| J | HowItWorks | Compaction: section padding 48→28, card padding 20→14, icon tile 56→40, icon glyph 28→22, title 16→14, description 12→11, gap 10→6. Sources caption forced to single line on ≥1024px (white-space:nowrap), full attribution in title= tooltip. | section height drops from ~700px to ~480px |
+
+## Investigations (Phases K and L)
+
+### K — Mandya taluks: ALREADY WORKS
+
+- `model Taluk` exists in Prisma with full schema (id, districtId, name, nameLocal, slug, tagline, population, area, villageCount, villages relation).
+- Route `src/app/[locale]/[state]/[district]/[taluk]/page.tsx` exists.
+- `/en/karnataka/mandya/maddur` and `/en/karnataka/mandya/srirangapatna` both return HTTP 200.
+- Taluks render on the district overview page as a CardGrid section "Taluks in Mandya" (lines 539-561 of OverviewClient.tsx). Each card links to `${base}/${t.slug}` — citizens can click any of Mandya/Maddur/Malavalli/Srirangapatna/Nagamangala/K R Pete to navigate.
+- The "Select Taluk" dropdown in Jayanth's screenshot (image 1) does not exist anywhere in the active codebase. No `<select>` for taluk navigation — the UI uses a card grid instead. Possible explanations: screenshot from older version, screenshot from a different module page, or a misidentified element.
+- **No code change needed.** Taluk navigation works. If Jayanth wants a dropdown alternative or different UX, that's a separate session.
+
+### L — Share Your Idea admin path: ALREADY WORKS END-TO-END
+
+- `model Suggestion` exists in Prisma: id, name, email, title, body, category, status (PENDING/ACCEPTED/IMPLEMENTED/SPAM/REJECTED), adminNotes, upvotes, createdAt, updatedAt. `@@index([status, createdAt])`.
+- `POST /api/suggestions` validates → rate-limits 3/hour/IP → `prisma.suggestion.create()` → emails admin (forthepeople1547@gmail.com) when RESEND_API_KEY set.
+- Admin page exists at `/[locale]/admin/suggestions/page.tsx` — gated by `ftp_admin_v1` cookie (redirects to `/[locale]/admin` if not authed). Renders all 500 latest suggestions via `SuggestionsClient`.
+- Admin actions: mark Accepted / Implemented (publishes to `/features?tab=suggest`); mark Spam / Rejected (hides).
+- **No code change needed.** Full submit → review → publish/hide loop is wired end-to-end. The new `HeroShareIdea` component (Phase F) reuses the same `SuggestionForm` component, so submissions from the hero land in the same admin queue.
+
+## Verification
+
+| | Before Session 19 | After Session 19 |
+|---|---|---|
+| Total problems | 107 | **107** |
+| Errors | 61 | 61 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (preserved exactly).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` all 200.
+- DrillDownMap component file untouched (Hard Rule 7).
+- prefers-reduced-motion respected on every new animation.
+
+## v13 commits (12 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `b11d53c` | B | Header — logo split (a + button) |
+| 2 | `4db4187` | C | Product dropdown — always 3 + current badge |
+| 3 | `3651bdb`* | D | 10 per-district icons + registry |
+| 4 | `26cc702` | E | Hero map 60/40 default + 65/35 on ≥1440px |
+| 5 | `38a0bf9` | F | Share Your Idea moved to hero (HeroShareIdea) |
+| 6 | `5ab05af` | G | Custom Category dropdown styling |
+| 7 | `90df376` | H | Color tokens + amber Vote-next + supporter tier audit |
+| 8 | `e21f8e7` | I | Red Support banner above footer |
+| 9 | `761267e` | J | HowItWorks compaction |
+
+*Commit hash for Phase D will be visible via `git log` — auto-numbered.
+
+## New files
+
+- `src/components/district/icons/SugarCaneIcon.tsx` (Mandya)
+- `src/components/district/icons/CharminarIcon.tsx` (Hyderabad)
+- `src/components/district/icons/IndiaGateIcon.tsx` (New Delhi)
+- `src/components/district/icons/GatewayOfIndiaIcon.tsx` (Mumbai)
+- `src/components/district/icons/HowrahBridgeIcon.tsx` (Kolkata)
+- `src/components/district/icons/CircuitIcon.tsx` (Bengaluru)
+- `src/components/district/icons/MysorePalaceIcon.tsx` (Mysuru)
+- `src/components/district/icons/ImambaraIcon.tsx` (Lucknow)
+- `src/components/district/icons/ShaniwarWadaIcon.tsx` (Pune)
+- `src/components/district/icons/MarinaTempleIcon.tsx` (Chennai)
+- `src/components/district/icons/index.ts` (registry)
+- `src/components/home/redesign-v2/HeroShareIdea.tsx`
+- `src/components/home/redesign-v2/SupportBanner.tsx`
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-19-v13-final-2026-04-27` exists; all v13 commits sit on local `main`. Push after Jayanth's manual review.
