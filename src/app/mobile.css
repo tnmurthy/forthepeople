@@ -435,6 +435,41 @@
    * ============================================================ */
   .ftp-breadcrumb-menu { display: none !important; }
 
+  /* ============================================================
+   * MobileBottomNav — Phase J
+   * ============================================================ */
+  .ftp-m-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #E5E7EB;
+    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+    z-index: 80;
+  }
+  .ftp-m-bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px;
+    text-decoration: none;
+    color: #6B7280;
+    font-size: 10px;
+    font-weight: 500;
+    min-height: 52px;
+  }
+  .ftp-m-bn-item.is-active { color: #2563EB; }
+  .ftp-m-bn-item.is-support { color: #E11D48; }
+  .ftp-m-bn-item.is-support.is-active { color: #BE123C; }
+
+  /* Reserve room at the bottom of the page so content isn't hidden
+     under the fixed nav. Use the same env() bottom inset for safe-area. */
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
   /* When a district MobileHeader is mounted, hide the global one so we
      don't end up with two stacked mobile headers. */
   body:has([data-mobile-header="district"]) [data-mobile-header="global"] {

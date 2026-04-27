@@ -18,6 +18,7 @@ import PageProgressBar from "@/components/common/PageProgressBar";
 import DisclaimerBanner from "@/components/home/redesign-v2/DisclaimerBanner";
 import HeaderBar from "@/components/home/redesign-v2/HeaderBar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
+import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import Footer from "@/components/home/redesign-v2/Footer";
 
 export default async function LocaleLayout({
@@ -43,6 +44,8 @@ export default async function LocaleLayout({
       {children}
       <Footer locale={locale} />
       <SuggestionFloatingButton />
+      {/* Mobile-only sticky bottom nav — CSS hides on desktop. */}
+      <MobileBottomNav locale={locale} />
     </QueryProvider>
   );
 }
