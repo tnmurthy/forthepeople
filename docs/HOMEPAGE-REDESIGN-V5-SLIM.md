@@ -928,3 +928,51 @@ arc. Each fix DOM-verified before commit. ~13 commits, all on local
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-19-v13-final-2026-04-27` exists; all v13 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 19.1 — fix-up for incomplete S19 fixes (2026-04-27, NOT pushed)
+
+5 phases, each DOM-verified before commit. ~3 commits, all on local
+`main`. Reversibility tag: `pre-session-19-1-fixup-2026-04-27`.
+
+## Findings + fixes
+
+| Phase | Reported issue | Investigation finding | Action |
+|---|---|---|---|
+| B | Mandya page freeze (45s timeout, 1334 chars body, 1 heading total) | DOES NOT REPRODUCE on current dev server. /en/karnataka/mandya returns 200 in 264ms with 147KB SSR HTML and 52KB visible text. The 45s freeze was almost certainly Turbopack cold-start compilation; once warm, page is healthy. | **No code fix.** Surfaced. |
+| C | Sugar-cane SVG = 0×0 inside `[hidden]` wrapper | The `[hidden]` wrapper is React's Suspense streaming placeholder (`id="S:0"`); it's 0×0 by spec, then content moves out at hydration. Defensive fix: added `width:100%` + `min-width:0` to `.hero-illustration` so flex/grid parents can't collapse it. (Note: rejected the spec's `width:100px` — would have shrunk hero banner to thumbnail across all districts.) | `98baca7` — width:100% on hero-illustration |
+| D | Taluks not rendering — "Taluk" word doesn't appear | DOES NOT REPRODUCE. SSR HTML contains 3 occurrences of "Taluks" (hero stat, sidebar nav, "Taluks in Mandya" SectionLabel) and all 7 taluk hrefs (mandya/maddur/malavalli/srirangapatna/nagamangala/kr-pete/pandavapura). | **No code fix.** Surfaced. |
+| E | Pune row missing temperature | `/api/data/homepage-preview` is currently timing out at 60s (DB query stalled). When it does respond, Pune likely has no `WeatherReading` row in DB → API returns `weather: null` → frontend doesn't render the temp span. This is a **data/scraper issue**, not a code issue. Per Phase E hard rule ("if data source itself returns nothing, surface in report — don't fake the temperature"), no code fix. | **No code fix.** Surfaced. |
+| F | District icons 18×18 too small | Confirmed via DOM. Bumped to 28×28 with 8px right margin (was 2px). | `b785472` — 28×28 icons with !important |
+
+## Verification
+
+| Check | Result |
+|---|---|
+| TSC | 0 errors |
+| Lint | 107 (preserved exactly) |
+| `/en` | 200, 0.94s |
+| `/en/karnataka/mandya` | 200, 0.13s — **no freeze** |
+| `/en/maharashtra/pune` | 200, 0.08s |
+| Mandya SSR HTML | 147KB, 7 taluk hrefs, "Taluks in Mandya" label present |
+| District icons rendered | All 10 at width="28" |
+
+## v13.1 commits (3 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `98baca7` | C | hero-illustration — width:100% defensive fix |
+| 2 | `b785472` | F | district icons 18→28 with !important sizing |
+
+## Surfaced (not fixed)
+
+1. **`/api/data/homepage-preview` 60s timeout** — endpoint hangs intermittently. The endpoint runs ~5 parallel Prisma queries per district × 10 districts = 50+ DB roundtrips. Either the DB connection pool is exhausted or one of the queries is unindexed and slow. Worth a dedicated session: profile each query, ensure indexes on `WeatherReading.districtId`, `DamReading.districtId`, `CropPrice.districtId + date`, etc. Until fixed, district rows on /en will sometimes show 🕐 freshness but no 🌡️ temp because the client-side fetch returns nothing.
+
+2. **Pune has no WeatherReading row in DB** — even when /api/data/homepage-preview responds, Pune's `weather: null` because the weather scraper hasn't seeded data for that district. Track in scraper/data pipeline backlog.
+
+3. **Mandya SSR has only 1 `<h>` tag** despite 52KB visible text — most subheadings render as styled `<div>` / `<span>` instead of semantic h2/h3/h4. Accessibility / SEO concern but not a "broken page" issue. Track separately.
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-19-1-fixup-2026-04-27` exists; the 2 v13.1 commits sit on local `main`. Push after Jayanth's manual review.
