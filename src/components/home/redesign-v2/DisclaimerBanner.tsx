@@ -106,11 +106,18 @@ export default function DisclaimerBanner() {
           background: "none",
           border: "none",
           cursor: "pointer",
-          fontSize: 16,
+          fontSize: 18,
           color: "#A16207",
-          padding: "0 4px",
+          // Mobile-revert: bumped to 36×36 hit target — was 20×16 which
+          // failed the iOS 44×44 standard for tap targets.
+          width: 36,
+          height: 36,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
           lineHeight: 1,
           flexShrink: 0,
+          borderRadius: 8,
         }}
       >
         ✕
