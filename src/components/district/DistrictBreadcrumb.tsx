@@ -197,13 +197,26 @@ export default function DistrictBreadcrumb({
           left: 0;
           z-index: 40;
           min-width: 240px;
-          max-height: 360px;
+          /* Session 19.9: bumped 360 → 70vh (capped at 560) so districts
+             with 14+ sub-districts (Pune 14, Hyderabad 16) show without
+             needing to scroll inside the menu. The previous 360px cap
+             clipped the bottom items so clicks at their absolute screen
+             coords landed on the page content beneath. */
+          max-height: min(70vh, 560px);
           overflow-y: auto;
           background: #FFFFFF;
           border: 1px solid #E5E5E0;
           border-radius: 10px;
           box-shadow: 0 8px 24px rgba(0,0,0,0.10);
           padding: 4px;
+          /* Always show scrollbar on long menus (e.g. all-states list at
+             36 items) so users know they can scroll for more. */
+          scrollbar-width: thin;
+        }
+        .ftp-breadcrumb-menu::-webkit-scrollbar { width: 6px; }
+        .ftp-breadcrumb-menu::-webkit-scrollbar-thumb {
+          background: #D1D5DB;
+          border-radius: 3px;
         }
         .ftp-breadcrumb-menu-item {
           display: flex;

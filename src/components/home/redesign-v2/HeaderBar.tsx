@@ -624,6 +624,12 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           text-decoration: none;
           font-size: 12px;
           transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease;
+          /* Session 19.9: when the inline breadcrumb takes flex space on
+             district pages, this badge gets squeezed below 1024-1366px
+             viewports and the "★ N" text wraps to a 2nd line. Pin width
+             to its content. */
+          flex-shrink: 0;
+          white-space: nowrap;
         }
         .ftp-github-link:hover {
           background: #FAFAF8;
