@@ -36,6 +36,7 @@ import HeroSection from "@/components/home/redesign-v2/HeroSection";
 import LiveDataShowcase from "@/components/home/redesign-v2/LiveDataShowcase";
 import HowItWorks from "@/components/home/redesign-v2/HowItWorks";
 import CommunitySection from "@/components/home/redesign-v2/CommunitySection";
+import SupportBanner from "@/components/home/redesign-v2/SupportBanner";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -146,6 +147,7 @@ export default async function HomePage({
         <LiveDataShowcase locale={locale} districts={activeDistricts} />
         <HowItWorks />
         <CommunitySection locale={locale} />
+        <SupportBanner locale={locale} />
       </main>
     </>
   );
