@@ -393,8 +393,8 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         /* Session 19.3 Phase C: small green pulsing dot replaces the
            "🕐 Live" meta line — saves ~16px vertical per row. */
         .ftp-district-row-live-dot {
-          width: 7px;
-          height: 7px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           background: #22C55E;
           box-shadow: 0 0 0 2px rgba(34,197,94,0.20);

@@ -141,12 +141,20 @@ export default function DistrictBreadcrumb({
         }
         .ftp-breadcrumb-emoji { font-size: 14px; line-height: 1; }
         .ftp-breadcrumb-dot {
-          width: 8px;
-          height: 8px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           background: #22C55E;
           box-shadow: 0 0 0 2px rgba(34,197,94,0.18);
           flex-shrink: 0;
+        }
+        /* Session 19.8 Phase E: coming-soon items in dropdown menus
+           render a 🔒 emoji instead of a grey dot. */
+        .ftp-breadcrumb-lock {
+          font-size: 11px;
+          line-height: 1;
+          flex-shrink: 0;
+          opacity: 0.7;
         }
 
         .ftp-breadcrumb-caret {
@@ -221,10 +229,6 @@ export default function DistrictBreadcrumb({
            Click still routes to the locked-district preview page. */
         .ftp-breadcrumb-menu-item[data-live="false"] {
           color: #9CA3AF;
-        }
-        .ftp-breadcrumb-menu-item[data-live="false"] .ftp-breadcrumb-dot {
-          background: #D1D5DB;
-          box-shadow: none;
         }
         /* Session 19.5/19.7: current item — muted with inline "Current" badge,
            no click. The ::after pseudo-element was replaced by an inline
@@ -474,7 +478,13 @@ function PeerMenuItem({
       aria-current={isCurrent ? "true" : undefined}
       onClick={onClick}
     >
-      <span className="ftp-breadcrumb-dot" aria-hidden="true" />
+      {isLive ? (
+        <span className="ftp-breadcrumb-dot" aria-hidden="true" />
+      ) : (
+        <span className="ftp-breadcrumb-lock" aria-label="Coming soon">
+          🔒
+        </span>
+      )}
       <span className="ftp-breadcrumb-menu-item-label">{children}</span>
       {showLocal && (
         <span className="ftp-breadcrumb-menu-item-local">{nameLocal}</span>
