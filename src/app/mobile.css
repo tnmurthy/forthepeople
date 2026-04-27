@@ -135,11 +135,13 @@
    * Locked decision in the plan.
    * ============================================================ */
   .ftp-m-breadcrumb-strip {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     position: static !important;
     background: white;
     border-bottom: 1px solid #E5E7EB;
-    padding: 8px 12px;
+    padding: 6px 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -149,6 +151,27 @@
     padding: 0;
     background: transparent;
     border-bottom: none;
+    flex: 1;
+    min-width: 0;
+  }
+  /* Hamburger trigger inside the strip — opens MobileDistrictDrawer
+     (Phase I). Dispatches the OPEN_MODULES_EVENT, which the drawer
+     host (MobileDistrictChrome) listens for. */
+  .ftp-m-breadcrumb-strip-hamburger {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #E5E7EB;
+    background: #F9FAFB;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #1A1A1A;
+  }
+  .ftp-m-breadcrumb-strip-hamburger:active {
+    background: #F3F4F6;
   }
   /* DistrictStatusBar uses Tailwind sticky top-[92px] md:top-[56px].
      Override it to static on mobile so it scrolls naturally. */

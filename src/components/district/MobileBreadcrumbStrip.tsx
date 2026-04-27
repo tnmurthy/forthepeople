@@ -14,6 +14,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
 import {
   INDIA_STATES,
   getState,
@@ -21,6 +22,7 @@ import {
 } from "@/lib/constants/districts";
 import { getStateConfig } from "@/lib/constants/state-config";
 import DistrictBreadcrumb from "./DistrictBreadcrumb";
+import { OPEN_MODULES_EVENT } from "./MobileDistrictChrome";
 
 // Module-scope helpers — outside the component so React Compiler doesn't
 // see them as memoization candidates with mutable dependencies.
@@ -81,8 +83,20 @@ export function MobileBreadcrumbStrip({ locale }: { locale: string }) {
 
   if (!stateData || !districtData) return null;
 
+  function openModulesDrawer() {
+    window.dispatchEvent(new Event(OPEN_MODULES_EVENT));
+  }
+
   return (
     <div className="ftp-m-breadcrumb-strip">
+      <button
+        type="button"
+        className="ftp-m-breadcrumb-strip-hamburger"
+        onClick={openModulesDrawer}
+        aria-label="Open module list"
+      >
+        <Menu size={18} />
+      </button>
       <DistrictBreadcrumb
         compact
         locale={locale}
