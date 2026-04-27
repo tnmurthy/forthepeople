@@ -413,6 +413,8 @@ export default function DistrictHeroIllustration({
         position: "relative",
         overflow: "hidden",
         borderBottom: "1px solid #E8E8E4",
+        width: "100%",
+        minWidth: 0,
         minHeight: 220,
       }}
       className="hero-illustration"
