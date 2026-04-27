@@ -328,8 +328,11 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
         @media (max-width: 767px) {
           .ftp-header-bar { padding: 8px 12px !important; gap: 8px !important; }
           .ftp-header-bar .ftp-desktop-only { display: none !important; }
-          .ftp-header-bar .ftp-logo-full { display: none !important; }
-          .ftp-header-bar .ftp-logo-short { display: inline !important; }
+          /* Mobile-revert: keep the full "ForThePeople.in" wordmark on
+             mobile too. The .ftp-logo-short abbreviation never renders
+             now — kept in DOM for any callers that might unhide it. */
+          .ftp-header-bar .ftp-logo-full { display: inline !important; }
+          .ftp-header-bar .ftp-logo-short { display: none !important; }
         }
         @media (min-width: 768px) {
           .ftp-header-bar .ftp-mobile-only { display: none !important; }
@@ -841,7 +844,7 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
       {/* ── Search — Session 16 v10 Phase B Fix #1: blue-tinted with affordance ── */}
       <div
         ref={searchRef}
-        className={`ftp-desktop-only ftp-search-shell${isDistrictPage ? " ftp-search-shell-compact" : ""}`}
+        className={`ftp-search-shell${isDistrictPage ? " ftp-search-shell-compact" : ""}`}
       >
         <form
           onSubmit={handleSearchSubmit}
@@ -1037,9 +1040,10 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
       </div>
 
       {/* ── Theme toggle (LOCKED — dark mode coming soon) ── */}
+      {/* Mobile-revert: shown on mobile too (compact 36×36 via .ftp-mobile-compact). */}
       <button
         type="button"
-        className="ftp-theme-locked ftp-desktop-only"
+        className="ftp-theme-locked ftp-mobile-compact"
         aria-label="Theme toggle (dark mode coming soon)"
         title="Dark mode coming soon"
         onClick={() => {
@@ -1061,21 +1065,6 @@ export default function HeaderBar({ locale }: HeaderBarProps) {
         <span className="ftp-desktop-only">Support</span>
       </Link>
 
-      {/* ── Mobile: search icon button only ── */}
-      {/* Session mobile-revert Phase D: dropped the hamburger panel.
-          Its 4 items (Support / Vote / GitHub / Dark mode) are now direct
-          icons in the main row, so the panel was redundant. The module
-          drawer trigger for district pages lives in MobileBreadcrumbStrip
-          (Phase I). */}
-      <button
-        type="button"
-        onClick={() => setSearchOpen((v) => !v)}
-        aria-label="Open district search"
-        className="ftp-link-btn ftp-mobile-only"
-        style={{ padding: 6 }}
-      >
-        <Search size={18} aria-hidden="true" />
-      </button>
     </header>
   );
 }

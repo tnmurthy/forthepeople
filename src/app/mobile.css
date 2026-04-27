@@ -21,9 +21,10 @@
 @media (max-width: 767px) {
 
   /* ============================================================
-   * StatsBar — 2×2 grid on mobile (4 tiles).
-   * Hide the 5th "Districts Coming" tile per locked decision —
-   * it's covered by the prominent Expanding-to-780 widget below.
+   * StatsBar — mobile layout per user spec:
+   *   row 1:  Districts LIVE  |  Dashboards / district
+   *   row 2:  Data Points     |  (empty — Districts Coming hidden)
+   *   row 3:  Last Refresh           (full width, spans 2 cols)
    * ============================================================ */
   .ftp-stats-bar {
     grid-template-columns: 1fr 1fr !important;
@@ -31,8 +32,13 @@
   }
   /* Hide the 4th StatTile ("Districts coming"). The .ftp-stats-bar children
      are: <style>, StatTile (live), StatTile (dashboards), StatTile (data),
-     StatTile (coming) ← child 5, then a final div (updated). */
+     StatTile (coming) ← child 5, then a final div .ftp-stat-tile-updated. */
   .ftp-stats-bar > .ftp-stat-tile:nth-child(5) { display: none !important; }
+  /* Last Refresh tile (.ftp-stat-tile-updated) spans both columns on mobile,
+     sitting below the 2×2 grid as a 5th wide tile. */
+  .ftp-stats-bar > .ftp-stat-tile-updated {
+    grid-column: 1 / -1 !important;
+  }
 
   /* ============================================================
    * HeroSection — single column, map full-width above district list.
@@ -91,30 +97,76 @@
   }
 
   /* ============================================================
-   * HeaderBar mobile-compact buttons — Phase D
-   * GitHub / Vote / Language now show on mobile too as icon-only
-   * 36×36 buttons. The text labels inside are hidden via CSS.
+   * HeaderBar mobile layout
+   *
+   * Target row at ≤767px:
+   *   ForThePeople.in ▼  |  [search input flex:1 in centre]  |  GH Vote Globe Heart Theme
+   *
+   * Override HeaderBar's built-in mobile rule that abbreviates the logo
+   * to "FTP.in" — user wants the full text on mobile too.
    * ============================================================ */
+  /* The full wordmark override now lives in HeaderBar's own scoped style
+     block (so it wins the cascade against runtime <style> insertions). */
+  .ftp-header-bar {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    row-gap: 6px !important;
+  }
+  /* Smaller logo so the row fits */
+  .ftp-header-bar .ftp-logo-link { padding: 4px 6px !important; font-size: 13px !important; }
+  .ftp-header-bar .ftp-logo-icon { width: 16px !important; height: 16px !important; }
+  .ftp-header-bar .ftp-product-trigger { padding: 4px 2px !important; }
+
+  /* Search shell drops to its own full-width row beneath the logo+icons.
+     order:99 puts it AFTER all flex siblings so it wraps to row 2. */
+  .ftp-header-bar .ftp-search-shell {
+    order: 99 !important;
+    flex: 1 0 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+  }
+  .ftp-header-bar .ftp-search-input {
+    padding: 6px 10px 6px 28px !important;
+    font-size: 12px !important;
+    height: 32px !important;
+  }
+  .ftp-header-bar .ftp-search-icon { left: 8px !important; width: 12px !important; height: 12px !important; }
+  .ftp-header-bar .ftp-search-kbd { display: none !important; }
+
+  /* Right-side icon buttons (GitHub / Vote / Globe / Theme) — all 32×32 */
   .ftp-github-link.ftp-mobile-compact,
   .ftp-vote-features-link.ftp-mobile-compact,
-  .ftp-mobile-compact > .ftp-language-btn {
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
+  .ftp-mobile-compact > .ftp-language-btn,
+  .ftp-theme-locked.ftp-mobile-compact {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
     justify-content: center;
     margin-left: 0 !important;
     flex-shrink: 0;
   }
-  /* Hide the inline text/labels but keep the icon */
+  /* Hide labels — keep just the icon */
   .ftp-github-link.ftp-mobile-compact .ftp-github-stars,
   .ftp-vote-features-link.ftp-mobile-compact > span:not(.ftp-vote-features-emoji),
   .ftp-mobile-compact > .ftp-language-btn > span:not(.ftp-language-icon),
   .ftp-mobile-compact > .ftp-language-btn > .ftp-language-chevron {
     display: none !important;
   }
-  /* Tighten gap between right-side icon buttons */
-  .ftp-header-bar > .ftp-mobile-compact { margin-left: 2px; }
+  /* Tighten gap between icons */
+  .ftp-header-bar > .ftp-mobile-compact { margin-left: 0 !important; }
+  .ftp-header-bar > .ftp-mobile-compact + .ftp-mobile-compact { margin-left: 2px !important; }
+  /* Compact Support heart on mobile (icon-only — text already hidden by .ftp-desktop-only) */
+  .ftp-header-bar .ftp-support-btn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 0 !important;
+  }
 
   /* ============================================================
    * Supporters marquee — slower on mobile so pills are readable.
