@@ -37,6 +37,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { INDIA_STATES, getState, getDistrict } from "@/lib/constants/districts";
+import { getStateConfig } from "@/lib/constants/state-config";
 import DistrictBreadcrumb from "@/components/district/DistrictBreadcrumb";
 
 // ── Product dropdown items ────────────────────────────────
@@ -238,6 +239,21 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
     routeStateData &&
     routeDistrictData
   );
+  // Session 19.8: state caret needs the FULL state list (was incorrectly
+  // wired to the district list in S19.5). Live ones first, then alphabetical.
+  const peerLiveStates = useMemo(() => {
+    const decorated = INDIA_STATES.map((s) => ({
+      slug: s.slug,
+      name: s.name,
+      nameLocal: s.nameLocal,
+      isLive: s.districts.some((d) => d.active),
+    }));
+    decorated.sort((a, b) => {
+      if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return decorated;
+  }, []);
   // Session 19.5: send the full list of districts (live + coming-soon) so the
   // breadcrumb dropdowns can render coming-soon items in muted grey. Sorted
   // live-first, then alphabetically within each group.
@@ -805,10 +821,15 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             stateName={routeStateData.name}
             districtSlug={routeDistrictSlug!}
             districtName={routeDistrictData.name}
+            peerLiveStates={peerLiveStates}
             peerLiveDistricts={peerLiveDistricts}
             taluks={taluksForBreadcrumb}
             currentTalukSlug={routeTalukData?.slug}
             currentTalukName={routeTalukData?.name}
+            subdivisionLabel={
+              getStateConfig(routeStateSlug ?? "")?.subDistrictUnit ??
+              "Sub-district"
+            }
           />
         </div>
       )}

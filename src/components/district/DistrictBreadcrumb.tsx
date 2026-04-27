@@ -31,12 +31,18 @@ export interface DistrictBreadcrumbProps {
   stateName: string;
   districtSlug: string;
   districtName: string;
+  /** All states (Session 19.8 restoration: live + coming-soon). Live ones get
+   *  a green dot; coming-soon get a 🔒 lock icon. Sorted live-first by caller. */
+  peerLiveStates: Peer[];
   /** All districts in the current state (Session 19.5: live + coming-soon). */
   peerLiveDistricts: Peer[];
   /** Sub-districts (taluks/tehsils/mandals) of the current district. */
   taluks: Peer[];
   currentTalukSlug?: string; // when on a taluk page, the active taluk
   currentTalukName?: string;
+  /** Session 19.8: per-state singular subdivision label (Taluk / Tehsil /
+   *  Mandal / Block / Taluka). Used for the 4th crumb placeholder + aria-label. */
+  subdivisionLabel?: string;
   /** Compact mode: strips wrapper chrome so the breadcrumb fits inline in the header row. */
   compact?: boolean;
 }
@@ -49,12 +55,15 @@ export default function DistrictBreadcrumb({
   stateName,
   districtSlug,
   districtName,
+  peerLiveStates,
   peerLiveDistricts,
   taluks,
   currentTalukSlug,
   currentTalukName,
+  subdivisionLabel,
   compact = false,
 }: DistrictBreadcrumbProps) {
+  const subLabel = subdivisionLabel ?? "Sub-district";
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const navRef = useRef<HTMLElement>(null);
 
@@ -314,7 +323,9 @@ export default function DistrictBreadcrumb({
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* State crumb — caret opens all districts of the current state */}
+      {/* State crumb — caret opens the full state list (Session 19.8 fix:
+          this used to incorrectly render districts of the current state,
+          duplicating the District crumb's caret). */}
       <BreadcrumbCrumb
         dot
         label={stateName}
@@ -322,23 +333,21 @@ export default function DistrictBreadcrumb({
         isCurrent={false}
         menuOpen={openMenu === "state"}
         onCaretClick={() => setOpenMenu(openMenu === "state" ? null : "state")}
-        ariaCaretLabel={`Open districts of ${stateName}`}
+        ariaCaretLabel={`Switch state (currently ${stateName})`}
       >
-        {peerLiveDistricts.length === 0 ? (
-          <div className="ftp-breadcrumb-menu-empty">
-            No districts listed for {stateName}
-          </div>
+        {peerLiveStates.length === 0 ? (
+          <div className="ftp-breadcrumb-menu-empty">No states listed</div>
         ) : (
-          peerLiveDistricts.map((d) => (
+          peerLiveStates.map((s) => (
             <PeerMenuItem
-              key={d.slug}
-              href={`/${locale}/${stateSlug}/${d.slug}`}
-              isLive={d.isLive !== false}
-              isCurrent={d.slug === districtSlug}
-              nameLocal={d.nameLocal ?? undefined}
+              key={s.slug}
+              href={`/${locale}/${s.slug}`}
+              isLive={s.isLive !== false}
+              isCurrent={s.slug === stateSlug}
+              nameLocal={s.nameLocal ?? undefined}
               onClick={close}
             >
-              {d.name}
+              {s.name}
             </PeerMenuItem>
           ))
         )}
@@ -381,10 +390,12 @@ export default function DistrictBreadcrumb({
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* Taluk crumb — current when on a taluk page, placeholder otherwise */}
+      {/* Sub-district crumb — current when on a taluk page, placeholder otherwise.
+          Session 19.8: placeholder + aria-label use the per-state subdivision
+          label (Taluk / Tehsil / Mandal / Block / Taluka). */}
       <BreadcrumbCrumb
         dot={!!currentTalukSlug}
-        label={currentTalukName ?? "Select sub-district"}
+        label={currentTalukName ?? `Select ${subLabel}`}
         href={
           currentTalukSlug
             ? `/${locale}/${stateSlug}/${districtSlug}/${currentTalukSlug}`
@@ -394,10 +405,12 @@ export default function DistrictBreadcrumb({
         isCurrent={!!currentTalukSlug}
         menuOpen={openMenu === "taluk"}
         onCaretClick={() => setOpenMenu(openMenu === "taluk" ? null : "taluk")}
-        ariaCaretLabel={`Choose a sub-district in ${districtName}`}
+        ariaCaretLabel={`Choose a ${subLabel.toLowerCase()} in ${districtName}`}
       >
         {taluks.length === 0 ? (
-          <div className="ftp-breadcrumb-menu-empty">No sub-districts listed</div>
+          <div className="ftp-breadcrumb-menu-empty">
+            No {subLabel.toLowerCase()}s listed
+          </div>
         ) : (
           taluks.map((t) => (
             <PeerMenuItem
