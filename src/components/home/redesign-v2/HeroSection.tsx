@@ -340,11 +340,13 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
 
         /* Session 17 v11 Phase D: stable district rows, all content always visible */
+        /* Session 19.2 Phase H: bumped min-height + padding so tagline + bullets
+           have visible vertical room (was 76px → text rendered ~10px tall and clipped). */
         .ftp-district-row {
           display: flex;
           flex-direction: column;
           gap: 4px;
-          padding: 10px 12px;
+          padding: 12px 14px;
           background: #FFFFFF;
           border: 1px solid #E5E7EB;
           border-radius: 8px;
@@ -352,7 +354,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           color: #1A1A1A;
           overflow: hidden;
           position: relative;
-          min-height: 76px;
+          min-height: 88px;
           transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
         }
         .ftp-district-row:hover {
@@ -415,8 +417,12 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           white-space: nowrap;
           font-variant-numeric: tabular-nums;
         }
+        /* Session 19.2 Phase H: explicit line-height + min-height so text is
+           guaranteed visible (was rendering at ~9px tall, font 11px → invisible). */
         .ftp-district-row-tagline {
           font-size: 11px;
+          line-height: 1.5;
+          min-height: 16px;
           color: #2563EB;
           font-weight: 500;
           white-space: nowrap;
@@ -425,8 +431,9 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-district-row-bullets {
           font-size: 10px;
+          line-height: 1.5;
+          min-height: 15px;
           color: #6B7280;
-          line-height: 1.4;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
