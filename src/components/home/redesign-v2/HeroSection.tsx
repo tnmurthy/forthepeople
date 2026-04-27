@@ -30,6 +30,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { DISTRICT_META } from "@/lib/data/district-meta";
 import { timeAgoLabel } from "@/lib/utils/timeAgo";
+import { getDistrictIcon } from "@/components/district/icons";
 
 const DrillDownMap = dynamic(() => import("@/components/map/DrillDownMap"), {
   ssr: false,
@@ -343,11 +344,16 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
         }
         .ftp-district-row-name-line {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           gap: 8px;
           flex: 1;
           min-width: 0;
           overflow: hidden;
+        }
+        /* Session 19 v13 Phase D: per-district SVG icon */
+        .ftp-district-row-icon {
+          flex-shrink: 0;
+          margin-right: 2px;
         }
         .ftp-district-row-name {
           font-size: 14px;
@@ -473,6 +479,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                 const temp = live?.temp ?? null;
                 const isNew = isWithin30Days(d.goLiveDate);
                 const updated = timeAgoLabel(live?.mostRecentAt ?? null);
+                const Icon = getDistrictIcon(d.slug);
                 return (
                   <Link
                     key={d.slug}
@@ -481,6 +488,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
                   >
                     <div className="ftp-district-row-head">
                       <div className="ftp-district-row-name-line">
+                        {Icon && <Icon size={18} className="ftp-district-row-icon" />}
                         <span className="ftp-district-row-name">{d.name}</span>
                         {meta?.nativeScript && (
                           <span className="ftp-district-row-script">
