@@ -211,7 +211,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
     return () => document.removeEventListener("keydown", onKey);
   }, [productOpen, langOpen, searchOpen, mobileNavOpen]);
 
-  const allDistricts = useMemo(flattenDistricts, []);
+  const allDistricts = useMemo(() => flattenDistricts(), []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

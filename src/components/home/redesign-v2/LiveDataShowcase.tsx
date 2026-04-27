@@ -17,7 +17,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getDistrictIcon } from "@/components/district/icons";
 
 interface ActiveDistrict {
@@ -402,13 +402,26 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
   );
 }
 
+// Session 19.2 Phase F: render the per-district registry icon via
+// React.createElement to satisfy the React Compiler lint rule
+// "no components during render" — JSX <Icon /> form with a runtime
+// lookup gets flagged; createElement(Icon, props) doesn't.
+function ActiveDistrictRegistryIcon({ slug }: { slug: string }) {
+  const Icon = getDistrictIcon(slug);
+  if (!Icon) return null;
+  return React.createElement(Icon, {
+    size: 36,
+    className: "ftp-livedata-active-icon",
+    "aria-label": `${slug} icon`,
+  });
+}
+
 function DistrictAvatar({ slug, hasSvg }: { slug: string; hasSvg: boolean }) {
   const SIZE = 56;
   // Session 19.2 Phase F: prefer the per-district registry icon.
   // Falls back to /districts/<slug>.svg file (if hosted) and finally
   // to the generic location pin.
-  const RegistryIcon = getDistrictIcon(slug);
-  if (RegistryIcon) {
+  if (getDistrictIcon(slug)) {
     return (
       <div
         className="ftp-livedata-active-icon-wrap"
@@ -425,11 +438,7 @@ function DistrictAvatar({ slug, hasSvg }: { slug: string; hasSvg: boolean }) {
           padding: 8,
         }}
       >
-        <RegistryIcon
-          size={36}
-          className="ftp-livedata-active-icon"
-          aria-label={`${slug} icon`}
-        />
+        <ActiveDistrictRegistryIcon slug={slug} />
       </div>
     );
   }
