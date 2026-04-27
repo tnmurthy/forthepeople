@@ -304,6 +304,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         .ftp-status-dot-green { background: #10B981; }
         .ftp-status-dot-red   { background: #DC2626; }
         /* Session 16 v10 Phase B (Fix #1): blue-tinted search field */
+        /* Session 18 v12 Phase D (Fix #3): visible field — light gray bg + border + ⌘K hint */
         .ftp-search-shell {
           flex: 1;
           min-width: 0;
@@ -315,22 +316,22 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: #F0F7FF;
-          border: 1px solid #DBEAFE;
-          border-radius: 8px;
           padding: 6px 10px;
+          background: #F9FAFB;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
           transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
         }
         .ftp-search-form:hover {
-          background: #E0F0FF;
-          border-color: #93C5FD;
+          background: #F3F4F6;
+          border-color: #D1D5DB;
         }
         .ftp-search-form:focus-within {
           background: #FFFFFF;
           border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
-        .ftp-search-icon { color: #2563EB; flex-shrink: 0; }
+        .ftp-search-icon { color: #6B7280; flex-shrink: 0; }
         .ftp-search-input {
           flex: 1;
           min-width: 0;
@@ -340,7 +341,19 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           font-size: 13px;
           color: #1A1A1A;
         }
-        .ftp-search-input::placeholder { color: #60A5FA; opacity: 0.85; }
+        .ftp-search-input::placeholder { color: #9CA3AF; }
+        .ftp-search-kbd {
+          font-family: inherit;
+          font-size: 10px;
+          color: #6B7280;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          padding: 1px 5px;
+          border-radius: 3px;
+          flex-shrink: 0;
+          line-height: 1;
+        }
+        .ftp-search-form:focus-within .ftp-search-kbd { display: none; }
         .ftp-search-results {
           position: absolute;
           top: calc(100% + 4px);
@@ -655,6 +668,7 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
             aria-label="Search any district"
             className="ftp-search-input"
           />
+          <kbd className="ftp-search-kbd" aria-hidden="true">⌘K</kbd>
         </form>
 
         {searchOpen && search.trim().length > 0 && (
