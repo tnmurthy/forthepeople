@@ -448,14 +448,20 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           .ftp-search-shell-compact { flex: 0 1 160px; max-width: 160px; }
         }
         /* Wrapper around the inline breadcrumb — takes up flex space so the
-           search shell shrinks naturally to its own max-width. */
+           search shell shrinks naturally to its own max-width.
+           Session 19.6: overflow MUST be visible so the dropdown menu inside
+           (position: absolute relative to a child crumb) can paint outside
+           the slot's content rect. With overflow:hidden the menu was
+           DOM-visible but pixel-clipped to the slot's height, so hit-testing
+           below the header returned page content beneath. The breadcrumb
+           itself uses flex-wrap:nowrap and min-width:0 to self-constrain. */
         .ftp-header-breadcrumb-slot {
           display: flex;
           align-items: center;
           flex: 1 1 auto;
           min-width: 0;
           margin-left: 4px;
-          overflow: hidden;
+          overflow: visible;
         }
         .ftp-search-form {
           position: relative;
