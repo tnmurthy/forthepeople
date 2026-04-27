@@ -121,15 +121,17 @@ function CategorySection({
   title,
   supporters,
   marqueeSpeed,
+  accent,
 }: {
   title: string;
   supporters: ContributorItem[];
   marqueeSpeed: string;
+  accent: "india" | "state" | "district";
 }) {
   if (supporters.length === 0) return null;
   const isStatic = supporters.length <= STATIC_THRESHOLD;
   return (
-    <div className="ftp-supporter-category">
+    <div className={`ftp-supporter-category ftp-cat-${accent}`}>
       <div className="ftp-supporter-category-header">
         <span className="ftp-supporter-category-title">{title}</span>
         <span className="ftp-supporter-category-count">{supporters.length}</span>
@@ -220,27 +222,45 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
         .ftp-supporters-header {
           margin-bottom: 24px;
         }
+        /* Session 17 v11 Phase G (Fix #7): gradient h2 + motto pill */
         .ftp-supporters-h2 {
           font-size: 24px;
-          font-weight: 700;
-          color: #1A1A1A;
+          font-weight: 800;
+          background: linear-gradient(135deg, #1E40AF 0%, #5B21B6 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
           margin: 0 0 4px;
           letter-spacing: -0.01em;
+          display: inline-block;
         }
         .ftp-supporters-sub {
           font-size: 13px;
           color: #6B7280;
-          margin: 0;
+          margin: 0 0 8px;
+        }
+        .ftp-supporters-motto {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #FEF3C7;
+          color: #92400E;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          margin-bottom: 4px;
         }
 
-        /* Session 16 v10 Phase I (Fix #10d): bordered category cards inside cream container */
+        /* Session 17 v11 Phase G (Fix #7): subtle gradient container + per-category accent bar */
         .ftp-supporters-categories {
           display: flex;
           flex-direction: column;
           gap: 16px;
-          background: #FAFAF8;
+          background: linear-gradient(135deg, #FAFAF8 0%, #F4F3FE 100%);
           border: 1px solid #E5E7EB;
-          border-radius: 12px;
+          border-radius: 16px;
           padding: 20px;
           margin-bottom: 16px;
         }
@@ -250,13 +270,31 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           gap: 10px;
           background: #FFFFFF;
           border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          padding: 14px 16px;
+          border-radius: 10px;
+          padding: 14px 18px;
+          position: relative;
+          transition: border-color 150ms ease, box-shadow 150ms ease;
         }
+        .ftp-supporter-category::before {
+          content: "";
+          position: absolute;
+          left: 0; top: 14px; bottom: 14px;
+          width: 3px;
+          background: var(--cat-accent, #2563EB);
+          border-radius: 0 2px 2px 0;
+        }
+        .ftp-supporter-category:hover {
+          border-color: var(--cat-accent, #2563EB);
+          box-shadow: 0 4px 12px var(--cat-shadow, rgba(37, 99, 235, 0.06));
+        }
+        .ftp-cat-india    { --cat-accent: #DC2626; --cat-shadow: rgba(220, 38, 38, 0.08); }
+        .ftp-cat-state    { --cat-accent: #6E59C0; --cat-shadow: rgba(110, 89, 192, 0.08); }
+        .ftp-cat-district { --cat-accent: #10B981; --cat-shadow: rgba(16, 185, 129, 0.08); }
         .ftp-supporter-category-header {
           display: flex;
           align-items: center;
           gap: 8px;
+          padding-left: 10px;
           font-size: 13px;
           font-weight: 600;
           color: #1A1A1A;
@@ -384,6 +422,10 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           <p className="ftp-supporters-sub">
             No corporate funding. No ads. Just citizens backing citizens.
           </p>
+          <div className="ftp-supporters-motto">
+            <span aria-hidden="true">✨</span>
+            100% citizen-funded · Open source · Forever free
+          </div>
         </div>
 
         {buckets && total > 0 && (
@@ -392,16 +434,19 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
               title="🇮🇳 India Patrons"
               supporters={buckets.allIndia}
               marqueeSpeed="120s"
+              accent="india"
             />
             <CategorySection
               title="🏛️ State Champions"
               supporters={buckets.states}
               marqueeSpeed="80s"
+              accent="state"
             />
             <CategorySection
               title="⌂ District Sponsors"
               supporters={buckets.districts}
               marqueeSpeed="50s"
+              accent="district"
             />
           </div>
         )}
