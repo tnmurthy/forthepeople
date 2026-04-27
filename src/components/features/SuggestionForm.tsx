@@ -100,10 +100,28 @@ export default function SuggestionForm({ onSuccess }: { onSuccess?: () => void }
 
       <div>
         <label style={label}>Category</label>
+        {/* Session 19 v13 Phase G (Fix #7): custom-styled select.
+            appearance:none kills the OS default chevron + bg; the
+            background-image data-URL renders our own chevron. The
+            opened popover is OS-controlled (cross-browser limit)
+            but the closed state now matches the rest of the form. */}
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as (typeof CATEGORIES)[number])}
-          style={{ ...input, cursor: "pointer" }}
+          className="ftp-suggest-select"
+          style={{
+            ...input,
+            cursor: "pointer",
+            appearance: "none",
+            WebkitAppearance: "none",
+            MozAppearance: "none",
+            paddingRight: 36,
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M3 4.5L6 7.5L9 4.5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 12px center",
+            backgroundSize: "12px",
+          }}
         >
           {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
