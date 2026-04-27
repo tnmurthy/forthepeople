@@ -36,6 +36,14 @@ interface DistrictSponsorBannerProps {
   stateName?: string;
   districtName?: string;
   locale?: string;
+  // Session 19.4 Phase C: optional stats fill the previously-empty right side
+  // of the card. Already rendered in DistrictHeroIllustration above; here we
+  // surface them again as compact micro-stats. All optional — when none are
+  // provided the card stays single-column for backward compatibility.
+  population?: number;
+  literacy?: number;
+  subDistrictCount?: number;
+  subDistrictLabel?: string;
 }
 
 const SOCIAL_ICONS: Record<string, typeof Instagram> = {
@@ -217,7 +225,21 @@ export default function DistrictSponsorBanner({
   stateName,
   districtName,
   locale = "en",
+  population,
+  literacy,
+  subDistrictCount,
+  subDistrictLabel = "Taluks",
 }: DistrictSponsorBannerProps) {
+  const hasMicroStats =
+    population != null || literacy != null || subDistrictCount != null;
+  const populationStr =
+    population != null
+      ? population >= 1_000_000
+        ? `${(population / 1_000_000).toFixed(2)}M`
+        : population >= 1_000
+          ? `${(population / 1_000).toFixed(0)}K`
+          : population.toString()
+      : null;
   const { data } = useQuery<{ contributors: Sponsor[] }>({
     queryKey: ["district-sponsors", district, state],
     queryFn: () =>
@@ -243,10 +265,63 @@ export default function DistrictSponsorBanner({
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        /* Session 19.4 Phase C: 2-column layout fills the previously empty
+           right side of the SUPPORTED BY card with 3 reused district stats. */
+        .ftp-supported-by-card-grid {
+          display: grid;
+          grid-template-columns: 1fr 240px;
+          gap: 28px;
+          align-items: start;
+        }
+        .ftp-supported-by-right {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          justify-content: center;
+          padding-left: 20px;
+          border-left: 1px solid #E2E8F0;
+          align-self: stretch;
+        }
+        .ftp-micro-stat {
+          display: flex;
+          flex-direction: column;
+        }
+        .ftp-micro-stat-num {
+          font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+          font-size: 22px;
+          font-weight: 700;
+          color: #2563EB;
+          line-height: 1.1;
+          letter-spacing: -0.01em;
+          font-variant-numeric: tabular-nums;
+        }
+        .ftp-micro-stat-label {
+          font-size: 10px;
+          color: #64748B;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-top: 3px;
+          font-weight: 600;
+        }
+        @media (max-width: 900px) {
+          .ftp-supported-by-card-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+          }
+          .ftp-supported-by-right {
+            flex-direction: row;
+            justify-content: space-between;
+            border-left: none;
+            border-top: 1px solid #E2E8F0;
+            padding-left: 0;
+            padding-top: 12px;
+          }
+        }
         @media (max-width: 600px) {
           .ftp-scroll-row { flex-wrap: wrap; gap: 6px !important; }
           .ftp-scroll-row-label { width: auto !important; }
           .ftp-sponsor-chip-name { font-size: 11px !important; }
+          .ftp-micro-stat-num { font-size: 18px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .ftp-scroll-row [style*="ftp-row-scroll"] { animation: none !important; }
@@ -254,6 +329,7 @@ export default function DistrictSponsorBanner({
       `}</style>
 
       <div
+        className={`ftp-supported-by-card${hasMicroStats ? " ftp-supported-by-card-grid" : ""}`}
         style={{
           background: "#F8FAFC",
           border: "1px solid #E2E8F0",
@@ -262,6 +338,7 @@ export default function DistrictSponsorBanner({
           marginBottom: 16,
         }}
       >
+        <div className="ftp-supported-by-left" style={{ minWidth: 0 }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#475569", letterSpacing: "0.04em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: 6 }}>
@@ -337,6 +414,31 @@ export default function DistrictSponsorBanner({
             or: {sName} ₹{TIER_CONFIG.state.amount.toLocaleString("en-IN")}/mo · All India ₹{TIER_CONFIG.patron.amount.toLocaleString("en-IN")}/mo
           </span>
         </div>
+        </div>
+
+        {/* Right column — micro-stats reused from district hero */}
+        {hasMicroStats && (
+          <div className="ftp-supported-by-right">
+            {subDistrictCount != null && (
+              <div className="ftp-micro-stat">
+                <div className="ftp-micro-stat-num">{subDistrictCount}</div>
+                <div className="ftp-micro-stat-label">{subDistrictLabel}</div>
+              </div>
+            )}
+            {literacy != null && (
+              <div className="ftp-micro-stat">
+                <div className="ftp-micro-stat-num">{literacy}%</div>
+                <div className="ftp-micro-stat-label">Literacy</div>
+              </div>
+            )}
+            {populationStr && (
+              <div className="ftp-micro-stat">
+                <div className="ftp-micro-stat-num">{populationStr}</div>
+                <div className="ftp-micro-stat-label">Population</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </>
   );

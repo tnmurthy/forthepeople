@@ -170,7 +170,17 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
 
       <div style={{ padding: "20px 24px 24px" }}>
         {/* Combined supporters + sponsor CTA card (cool gray, distinct from AI Analysis) */}
-        <DistrictSponsorBanner district={districtSlug} state={stateSlug} districtName={districtData.name} stateName={stateName} locale={locale} />
+        <DistrictSponsorBanner
+          district={districtSlug}
+          state={stateSlug}
+          districtName={districtData.name}
+          stateName={stateName}
+          locale={locale}
+          population={districtData.population}
+          literacy={districtData.literacy}
+          subDistrictCount={displayedTalukCount}
+          subDistrictLabel={stateConfig?.subDistrictUnitPlural ?? "Taluks"}
+        />
 
         <LiveElectionBanner stateSlug={stateSlug} leadershipHref={`${base}/leadership`} />
 
