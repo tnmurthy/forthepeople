@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { getDistrictIcon } from "@/components/district/icons";
 
 interface ActiveDistrict {
   slug: string;
@@ -400,6 +401,35 @@ export default function LiveDataShowcase({ locale, districts }: LiveDataShowcase
 
 function DistrictAvatar({ slug, hasSvg }: { slug: string; hasSvg: boolean }) {
   const SIZE = 56;
+  // Session 19.2 Phase F: prefer the per-district registry icon.
+  // Falls back to /districts/<slug>.svg file (if hosted) and finally
+  // to the generic location pin.
+  const RegistryIcon = getDistrictIcon(slug);
+  if (RegistryIcon) {
+    return (
+      <div
+        className="ftp-livedata-active-icon-wrap"
+        style={{
+          width: SIZE,
+          height: SIZE,
+          borderRadius: "50%",
+          background: "#FAFAF8",
+          border: "1px solid #E8E8E4",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          padding: 8,
+        }}
+      >
+        <RegistryIcon
+          size={36}
+          className="ftp-livedata-active-icon"
+          aria-label={`${slug} icon`}
+        />
+      </div>
+    );
+  }
   if (hasSvg) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
