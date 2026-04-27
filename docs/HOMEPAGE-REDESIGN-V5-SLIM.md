@@ -774,3 +774,63 @@ Reversibility tag: `pre-session-17-v11-restructure-2026-04-27`.
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-18-v12-desktop-polish-2026-04-27` exists; all v12 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 18.1 — v12 fix-up (2026-04-27, NOT pushed)
+
+4 surgical fix-ups for issues that didn't fully land in Session 18.
+Each fix verified via DOM inspection (curl + grep) before commit, not
+just file edit. ~5 commits, all on local `main`. Reversibility tag:
+`pre-session-18-1-fixup-2026-04-27`.
+
+## What changed
+
+| Surface | Issue | Root cause | Fix | Verified |
+|---|---|---|---|---|
+| StatsBar 5th tile | Rendered literal "Live" + stale dot | `timeAgoLabel`'s `staleThresholdMinutes: 120` default was tripping the LIVE fallback for any timestamp ≥2h old (most local-dev sessions). | Pass `staleThresholdMinutes: 525600` so `timeAgoLabel` always returns the real "Xm/Xh/Xd ago" label. The recency dot already conveys staleness via color. | curl /en grep showed `"76h ago"` (real timestamp) |
+| Search field | `<input>` rendered with bg `rgba(0,0,0,0)` + border `0px none` | Visible chrome lived only on the parent `<form>`. Direct DOM inspection of the input saw bare default styles. | Restructured CSS: form becomes a position:relative bare wrapper, input gets `bg #F9FAFB` + `1px #E5E7EB border` directly with `!important` to win cascade. Search icon + ⌘K kbd absolutely positioned over the input edges. | rendered HTML contains `.ftp-search-input` rule with `!important` declarations |
+| `:root` CSS vars | `getComputedStyle(:root).getPropertyValue('--ftp-border-card')` returned empty | Tailwind v4's `@theme {}` block exposes tokens to its utility generator but doesn't declare them on a real selector. Build also strips `:root` vars with no consumer. | Mirror tokens onto a real `:root` block + add `.ftp-card-token-host` / `.ftp-tile-token-host` consumer utility classes so Tailwind's bundler keeps them. | rendered CSS bundle now contains 3 references to `--ftp-border-card` |
+| Mandya page | DOM verification looked for `svg[aria-label*="Sugar" i]` and got null | Session 18 inlined the sugar-cane SVG in `DistrictHeroIllustration` but didn't set an aria-label on the `<svg>` root. | Added `role="img"` + `aria-label="Sugar cane — Mandya's primary industry"` to the mandya case branch. | rendered HTML contains the aria-label attr; segment + leaf colors verified (#365314 ×42, #16A34A ×33, #15803D ×5) |
+
+## Verification
+
+| | Before Session 18.1 | After Session 18.1 |
+|---|---|---|
+| Total problems | 107 | **107** |
+| Errors | 61 | 61 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (preserved exactly).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` all 200.
+
+## v12.1 commits (5 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `4899e54` | B | StatsBar — replace stale "Live" fallback with real Xm-ago text |
+| 2 | `84ebea8` | C | Search — visible styling on actual `<input>` element + absolute icon/kbd |
+| 3 | `403c59e` | D | globals — `:root` mirror + consumer utilities so Tailwind v4 keeps the FTP tokens |
+| 4 | `c8cd7fe` | E | Mandya — `aria-label` on the sugar-cane SVG so DOM verification finds it |
+
+## Process notes
+
+Session 18 commit messages claimed each fix landed (file edits succeeded,
+TSC was clean) but DOM inspection revealed 4 of them never reached the
+rendered output:
+- StatsBar: helper logic was correct but the prop chain hit `timeAgoLabel`'s
+  default stale threshold; the rendered HTML showed the LIVE fallback.
+- Search: targeted classes that existed but applied styling to the wrong
+  layer (form wrapper vs input element).
+- CSS vars: Tailwind v4 swallowed them.
+- Mandya: SVG rendered correctly but couldn't be queried by aria-label.
+
+Going forward, Session 18.1's pattern — confirm rendered DOM with curl
++ grep before declaring a fix complete — should be the default for
+visual fixes. File edits + TSC pass alone is not sufficient evidence
+that a UI change took effect.
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-18-1-fixup-2026-04-27` exists; all v12.1 commits sit on local `main`. Push after Jayanth's manual review.
