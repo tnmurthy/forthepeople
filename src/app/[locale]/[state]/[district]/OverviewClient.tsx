@@ -176,10 +176,6 @@ export default function OverviewClient({ locale, stateSlug, districtSlug, stateN
           districtName={districtData.name}
           stateName={stateName}
           locale={locale}
-          population={districtData.population}
-          literacy={districtData.literacy}
-          subDistrictCount={displayedTalukCount}
-          subDistrictLabel={stateConfig?.subDistrictUnitPlural ?? "Taluks"}
         />
 
         <LiveElectionBanner stateSlug={stateSlug} leadershipHref={`${base}/leadership`} />
