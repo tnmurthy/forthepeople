@@ -210,6 +210,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           flex-direction: column;
           gap: 8px;
         }
+        /* Session 19.2 Phase D: SVG zoomed to crop dead blue around India */
         .ftp-hero-map-frame {
           width: 100%;
           aspect-ratio: 800 / 900;
@@ -219,11 +220,22 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           overflow: hidden;
           position: relative;
           display: flex;
+          touch-action: pinch-zoom;
         }
         .ftp-hero-map-frame svg {
           width: 100%;
           height: 100%;
           display: block;
+          transform: scale(1.18);
+          transform-origin: center center;
+          transition: transform 300ms ease;
+        }
+        .ftp-hero-map-frame:hover svg {
+          transform: scale(1.22);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-hero-map-frame svg { transition: none; }
+          .ftp-hero-map-frame:hover svg { transform: scale(1.18); }
         }
         .ftp-hero-map-hint {
           font-size: 11px;
