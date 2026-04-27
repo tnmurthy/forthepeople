@@ -36,14 +36,21 @@
 
   /* ============================================================
    * HeroSection — single column, map full-width above district list.
+   * Grid items default to min-width:auto (= content size) which lets
+   * a wide SVG map blow out the row. Pin to 0 so they shrink.
    * ============================================================ */
   .ftp-hero-row {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
+  .ftp-hero-map-col,
+  .ftp-hero-districts-col {
+    min-width: 0 !important;
+  }
   .ftp-hero-map-frame {
     aspect-ratio: 4 / 3 !important;
     max-height: 360px !important;
+    width: 100% !important;
   }
   .ftp-hero-titleblock {
     padding: 0 4px !important;
@@ -82,6 +89,32 @@
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
+
+  /* ============================================================
+   * HeaderBar mobile-compact buttons — Phase D
+   * GitHub / Vote / Language now show on mobile too as icon-only
+   * 36×36 buttons. The text labels inside are hidden via CSS.
+   * ============================================================ */
+  .ftp-github-link.ftp-mobile-compact,
+  .ftp-vote-features-link.ftp-mobile-compact,
+  .ftp-mobile-compact > .ftp-language-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    justify-content: center;
+    margin-left: 0 !important;
+    flex-shrink: 0;
+  }
+  /* Hide the inline text/labels but keep the icon */
+  .ftp-github-link.ftp-mobile-compact .ftp-github-stars,
+  .ftp-vote-features-link.ftp-mobile-compact > span:not(.ftp-vote-features-emoji),
+  .ftp-mobile-compact > .ftp-language-btn > span:not(.ftp-language-icon),
+  .ftp-mobile-compact > .ftp-language-btn > .ftp-language-chevron {
+    display: none !important;
+  }
+  /* Tighten gap between right-side icon buttons */
+  .ftp-header-bar > .ftp-mobile-compact { margin-left: 2px; }
 
   /* ============================================================
    * Supporters marquee — slower on mobile so pills are readable.

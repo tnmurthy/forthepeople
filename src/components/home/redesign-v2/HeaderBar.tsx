@@ -30,7 +30,6 @@ import {
   Globe,
   Heart,
   Lock,
-  Menu,
   Network,
   Search,
   Users,
@@ -161,11 +160,9 @@ function useClickOutside(ref: React.RefObject<HTMLElement | null>, onOutside: ()
 
 export interface HeaderBarProps {
   locale: string;
-  /** Optional callback for the mobile hamburger. */
-  onOpenMobileNav?: () => void;
 }
 
-export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
+export default function HeaderBar({ locale }: HeaderBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const githubStars = useGithubStars();
@@ -175,16 +172,13 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
   const [langOpen, setLangOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const productRef = useRef<HTMLDivElement | null>(null);
   const langRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
-  const mobileNavRef = useRef<HTMLDivElement | null>(null);
   useClickOutside(productRef, () => setProductOpen(false));
   useClickOutside(langRef, () => setLangOpen(false));
   useClickOutside(searchRef, () => setSearchOpen(false));
-  useClickOutside(mobileNavRef, () => setMobileNavOpen(false));
 
   // Reset any stale dark-mode preference (theme is locked in v7)
   useEffect(() => {
@@ -200,18 +194,17 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
 
   // Escape closes any open dropdown / panel.
   useEffect(() => {
-    if (!productOpen && !langOpen && !searchOpen && !mobileNavOpen) return;
+    if (!productOpen && !langOpen && !searchOpen) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setProductOpen(false);
         setLangOpen(false);
         setSearchOpen(false);
-        setMobileNavOpen(false);
       }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [productOpen, langOpen, searchOpen, mobileNavOpen]);
+  }, [productOpen, langOpen, searchOpen]);
 
   const allDistricts = useMemo(() => flattenDistricts(), []);
 
@@ -923,13 +916,15 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         )}
       </div>
 
-      {/* ── Desktop nav: GitHub stars + Vote on features text link ── */}
-      {/* Session 13 v8 Fix #2: drop redundant Support text link, add GitHub w/ dynamic stars. */}
+      {/* ── GitHub stars + Vote on features text link ── */}
+      {/* Session mobile-revert Phase D: previously .ftp-desktop-only; now
+          shows on mobile too as icon-only via .ftp-mobile-compact (CSS hides
+          the text spans below 768px so just the icon renders). */}
       <a
         href="https://github.com/jayanthmb14/forthepeople"
         target="_blank"
         rel="noopener noreferrer"
-        className="ftp-github-link ftp-desktop-only"
+        className="ftp-github-link ftp-mobile-compact"
         aria-label={`GitHub repository (${githubStars.toLocaleString("en-IN")} stars)`}
       >
         <Github className="ftp-github-icon" aria-hidden="true" />
@@ -939,14 +934,14 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       </a>
       <Link
         href={`/${locale}/features`}
-        className="ftp-vote-features-link ftp-desktop-only"
+        className="ftp-vote-features-link ftp-mobile-compact"
       >
         <span className="ftp-vote-features-emoji" aria-hidden="true">🗳️</span>
         <span>Vote on Features</span>
       </Link>
 
-      {/* ── Language dropdown ── */}
-      <div ref={langRef} className="ftp-desktop-only" style={{ position: "relative" }}>
+      {/* ── Language dropdown — also shown on mobile as icon-only ── */}
+      <div ref={langRef} className="ftp-mobile-compact" style={{ position: "relative" }}>
         <button
           type="button"
           onClick={() => setLangOpen((v) => !v)}
@@ -1066,7 +1061,12 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         <span className="ftp-desktop-only">Support</span>
       </Link>
 
-      {/* ── Mobile: search icon button + hamburger ── */}
+      {/* ── Mobile: search icon button only ── */}
+      {/* Session mobile-revert Phase D: dropped the hamburger panel.
+          Its 4 items (Support / Vote / GitHub / Dark mode) are now direct
+          icons in the main row, so the panel was redundant. The module
+          drawer trigger for district pages lives in MobileBreadcrumbStrip
+          (Phase I). */}
       <button
         type="button"
         onClick={() => setSearchOpen((v) => !v)}
@@ -1076,43 +1076,6 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       >
         <Search size={18} aria-hidden="true" />
       </button>
-      <div ref={mobileNavRef} className="ftp-mobile-only" style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => {
-            setMobileNavOpen((v) => !v);
-            onOpenMobileNav?.();
-          }}
-          aria-label="Open navigation menu"
-          aria-expanded={mobileNavOpen}
-          className="ftp-link-btn"
-          style={{ padding: 6 }}
-        >
-          <Menu size={18} aria-hidden="true" />
-        </button>
-        {mobileNavOpen && (
-          <div className="ftp-mobile-panel" role="menu">
-            <Link href={`/${locale}/support`} role="menuitem" onClick={() => setMobileNavOpen(false)}>
-              <Heart size={14} aria-hidden="true" /> Support
-            </Link>
-            <Link href={`/${locale}/features`} role="menuitem" onClick={() => setMobileNavOpen(false)}>
-              🗳️ Vote on Features
-            </Link>
-            <a
-              href="https://github.com/jayanthmb14/forthepeople"
-              target="_blank"
-              rel="noopener noreferrer"
-              role="menuitem"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              <Github size={14} aria-hidden="true" /> GitHub
-            </a>
-            <button type="button" disabled title="Dark mode coming soon" role="menuitem">
-              <Lock size={12} aria-hidden="true" /> Dark mode (soon)
-            </button>
-          </div>
-        )}
-      </div>
     </header>
   );
 }
