@@ -31,6 +31,10 @@ export interface DistrictBreadcrumbProps {
   peerLiveStates: Peer[]; // all states with ≥1 active district (including current)
   peerLiveDistricts: Peer[]; // all active districts in current state (including current)
   taluks: Peer[]; // taluks of current district
+  currentTalukSlug?: string; // when on a taluk page, the active taluk
+  currentTalukName?: string;
+  /** Compact mode: strips wrapper chrome so the breadcrumb fits inline in the header row. */
+  compact?: boolean;
 }
 
 type MenuKey = null | "india" | "state" | "district" | "taluk";
@@ -44,6 +48,9 @@ export default function DistrictBreadcrumb({
   peerLiveStates,
   peerLiveDistricts,
   taluks,
+  currentTalukSlug,
+  currentTalukName,
+  compact = false,
 }: DistrictBreadcrumbProps) {
   const [openMenu, setOpenMenu] = useState<MenuKey>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -72,6 +79,7 @@ export default function DistrictBreadcrumb({
     <nav
       ref={navRef}
       className="ftp-district-breadcrumb"
+      data-compact={compact ? "true" : "false"}
       aria-label="District navigation"
     >
       <style>{`
@@ -210,6 +218,36 @@ export default function DistrictBreadcrumb({
           .ftp-breadcrumb-menu { min-width: 160px; }
         }
 
+        /* Compact mode — flattens chrome so the breadcrumb sits inline
+           in the global header row instead of a separate strip. */
+        .ftp-district-breadcrumb[data-compact="true"] {
+          padding: 0;
+          background: transparent;
+          border-bottom: none;
+          font-size: 12px;
+          flex-wrap: nowrap;
+          overflow-x: visible;
+          flex: 0 1 auto;
+          min-width: 0;
+        }
+        .ftp-district-breadcrumb[data-compact="true"] .ftp-breadcrumb-link {
+          padding: 3px 6px;
+        }
+        .ftp-district-breadcrumb[data-compact="true"] .ftp-breadcrumb-caret {
+          width: 18px;
+          height: 18px;
+          font-size: 9px;
+        }
+        .ftp-district-breadcrumb[data-compact="true"] .ftp-breadcrumb-sep {
+          padding: 0 1px;
+        }
+        @media (max-width: 1024px) {
+          .ftp-district-breadcrumb[data-compact="true"] .ftp-breadcrumb-emoji,
+          .ftp-district-breadcrumb[data-compact="true"] .ftp-breadcrumb-link span:not(.ftp-breadcrumb-emoji) {
+            /* On medium screens trim non-current crumb labels to dots-only */
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .ftp-breadcrumb-link,
           .ftp-breadcrumb-caret,
@@ -269,12 +307,12 @@ export default function DistrictBreadcrumb({
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* District crumb (current) */}
+      {/* District crumb (current unless a taluk is selected) */}
       <BreadcrumbCrumb
         dot
         label={districtName}
         href={`/${locale}/${stateSlug}/${districtSlug}`}
-        isCurrent
+        isCurrent={!currentTalukSlug}
         menuOpen={openMenu === "district"}
         onCaretClick={() =>
           setOpenMenu(openMenu === "district" ? null : "district")
@@ -303,12 +341,17 @@ export default function DistrictBreadcrumb({
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
-      {/* Taluk crumb (placeholder — overview page has no taluk selected) */}
+      {/* Taluk crumb — current when on a taluk page, placeholder otherwise */}
       <BreadcrumbCrumb
-        label="Select Taluk"
-        href={null}
-        placeholder
-        isCurrent={false}
+        dot={!!currentTalukSlug}
+        label={currentTalukName ?? "Select Taluk"}
+        href={
+          currentTalukSlug
+            ? `/${locale}/${stateSlug}/${districtSlug}/${currentTalukSlug}`
+            : null
+        }
+        placeholder={!currentTalukSlug}
+        isCurrent={!!currentTalukSlug}
         menuOpen={openMenu === "taluk"}
         onCaretClick={() => setOpenMenu(openMenu === "taluk" ? null : "taluk")}
         ariaCaretLabel={`Choose a taluk in ${districtName}`}
@@ -321,6 +364,7 @@ export default function DistrictBreadcrumb({
               key={t.slug}
               href={`/${locale}/${stateSlug}/${districtSlug}/${t.slug}`}
               className="ftp-breadcrumb-menu-item"
+              data-current={t.slug === currentTalukSlug ? "true" : "false"}
               onClick={close}
             >
               {t.name}

@@ -36,7 +36,8 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { INDIA_STATES } from "@/lib/constants/districts";
+import { INDIA_STATES, getState, getDistrict } from "@/lib/constants/districts";
+import DistrictBreadcrumb from "@/components/district/DistrictBreadcrumb";
 
 // ── Product dropdown items ────────────────────────────────
 // Session 13 v8 Fix #12, #13: Lucide icons in brand colors (no apple emoji),
@@ -213,6 +214,54 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
 
   const allDistricts = useMemo(() => flattenDistricts(), []);
 
+  // Session 19.4: detect district context from pathname so the breadcrumb
+  // can render inline in the header (replaces the old standalone breadcrumb
+  // strip + DistrictStatusBar that wasted ~75px of vertical space).
+  const routeParts = useMemo(
+    () => (pathname ?? "").split("/").filter(Boolean),
+    [pathname],
+  );
+  const routeStateSlug = routeParts[1];
+  const routeDistrictSlug = routeParts[2];
+  const routeTalukSlug = routeParts[3];
+  const routeStateData = routeStateSlug ? getState(routeStateSlug) : undefined;
+  const routeDistrictData =
+    routeStateSlug && routeDistrictSlug
+      ? getDistrict(routeStateSlug, routeDistrictSlug)
+      : undefined;
+  const routeTalukData = routeTalukSlug
+    ? routeDistrictData?.taluks.find((t) => t.slug === routeTalukSlug)
+    : undefined;
+  const isDistrictPage = !!(
+    routeStateSlug &&
+    routeDistrictSlug &&
+    routeStateData &&
+    routeDistrictData
+  );
+  const peerLiveStates = useMemo(
+    () =>
+      INDIA_STATES.filter((s) => s.districts.some((d) => d.active)).map((s) => ({
+        slug: s.slug,
+        name: s.name,
+      })),
+    [],
+  );
+  const peerLiveDistricts = useMemo(
+    () =>
+      (routeStateData?.districts ?? [])
+        .filter((d) => d.active)
+        .map((d) => ({ slug: d.slug, name: d.name })),
+    [routeStateData],
+  );
+  const taluksForBreadcrumb = useMemo(
+    () =>
+      (routeDistrictData?.taluks ?? []).map((t) => ({
+        slug: t.slug,
+        name: t.name,
+      })),
+    [routeDistrictData],
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return { live: [] as FlatDistrict[], locked: [] as FlatDistrict[] };
@@ -372,6 +421,29 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           max-width: 440px;
           margin-left: auto;
           position: relative;
+        }
+        /* Session 19.4 Phase B: on district pages the inline breadcrumb takes
+           the elastic space, so the search caps narrower (was 440px → 240px). */
+        .ftp-search-shell-compact {
+          flex: 0 1 240px;
+          max-width: 240px;
+          margin-left: 8px;
+        }
+        @media (max-width: 1280px) {
+          .ftp-search-shell-compact { flex: 0 1 200px; max-width: 200px; }
+        }
+        @media (max-width: 1024px) {
+          .ftp-search-shell-compact { flex: 0 1 160px; max-width: 160px; }
+        }
+        /* Wrapper around the inline breadcrumb — takes up flex space so the
+           search shell shrinks naturally to its own max-width. */
+        .ftp-header-breadcrumb-slot {
+          display: flex;
+          align-items: center;
+          flex: 1 1 auto;
+          min-width: 0;
+          margin-left: 4px;
+          overflow: hidden;
         }
         .ftp-search-form {
           position: relative;
@@ -712,8 +784,32 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
 
       {/* Session 18 v12 Phase B: "Updated Xm ago" pill removed — moved to StatsBar 5th tile. */}
 
+      {/* Session 19.4 Phase B: visual breadcrumb sits inline in the header on
+          district pages — replaces the old standalone breadcrumb strip + the
+          DistrictStatusBar (saved ~75px of vertical space). */}
+      {isDistrictPage && routeStateData && routeDistrictData && (
+        <div className="ftp-desktop-only ftp-header-breadcrumb-slot">
+          <DistrictBreadcrumb
+            compact
+            locale={locale}
+            stateSlug={routeStateSlug!}
+            stateName={routeStateData.name}
+            districtSlug={routeDistrictSlug!}
+            districtName={routeDistrictData.name}
+            peerLiveStates={peerLiveStates}
+            peerLiveDistricts={peerLiveDistricts}
+            taluks={taluksForBreadcrumb}
+            currentTalukSlug={routeTalukData?.slug}
+            currentTalukName={routeTalukData?.name}
+          />
+        </div>
+      )}
+
       {/* ── Search — Session 16 v10 Phase B Fix #1: blue-tinted with affordance ── */}
-      <div ref={searchRef} className="ftp-desktop-only ftp-search-shell">
+      <div
+        ref={searchRef}
+        className={`ftp-desktop-only ftp-search-shell${isDistrictPage ? " ftp-search-shell-compact" : ""}`}
+      >
         <form
           onSubmit={handleSearchSubmit}
           role="search"

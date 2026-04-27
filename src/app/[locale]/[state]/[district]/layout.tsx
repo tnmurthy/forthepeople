@@ -8,10 +8,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import Sidebar from "@/components/layout/Sidebar";
-import DistrictStatusBar from "@/components/layout/DistrictStatusBar";
-import DistrictBreadcrumb from "@/components/district/DistrictBreadcrumb";
 import FeedbackFloatingButton from "@/components/common/FeedbackFloatingButton";
-import { getDistrict, getState, INDIA_STATES } from "@/lib/constants/districts";
+import { getDistrict, getState } from "@/lib/constants/districts";
 
 type Params = Promise<{ locale: string; state: string; district: string }>;
 
@@ -95,17 +93,15 @@ export default async function DistrictLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
-      {/* Live status bar — sticky below header */}
-      <DistrictStatusBar
-        districtName={districtData!.name}
-        stateName={stateData?.name ?? ""}
-      />
-
+      {/* Session 19.4 Phase B: DistrictStatusBar + standalone DistrictBreadcrumb
+          removed from this layout. Their jobs are now covered by the inline
+          breadcrumb in the global HeaderBar (which sources its data from
+          INDIA_STATES via the pathname). Saves ~75px of vertical chrome. */}
       <div
         style={{
           display: "flex",
           alignItems: "flex-start",
-          minHeight: "calc(100vh - 56px - 32px - 28px)", // viewport - header - status bar - disclaimer
+          minHeight: "calc(100vh - 56px - 28px)", // viewport - header - disclaimer
         }}
       >
         {/* Sidebar — desktop only */}
@@ -117,24 +113,6 @@ export default async function DistrictLayout({
           role="main"
           aria-label={`${districtData!.name} district data`}
         >
-          {/* Visual breadcrumb + peer switcher (Session 19.3 Phase B) */}
-          <DistrictBreadcrumb
-            locale={locale}
-            stateSlug={stateSlug}
-            stateName={stateData?.name ?? ""}
-            districtSlug={districtSlug}
-            districtName={districtData!.name}
-            peerLiveStates={INDIA_STATES
-              .filter((s) => s.districts.some((d) => d.active))
-              .map((s) => ({ slug: s.slug, name: s.name }))}
-            peerLiveDistricts={(stateData?.districts ?? [])
-              .filter((d) => d.active)
-              .map((d) => ({ slug: d.slug, name: d.name }))}
-            taluks={(districtData?.taluks ?? []).map((t) => ({
-              slug: t.slug,
-              name: t.name,
-            }))}
-          />
           {children}
         </main>
       </div>
