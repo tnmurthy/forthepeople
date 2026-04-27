@@ -170,6 +170,129 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  /* ============================================================
+   * Mobile section helpers (used by Phases D-F)
+   * ============================================================ */
+  .ftp-m-section { display: block; padding: 16px 0; }
+  .ftp-m-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px 12px;
+  }
+  .ftp-m-section-head h2 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6B7280;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ftp-m-section-cta {
+    font-size: 13px;
+    color: #2563EB;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .ftp-m-live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #10B981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+   * MobileDistrictCarousel — Phase D
+   * ============================================================ */
+  .ftp-m-districts-section { background: #FAFAF8; }
+  .ftp-m-carousel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 16px 12px;
+    scrollbar-width: none;
+  }
+  .ftp-m-carousel::-webkit-scrollbar { display: none; }
+  .ftp-m-district-card {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 16px;
+    text-decoration: none;
+    color: #1A1A1A;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 180px;
+    transition: transform 150ms ease;
+  }
+  .ftp-m-district-card:active { transform: scale(0.98); }
+  .ftp-m-district-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .ftp-m-district-card-new {
+    background: #10B981;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .ftp-m-district-card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1A1A1A;
+  }
+  .ftp-m-district-card-name-local {
+    font-size: 13px;
+    color: #6B7280;
+  }
+  .ftp-m-district-card-tagline {
+    font-size: 12px;
+    color: #2563EB;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+  .ftp-m-district-card-state {
+    font-size: 11px;
+    color: #9CA3AF;
+    margin-top: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .ftp-m-carousel-dots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    padding: 4px 0;
+  }
+  .ftp-m-dot {
+    width: 6px;
+    height: 6px;
+    background: #D1D5DB;
+    border-radius: 50%;
+    transition: all 200ms ease;
+  }
+  .ftp-m-dot.active {
+    background: #2563EB;
+    width: 16px;
+    border-radius: 3px;
+  }
 }
 
 @media (max-width: 360px) {
