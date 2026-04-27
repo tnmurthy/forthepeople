@@ -17,6 +17,7 @@ import PageProgressBar from "@/components/common/PageProgressBar";
 // in HeaderBar — see component header comment for the deferred list.
 import DisclaimerBanner from "@/components/home/redesign-v2/DisclaimerBanner";
 import HeaderBar from "@/components/home/redesign-v2/HeaderBar";
+import { MobileHeader } from "@/components/layout/MobileHeader";
 import Footer from "@/components/home/redesign-v2/Footer";
 
 export default async function LocaleLayout({
@@ -34,6 +35,11 @@ export default async function LocaleLayout({
       <MigrationBanner />
       <DisclaimerBanner />
       <HeaderBar locale={locale} />
+      {/* Mobile header — CSS hides on desktop. On district pages, an
+          inner client wrapper provides the hamburger callback that opens
+          the LEFT module drawer (Phase I); on other pages the spacer
+          renders. */}
+      <MobileHeader locale={locale} />
       {children}
       <Footer locale={locale} />
       <SuggestionFloatingButton />

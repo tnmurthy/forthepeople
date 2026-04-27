@@ -1,0 +1,95 @@
+/* ============================================================
+ * ForThePeople.in — Mobile-only stylesheet (Session M1)
+ *
+ * Every selector here is mobile-additive: classes prefixed
+ * .ftp-m-* are hidden by default and become visible only inside
+ * @media (max-width: 767px). Existing desktop classes that need
+ * to be hidden on mobile are also placed inside the same media
+ * query — never modified outside it.
+ *
+ * Desktop (viewport ≥ 1024px) MUST remain pixel-identical to the
+ * pre-M1 baseline.
+ * ============================================================ */
+
+/* ---------- Default-hidden mobile components ---------- */
+
+.ftp-m-header,
+.ftp-m-bottom-nav,
+.ftp-m-hero,
+.ftp-m-section {
+  display: none;
+}
+
+/* ===================================================
+ * MOBILE BREAKPOINT — everything inside this query
+ * applies only to viewports ≤ 767px.
+ * =================================================== */
+@media (max-width: 767px) {
+
+  /* ---------- Hide desktop chrome on mobile ---------- */
+  .ftp-header-bar { display: none !important; }
+
+  /* ============================================================
+   * MobileHeader — Phase B
+   * ============================================================ */
+  .ftp-m-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    padding: 0 8px;
+    background: white;
+    border-bottom: 1px solid #E5E7EB;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 8px;
+  }
+  .ftp-m-header-hamburger,
+  .ftp-m-header-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    color: #1A1A1A;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .ftp-m-header-hamburger:active,
+  .ftp-m-header-icon:active {
+    background: #F3F4F6;
+  }
+  .ftp-m-header-spacer {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .ftp-m-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: #1A1A1A;
+    font-weight: 700;
+    font-size: 15px;
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .ftp-m-header-logo-icon { color: #2563EB; flex-shrink: 0; }
+  .ftp-m-header-logo-tld { color: #2563EB; }
+  .ftp-m-header-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .ftp-m-header-icon-support { color: #E11D48; }
+}
+
+@media (max-width: 360px) {
+  .ftp-m-header-logo-text { font-size: 13px; }
+}

@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono, Noto_Sans_Kannada, Noto_Sans_Devanagari } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import "./mobile.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
