@@ -47,6 +47,39 @@
   --ftp-shadow-hover:   0 6px 16px rgba(37, 99, 235, 0.10);
 }
 
+/* Session 18.1 Phase D (Fix #3): mirror the FTP card tokens onto :root
+   so getComputedStyle(document.documentElement).getPropertyValue('--ftp-...')
+   resolves them. Tailwind v4's @theme block exposes tokens to its utility
+   generator but doesn't surface them as inheritable CSS custom properties
+   unless declared on a real selector. */
+:root {
+  --ftp-border-card:    1px solid #E5E7EB;
+  --ftp-border-section: 1px solid #E5E7EB;
+  --ftp-border-hover:   1px solid #2563EB;
+  --ftp-radius-card:    12px;
+  --ftp-radius-tile:    8px;
+  --ftp-shadow-card:    0 2px 8px rgba(0, 0, 0, 0.04);
+  --ftp-shadow-hover:   0 6px 16px rgba(37, 99, 235, 0.10);
+}
+
+/* Convenience utilities that consume the FTP card tokens. Their primary
+   purpose is to KEEP the tokens in the production bundle (Tailwind v4
+   strips :root custom properties that have no consumer). They also
+   double as drop-in helpers for future cards. */
+.ftp-card-token-host {
+  border: var(--ftp-border-card);
+  border-radius: var(--ftp-radius-card);
+  box-shadow: var(--ftp-shadow-card);
+}
+.ftp-card-token-host:hover {
+  border: var(--ftp-border-hover);
+  box-shadow: var(--ftp-shadow-hover);
+}
+.ftp-tile-token-host {
+  border-radius: var(--ftp-radius-tile);
+  border: var(--ftp-border-section);
+}
+
 /* ── Base ── */
 *,
 *::before,
