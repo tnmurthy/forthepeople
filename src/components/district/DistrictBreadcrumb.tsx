@@ -287,32 +287,14 @@ export default function DistrictBreadcrumb({
         }
       `}</style>
 
-      {/* India crumb — caret opens the full state list (live + coming-soon) */}
-      <BreadcrumbCrumb
-        emoji="🇮🇳"
-        label="India"
-        href={`/${locale}`}
-        isCurrent={false}
-        menuOpen={openMenu === "india"}
-        onCaretClick={() => setOpenMenu(openMenu === "india" ? null : "india")}
-        ariaCaretLabel="Open state switcher"
-      >
-        {peerLiveStates.length === 0 ? (
-          <div className="ftp-breadcrumb-menu-empty">No states listed</div>
-        ) : (
-          peerLiveStates.map((s) => (
-            <PeerMenuItem
-              key={s.slug}
-              href={`/${locale}/${s.slug}`}
-              isLive={s.isLive !== false}
-              isCurrent={s.slug === stateSlug}
-              onClick={close}
-            >
-              {s.name}
-            </PeerMenuItem>
-          ))
-        )}
-      </BreadcrumbCrumb>
+      {/* India crumb — plain link, no caret. The peer-state switcher lives
+          on the State crumb below. Matches production parity (S19.7). */}
+      <span className="ftp-breadcrumb-crumb ftp-breadcrumb-crumb-static">
+        <Link href={`/${locale}`} className="ftp-breadcrumb-link">
+          <span className="ftp-breadcrumb-emoji" aria-hidden="true">🇮🇳</span>
+          <span>India</span>
+        </Link>
+      </span>
 
       <span className="ftp-breadcrumb-sep" aria-hidden="true">›</span>
 
