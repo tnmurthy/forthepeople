@@ -40,9 +40,9 @@ interface DistrictSponsorBannerProps {
   // of the card. Already rendered in DistrictHeroIllustration above; here we
   // surface them again as compact micro-stats. All optional — when none are
   // provided the card stays single-column for backward compatibility.
-  population?: number;
-  literacy?: number;
-  subDistrictCount?: number;
+  population?: number | null;
+  literacy?: number | null;
+  subDistrictCount?: number | null;
   subDistrictLabel?: string;
 }
 

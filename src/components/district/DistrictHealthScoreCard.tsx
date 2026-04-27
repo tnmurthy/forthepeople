@@ -74,94 +74,96 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
         marginBottom: 16,
       }}
     >
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Grade badge */}
-          <div
-            style={{
-              width: 52, height: 52, borderRadius: 12,
-              background: color, display: "flex", alignItems: "center",
-              justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 20,
-              flexShrink: 0,
-            }}
-          >
-            {data.grade}
-          </div>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: "#1A1A1A" }}>District Health Score</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-              <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 22, fontWeight: 700, color }}>
-                {data.overallScore}
-              </span>
-              <span style={{ fontSize: 12, color: "#9B9B9B" }}>/ 100</span>
-              {data.trend === "improving" && <TrendingUp size={14} color="#16A34A" />}
-              {data.trend === "declining" && <TrendingDown size={14} color="#DC2626" />}
-              {data.trend === "stable"    && <Minus size={14} color="#9B9B9B" />}
-              {data.previousScore !== null && (
-                <span style={{ fontSize: 11, color: "#9B9B9B" }}>
-                  (was {data.previousScore} last week)
+      {/* Session 19.4 Phase D: 2-column layout — score+grade on left, the
+          10-category breakdown grid on right. Eliminates the empty space
+          that used to sit between the grade badge and the tiny "How is this
+          calculated?" button. Stacks back to 1 column below 900px. */}
+      <div className="ftp-health-score-grid">
+        <div className="ftp-health-score-left">
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {/* Grade badge */}
+            <div
+              style={{
+                width: 52, height: 52, borderRadius: 12,
+                background: color, display: "flex", alignItems: "center",
+                justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 20,
+                flexShrink: 0,
+              }}
+            >
+              {data.grade}
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: 15, color: "#1A1A1A" }}>District Health Score</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 22, fontWeight: 700, color }}>
+                  {data.overallScore}
                 </span>
+                <span style={{ fontSize: 12, color: "#9B9B9B" }}>/ 100</span>
+                {data.trend === "improving" && <TrendingUp size={14} color="#16A34A" />}
+                {data.trend === "declining" && <TrendingDown size={14} color="#DC2626" />}
+                {data.trend === "stable"    && <Minus size={14} color="#9B9B9B" />}
+              </div>
+              {data.previousScore !== null && (
+                <div style={{ fontSize: 11, color: "#9B9B9B", marginTop: 2 }}>
+                  was {data.previousScore} last week
+                </div>
               )}
             </div>
           </div>
+          <button
+            onClick={() => setShowBreakdown(!showBreakdown)}
+            aria-label={showBreakdown ? "Hide score breakdown" : "Show how the score is calculated"}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              fontSize: 12, color: "#2563EB", background: "none",
+              border: "1px solid #DBEAFE", borderRadius: 8,
+              cursor: "pointer", padding: "6px 10px", marginTop: 12,
+              alignSelf: "flex-start",
+            }}
+          >
+            {showBreakdown ? <X size={13} /> : <Info size={13} />}
+            <span>{showBreakdown ? "Hide breakdown" : "How is this calculated?"}</span>
+          </button>
+          <div style={{ fontSize: 10, color: "#9B9B9B", marginTop: 10, lineHeight: 1.5, fontStyle: "italic" }}>
+            Indicative score based on currently available data. Will update as more modules are populated for this district.
+          </div>
         </div>
-        <button
-          onClick={() => setShowBreakdown(!showBreakdown)}
-          aria-label={showBreakdown ? "Hide score breakdown" : "Show how the score is calculated"}
+
+        {/* Right column — 10-category breakdown grid */}
+        <div
           style={{
-            display: "flex", alignItems: "center", gap: 4,
-            fontSize: 12, color: "#2563EB", background: "none", border: "none",
-            cursor: "pointer", padding: "6px 8px", minHeight: 44, minWidth: 44,
-            borderRadius: 8, flexShrink: 0,
+            display: "grid",
+            gridTemplateColumns: "repeat(5, 1fr)",
+            gap: "10px 10px",
+            alignContent: "center",
           }}
+          className="health-grid ftp-health-score-right"
         >
-          {showBreakdown ? <X size={13} /> : <Info size={13} />}
-          <span className="hidden sm:inline">
-            {showBreakdown ? "Hide" : "How is this calculated?"}
-          </span>
-        </button>
-      </div>
-
-      {/* Data coverage disclaimer — always visible */}
-      <div style={{ fontSize: 10, color: "#9B9B9B", marginBottom: 10, lineHeight: 1.5, fontStyle: "italic" }}>
-        Indicative score based on currently available data. Will update as more modules are populated for this district.
-      </div>
-
-      {/* Category bars grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
-          gap: "8px 12px",
-          marginBottom: showBreakdown ? 16 : 0,
-        }}
-        className="health-grid"
-      >
-        {CATEGORY_CONFIG.map((cat) => {
-          const catData = data.categories[cat.key];
-          if (!catData) return null;
-          return (
-            <div key={cat.key} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 18, marginBottom: 2 }}>{cat.icon}</div>
-              <div style={{ fontSize: 10, color: "#6B6B6B", marginBottom: 3, lineHeight: 1.2 }}>{cat.label}</div>
-              <div style={{ width: "100%", height: 4, background: "#F0F0EC", borderRadius: 2, overflow: "hidden" }}>
+          {CATEGORY_CONFIG.map((cat) => {
+            const catData = data.categories[cat.key];
+            if (!catData) return null;
+            return (
+              <div key={cat.key} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 18, marginBottom: 2 }}>{cat.icon}</div>
+                <div style={{ fontSize: 10, color: "#6B6B6B", marginBottom: 3, lineHeight: 1.2 }}>{cat.label}</div>
+                <div style={{ width: "100%", height: 4, background: "#F0F0EC", borderRadius: 2, overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%", borderRadius: 2, transition: "width 0.6s ease",
+                      width: `${catData.score}%`,
+                      background: cat.color,
+                    }}
+                  />
+                </div>
                 <div
-                  style={{
-                    height: "100%", borderRadius: 2, transition: "width 0.6s ease",
-                    width: `${catData.score}%`,
-                    background: cat.color,
-                  }}
-                />
+                  style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, marginTop: 2, color: cat.color }}
+                >
+                  {catData.score}
+                </div>
               </div>
-              <div
-                style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 11, fontWeight: 700, marginTop: 2, color: cat.color }}
-              >
-                {catData.score}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Expandable breakdown */}
@@ -221,8 +223,26 @@ export function DistrictHealthScoreCard({ districtSlug }: { districtSlug: string
       )}
 
       <style>{`
+        .ftp-health-score-grid {
+          display: grid;
+          grid-template-columns: 280px 1fr;
+          gap: 24px;
+          align-items: stretch;
+          margin-bottom: 0;
+        }
+        .ftp-health-score-left {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        @media (max-width: 900px) {
+          .ftp-health-score-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+          }
+        }
         @media (max-width: 500px) {
-          .health-grid { grid-template-columns: repeat(5, 1fr) !important; }
+          .health-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 6px !important; }
         }
       `}</style>
     </div>
