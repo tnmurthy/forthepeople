@@ -2,19 +2,23 @@
  * ForThePeople.in — Your District. Your Data. Your Right.
  * © 2026 Jayanth M B. MIT License with Attribution.
  *
- * Session M1 Phase I: client wrapper that owns the drawer-open state for
- * the district MobileHeader. Mounts BOTH the mobile header (with the
- * hamburger callback) and the drawer itself. The plain MobileHeader in
- * the global locale layout is hidden on district pages via CSS so this
- * wrapper's header takes over (avoids duplicate headers).
+ * Mobile drawer host for district pages. Owns the open/close state for
+ * MobileDistrictDrawer and listens for a window-level event so HeaderBar's
+ * mobile hamburger panel can open the drawer without prop-drilling across
+ * the layout tree.
+ *
+ * On mobile (≤767px) the desktop HeaderBar still renders; its hamburger
+ * panel includes a "📋 All modules" item that dispatches
+ * `ftp:open-modules-drawer`. This component listens and opens the drawer.
  */
 
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { MobileHeader } from "@/components/layout/MobileHeader";
 import { MobileDistrictDrawer } from "./MobileDistrictDrawer";
+
+export const OPEN_MODULES_EVENT = "ftp:open-modules-drawer";
 
 interface Props {
   locale: string;
@@ -31,26 +35,26 @@ export function MobileDistrictChrome({
 }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname() ?? "";
-  // Active module from URL: /[locale]/[state]/[district]/<module-or-overview>
   const parts = pathname.split("/").filter(Boolean);
   const activeSlug = parts[3] ?? "overview";
 
+  useEffect(() => {
+    function onOpen() {
+      setDrawerOpen(true);
+    }
+    window.addEventListener(OPEN_MODULES_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_MODULES_EVENT, onOpen);
+  }, []);
+
   return (
-    <div className="ftp-m-district-chrome">
-      <MobileHeader
-        locale={locale}
-        variant="district"
-        onModuleMenuClick={() => setDrawerOpen(true)}
-      />
-      <MobileDistrictDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        locale={locale}
-        stateSlug={stateSlug}
-        districtSlug={districtSlug}
-        districtName={districtName}
-        activeSlug={activeSlug}
-      />
-    </div>
+    <MobileDistrictDrawer
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+      locale={locale}
+      stateSlug={stateSlug}
+      districtSlug={districtSlug}
+      districtName={districtName}
+      activeSlug={activeSlug}
+    />
   );
 }
