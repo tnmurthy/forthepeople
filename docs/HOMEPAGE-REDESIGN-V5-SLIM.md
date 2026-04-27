@@ -687,3 +687,90 @@ Reversibility tag: `pre-session-17-v11-restructure-2026-04-27`.
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-17-v11-restructure-2026-04-27` exists; all v11 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 18 — v12 desktop polish (2026-04-27, NOT pushed) — desktop FINAL
+
+11 surgical desktop fixes. Mobile is the next session after this lands.
+~12 commits, all on local `main`. Reversibility tag:
+`pre-session-18-v12-desktop-polish-2026-04-27`.
+
+## What changed
+
+| Surface | Change | Fix # |
+|---|---|---|
+| HeaderBar | "Updated Xm ago" green pill REMOVED. useUpdatedPill hook + timeAgoLabel imports dropped. | #1 |
+| StatsBar (5th tile) | Static "Live" text → dynamic Xm-ago + recency-tier dot indicator: green pulsing (<30 min), blue (<3h), gray (≥3h). | #2 |
+| Search field | Light gray bg #F9FAFB + visible #E5E7EB border + 3px blue focus ring + ⌘K kbd hint pinned right (hidden when focused). Was too-subtle blue tint. | #3 |
+| HeroSection h1 | 3-color gradient (blue/purple/emerald) → single deep navy #0F172A with one blue accent gradient on the word "data" only. Drops .ftp-h1-blue / .ftp-h1-purple / .ftp-h1-emerald / .ftp-h1-phrase. | #4 |
+| globals.css | New `--ftp-border-*`, `--ftp-radius-*`, `--ftp-shadow-*` tokens. Existing components already render at the literal equivalents — tokens documented for reuse. | #5 |
+| HeroSection (districts) | Sort newest-first by goLiveDate. List wrapped in `.ftp-hero-districts-scroll` with max-height 480px + overflow-y:auto + thin custom scrollbar. Mobile drops the cap. | #6 |
+| HeroSection (Vote-next CTA) | NEW pinned static `.ftp-vote-next-district-cta` below the scroll: indigo gradient bg, 🗳️ icon, "Vote for the next district / Tell us which district to launch next →". Always visible regardless of scroll position. | #6 |
+| HeroSection (NEW badge) | Color flipped yellow #EAB308 → green #10B981. Validity changed from "top 3 newest" count → date-bounded `isWithin30Days(goLiveDate)` so older districts auto-lose the badge. | #7 |
+| ContributorsStrip | Each clickable pill renders a small ↗ icon (9px, 55% opacity). Hover bumps border-width to 1.5px + lifts -1px + emphasizes the icon (full opacity + nudges 2px right + 2px up). Reduced-motion freezes. | #8 |
+| CommunitySection (NEW file) | 50/50 grid wrapper for ContributorsStrip (compact mode) + VoteFeaturesCTA. Tablet ≤1024px collapses to 1-col with 32px gap. Neutralizes inner sections' padding/bg/border-top so columns stack tightly. | #9 |
+| ContributorsStrip (compact) | New `compact` prop. Header switches to flex-row with 18px H2 + inline "View all & how to join →" link; bottom CTA hidden; subtitle + motto pill dropped. Non-compact layout preserved for /contributors page. | #9b |
+| DistrictHeroIllustration (mandya) | KRS-dam-dominant SVG → 5 prominent sugar-cane stalks (heights 195-235px) with segment bands and feathery green leaves. Dam shrinks to a low-opacity background detail. | #10 |
+| HowItWorks | Full visual rebuild: 4 cards in pastel-accent palette (blue/purple/emerald/amber), each with top accent stripe + 56×56 icon-tile + step-number pill in tint color + accent-colored title. Arrow connectors (→) interleaved between cards on desktop. Source-attribution caption preserved. | #11 |
+
+## v12 layout map (compose order in `src/app/[locale]/page.tsx`)
+
+```
+<PageProgressBar />
+<MigrationBanner />
+<DisclaimerBanner />
+<HeaderBar />                     — NO Updated pill, ⌘K search hint, layered Support
+<main>
+  <FinancialTicker />             — Market Open/Closed + per-item title= cadence
+  <StatsBar />                    — 5 outlined tiles; 5th tile dynamic Xm ago + dot
+  <HeroSection />                 — TOP: navy h1 with one accent + banner CTA
+                                    BOTTOM: 50/50 map (aspect-ratio) + districts col
+                                            (newest-first scroll, green NEW, Vote-next CTA pinned)
+  <LiveDataShowcase />            — color-coded module cards
+  <HowItWorks />                  — pastel accent cards + arrow connectors (NEW design)
+  <CommunitySection />            — Supporters compact (left 50%) + VoteFeaturesCTA (right 50%)
+</main>
+<Footer />
+```
+
+## Verification
+
+| | Before Session 18 | After Session 18 |
+|---|---|---|
+| Total problems | 107 | **107** |
+| Errors | 61 | 61 |
+| Warnings | 46 | 46 |
+
+- TSC: 0 errors throughout.
+- Lint: 107 (preserved exactly — same as end-of-Session-17).
+- Localhost smoke: `/en`, `/en/karnataka/mandya`, `/en/maharashtra/pune`, `/en/contributors`, `/en/vote-district`, `/en/features` all 200.
+- DrillDownMap component file untouched (Hard Rule 7 honored).
+- prefers-reduced-motion respected on every new animation.
+
+## v12 commits (12 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `3af66d2` | B | Header — "Updated Xm ago" pill removed |
+| 2 | `48c7017` | C | StatsBar 5th tile — dynamic Xm-ago + recency dot |
+| 3 | `1364c39` | D | Search — visible styling + ⌘K hint |
+| 4 | `a7d8918` | E | H1 — single navy with one accent on "data" |
+| 5 | `cac0ec7` | F | globals — --ftp-border-* / --ftp-radius-* / --ftp-shadow-* tokens |
+| 6 | `9b9a57c` | G | Districts — newest-first scroll + Vote-next CTA + green NEW badge |
+| 7 | `188bbb3` | H | Supporters — ↗ link icon on clickable pills + hover lift |
+| 8 | `1275993` | I | CommunitySection (NEW) + ContributorsStrip compact mode |
+| 9 | `1a821d8` | J | Mandya — sugar cane illustration replaces dam-dominant SVG |
+| 10 | `d127d87` | K | HowItWorks — pastel accent rebuild + arrow connectors |
+
+## Notes for next session (mobile)
+
+- Hero `display: contents` on mobile (Session 16) still applies — the title block stacks first, then map, then districts col. New Vote-next CTA stays pinned at the bottom of the districts col on mobile.
+- CommunitySection collapses to 1-col at ≤1024px — verify supporter compact-mode still reads naturally on phone widths.
+- HowItWorks 4-col grid → 2-col tablet → 1-col mobile (≤600px) is already in place. Arrow connectors hide automatically when grid collapses.
+- StatsBar 5-tile grid → 2-col mobile from Session 16 stays.
+- Mandya sugar cane SVG should scale fine via viewBox; no mobile-specific adjustments expected.
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-18-v12-desktop-polish-2026-04-27` exists; all v12 commits sit on local `main`. Push after Jayanth's manual review.
