@@ -107,10 +107,11 @@ function SupporterPill({ contributor }: { contributor: ContributorItem }) {
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className={className}
+        className={`${className} ftp-sup-pill-clickable`}
         title={contributor.socialPlatform ? `${contributor.displayName} on ${contributor.socialPlatform}` : contributor.displayName}
       >
         {inner}
+        <span className="ftp-sup-link-icon" aria-hidden="true">↗</span>
       </a>
     );
   }
@@ -358,10 +359,25 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
           color: inherit;
           transition: transform 150ms ease, box-shadow 150ms ease;
         }
-        .ftp-sup-link { cursor: pointer; }
-        .ftp-sup-link:hover {
+        /* Session 18 v12 Phase H (Fix #8): visible link cue + clearer hover */
+        .ftp-sup-link,
+        .ftp-sup-pill-clickable { cursor: pointer; }
+        .ftp-sup-link:hover,
+        .ftp-sup-pill-clickable:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+          border-width: 1.5px;
+        }
+        .ftp-sup-link-icon {
+          font-size: 9px;
+          opacity: 0.55;
+          margin-left: 2px;
+          transition: opacity 150ms ease, transform 150ms ease;
+          flex-shrink: 0;
+        }
+        .ftp-sup-pill-clickable:hover .ftp-sup-link-icon {
+          opacity: 1;
+          transform: translate(2px, -2px);
         }
         .ftp-sup-name { font-weight: 600; white-space: nowrap; }
         .ftp-sup-badge-text {
@@ -406,7 +422,10 @@ export default function ContributorsStrip({ locale }: ContributorsStripProps) {
             white-space: normal;
           }
           .ftp-supporter-marquee-viewport { -webkit-mask-image: none; mask-image: none; }
-          .ftp-sup-link:hover { transform: none; box-shadow: none; }
+          .ftp-sup-link:hover,
+          .ftp-sup-pill-clickable:hover { transform: none; box-shadow: none; }
+          .ftp-sup-link-icon { transition: none; }
+          .ftp-sup-pill-clickable:hover .ftp-sup-link-icon { transform: none; }
         }
       `}</style>
 
