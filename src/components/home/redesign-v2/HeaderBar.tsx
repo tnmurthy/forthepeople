@@ -311,9 +311,14 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
       className="ftp-header-bar"
       role="banner"
       style={{
+        // Session 19.11: 30 → 50 so the breadcrumb dropdown menu (inside
+        // header's stacking context) paints above the DistrictStatusBar
+        // (which is also z:30 and tied with the header at the same level —
+        // source order made the status bar cover the menu's top items).
+        // Admin modals at z:60+ still sit above the header.
         position: "sticky",
         top: 0,
-        zIndex: 30,
+        zIndex: 50,
         background: "#FFFFFF",
         borderBottom: "1px solid #E8E8E4",
         padding: "10px 32px",
