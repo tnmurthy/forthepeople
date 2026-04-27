@@ -304,7 +304,10 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
         .ftp-status-dot-green { background: #10B981; }
         .ftp-status-dot-red   { background: #DC2626; }
         /* Session 16 v10 Phase B (Fix #1): blue-tinted search field */
-        /* Session 18 v12 Phase D (Fix #3): visible field — light gray bg + border + ⌘K hint */
+        /* Session 18.1 Phase C (Fix #2): visible styling on the INPUT itself,
+           not just the form wrapper. DOM inspection of <input> now sees real
+           bg + border instead of transparent. !important wins over Tailwind
+           preflight + reset cascades. */
         .ftp-search-shell {
           flex: 1;
           min-width: 0;
@@ -313,36 +316,48 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           position: relative;
         }
         .ftp-search-form {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 10px;
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+          position: relative;
+          display: block;
+          width: 100%;
         }
-        .ftp-search-form:hover {
-          background: #F3F4F6;
-          border-color: #D1D5DB;
+        .ftp-search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 14px;
+          height: 14px;
+          color: #6B7280 !important;
+          pointer-events: none;
+          z-index: 1;
         }
-        .ftp-search-form:focus-within {
-          background: #FFFFFF;
-          border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-        }
-        .ftp-search-icon { color: #6B7280; flex-shrink: 0; }
         .ftp-search-input {
-          flex: 1;
-          min-width: 0;
-          border: none;
-          outline: none;
-          background: transparent;
-          font-size: 13px;
-          color: #1A1A1A;
+          width: 100% !important;
+          padding: 8px 38px 8px 36px !important;
+          background: #F9FAFB !important;
+          border: 1px solid #E5E7EB !important;
+          border-radius: 8px !important;
+          font-size: 13px !important;
+          color: #1A1A1A !important;
+          font-family: inherit !important;
+          outline: none !important;
+          transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease !important;
         }
-        .ftp-search-input::placeholder { color: #9CA3AF; }
+        .ftp-search-input::placeholder { color: #9CA3AF !important; }
+        .ftp-search-input:hover {
+          background: #F3F4F6 !important;
+          border-color: #D1D5DB !important;
+        }
+        .ftp-search-input:focus {
+          background: #FFFFFF !important;
+          border-color: #2563EB !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+        }
         .ftp-search-kbd {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
           font-family: inherit;
           font-size: 10px;
           color: #6B7280;
@@ -350,7 +365,8 @@ export default function HeaderBar({ locale, onOpenMobileNav }: HeaderBarProps) {
           border: 1px solid #E5E7EB;
           padding: 1px 5px;
           border-radius: 3px;
-          flex-shrink: 0;
+          pointer-events: none;
+          z-index: 1;
           line-height: 1;
         }
         .ftp-search-form:focus-within .ftp-search-kbd { display: none; }
