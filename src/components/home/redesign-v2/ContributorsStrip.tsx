@@ -123,14 +123,27 @@ function CategorySection({
   supporters,
   marqueeSpeed,
   accent,
+  ctaHref,
+  ctaLabel,
 }: {
   title: string;
   supporters: ContributorItem[];
   marqueeSpeed: string;
   accent: "india" | "state" | "district";
+  ctaHref?: string;
+  ctaLabel?: string;
 }) {
   if (supporters.length === 0) return null;
   const isStatic = supporters.length <= STATIC_THRESHOLD;
+  // Session 19.4 Phase E: trailing "Be the next sponsor" CTA fills the empty
+  // tail of the static list. Only renders for the static layout — adding it to
+  // the marquee duplicate-track would render twice and look broken.
+  const cta =
+    ctaHref && ctaLabel ? (
+      <a href={ctaHref} className="ftp-sup-pill ftp-sup-pill-cta">
+        {ctaLabel}
+      </a>
+    ) : null;
   return (
     <div className={`ftp-supporter-category ftp-cat-${accent}`}>
       <div className="ftp-supporter-category-header">
@@ -143,6 +156,7 @@ function CategorySection({
           {supporters.map((s, i) => (
             <SupporterPill key={i} contributor={s} />
           ))}
+          {cta}
         </div>
       ) : (
         <div className="ftp-supporter-marquee-viewport">
@@ -398,6 +412,21 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
           color: inherit;
           transition: transform 150ms ease, box-shadow 150ms ease;
         }
+        /* Session 19.4 Phase E: trailing "Be the next sponsor" CTA pill —
+           dashed border + tier-accent colour signals "open slot, click to fill". */
+        .ftp-sup-pill-cta {
+          background: transparent;
+          border: 1px dashed var(--cat-accent, #2563EB);
+          color: var(--cat-accent, #2563EB);
+          font-style: italic;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .ftp-sup-pill-cta:hover {
+          background: var(--cat-shadow, rgba(37, 99, 235, 0.08));
+          border-style: solid;
+          transform: translateY(-1px);
+        }
         /* Session 18 v12 Phase H (Fix #8): visible link cue + clearer hover */
         .ftp-sup-link,
         .ftp-sup-pill-clickable { cursor: pointer; }
@@ -534,18 +563,24 @@ export default function ContributorsStrip({ locale, compact = false }: Contribut
               supporters={buckets.allIndia}
               marqueeSpeed="120s"
               accent="india"
+              ctaHref={`/${locale}/support?tier=patron`}
+              ctaLabel="+ Become an India Patron →"
             />
             <CategorySection
               title="🏛️ State Champions"
               supporters={buckets.states}
               marqueeSpeed="80s"
               accent="state"
+              ctaHref={`/${locale}/support?tier=state`}
+              ctaLabel="+ Sponsor a state →"
             />
             <CategorySection
               title="⌂ District Sponsors"
               supporters={buckets.districts}
               marqueeSpeed="50s"
               accent="district"
+              ctaHref={`/${locale}/support?tier=district`}
+              ctaLabel="+ Be the next sponsor →"
             />
           </div>
         )}
