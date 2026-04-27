@@ -976,3 +976,72 @@ arc. Each fix DOM-verified before commit. ~13 commits, all on local
 ## Push status
 
 **NOT pushed.** Reversibility tag `pre-session-19-1-fixup-2026-04-27` exists; the 2 v13.1 commits sit on local `main`. Push after Jayanth's manual review.
+
+---
+
+# Session 19.2 — district crash diagnosis + 9 polish items (2026-04-27, NOT pushed)
+
+10 phases, each DOM-verified before commit. ~9 commits, all on local
+`main`. Reversibility tag: `pre-session-19-2-2026-04-27`.
+
+## Outcomes
+
+| Phase | Reported issue | Outcome |
+|---|---|---|
+| B | All district pages broken — 1337 chars body, browser 45s freeze, 1 heading | DOES NOT REPRODUCE. Mandya: 200 in 168ms, 148KB SSR, 52KB visible text, 7 taluk hrefs. Pune: 200 in 74ms, 136KB SSR. Single `<h1>` is by design (subheadings are styled divs). Past freezes were Turbopack cold-start or `/api/data/homepage-preview` hangs. **No code change.** |
+| C | Breadcrumb / district hero theme / Mandya taluks visibility | Findings: visual breadcrumb component doesn't exist (only JSON-LD); district-specific hero color is already wired via `PALETTES` in `DistrictHeroIllustration.tsx`; Mandya taluks render correctly with all 7 hrefs. **No code change.** |
+| D | Map SVG 0 0 800 900 — India occupies center 50%, dead blue around it | Applied `transform: scale(1.18)` on the SVG inside `.ftp-hero-map-frame` (DrillDownMap component file is read-only per Hard Rule 7). Hover: scale(1.22). Touch-action: pinch-zoom. Reduced-motion: locks at base scale. Verified in DOM bundle. (`cdc4a62`) |
+| E | Hero columns unbalanced — map 842px, district list 660px | `align-items: start → stretch` on `.ftp-hero-row`. `.ftp-hero-districts-col` gets `height: 100% + min-height: 0`. `.ftp-hero-districts-scroll` drops the `max-height: 480px` cap. Both columns now fill the row height. (`4a91b48`) |
+| F | Live Data header always shows static blue location pin | `DistrictAvatar` now prefers `getDistrictIcon(slug)` from the per-district registry (top of fallback chain). Icon updates with the active tab via existing state. ESLint workaround: extracted `ActiveDistrictRegistryIcon` to module scope + uses `React.createElement` (the JSX `<Icon />` form with runtime lookup triggers React Compiler's "no components during render" rule). (`d5579ba`) |
+| G | Live Data: 3 of 4 cards consistently empty (Infra/News/Weather) | Empirical probe: Mandya weather 14KB ✓ but infra 184B; Pune weather 133B + infra empty. Schemes + Budget have data for both. Swapped Weather→Schemes (🏛️ blue) and Infrastructure→Budget (💰 cyan). New `summarizeSchemes` + `summarizeBudget` helpers. Card hrefs route to `/<district>/schemes` and `/<district>/finance`. The full dynamic-priority refactor (~100 LOC) was over Hard Rule 6's 40-line budget — minimal swap delivers same UX outcome. (`e70f21c`) |
+| H | District row tagline + bullets clipped to ~9-10px while font is 11px | `.ftp-district-row`: min-height 76→88, padding 10×12→12×14. `.ftp-district-row-tagline`: `line-height: 1.5 + min-height: 16`. `.ftp-district-row-bullets`: `line-height: 1.5 + min-height: 15`. Together computed line box ≥16.5px — visible. (`ebed4d8`) |
+| I | "₹1.50/day" inconsistent with ₹99/month entry tier | Replaced 4 occurrences (₹1.50 → ₹3.30, computed as 99÷30): metadata title + hero text on `/support`, SupportBanner JSX, HomeDrilldown legacy nav. DOM verified: 0 `1.50` matches, 2-3 `3.30` matches per affected page. (`b2a830b`) |
+| J | TSC + lint + smoke + docs | TSC clean. Lint at 107 problems (60E/47W) — same total as baseline 107 (61E/46W); distribution shifted by 1 error → 1 warning. All 7 routes 200 in <0.2s. (`70aa28a`) |
+
+## Verification
+
+| Check | Result |
+|---|---|
+| TSC | 0 errors |
+| Lint | **107** problems — same total as baseline (60E/47W vs 61E/46W) |
+| `/en` | 200, 0.17s |
+| `/en/karnataka/mandya` | 200, **0.09s** — no crash, no freeze |
+| `/en/maharashtra/pune` | 200, 0.06s |
+| `/en/contributors` | 200, 0.07s |
+| `/en/vote-district` | 200, 0.05s |
+| `/en/features` | 200, 0.12s |
+| `/en/support` | 200, 0.14s |
+| Mandya SSR | 148KB, 7 taluk hrefs, "Taluks in Mandya" label present |
+| 4 Live Data card titles | Crop prices · Schemes · Local news · Budget (rendered) |
+| Map scale CSS | 2 occurrences of `transform: scale(1.18)` in HTML |
+| Pricing | `/en` 0×`1.50`, 2×`3.30`. `/en/support` 0×`1.50`, 3×`3.30` |
+| Live Data icon class | `ftp-livedata-active-icon` rendered |
+
+## v13.2 commits (8 commits, all `main`, no push)
+
+| # | Commit | Phase | Surface |
+|---|---|---|---|
+| 1 | `cdc4a62` | D | Map — scale(1.18) zoom + hover scale(1.22) |
+| 2 | `4a91b48` | E | Hero columns — balanced height via stretch + flex:1 |
+| 3 | `d5579ba` | F | Live Data — district-aware icon swap (registry-driven) |
+| 4 | `e70f21c` | G | Live Data — Schemes + Budget replace Weather + Infrastructure |
+| 5 | `ebed4d8` | H | District row tagline + bullets — min-height + line-height fix |
+| 6 | `b2a830b` | I | Pricing — ₹1.50/day → ₹3.30/day everywhere |
+| 7 | `70aa28a` | J | Lint — useMemo inline + React.createElement registry pattern |
+
+## Phases B + C (no code change, surfaced)
+
+- District page crash: NOT REPRODUCED. SSR healthy on all 10 active districts.
+- Breadcrumb component: doesn't exist (only JSON-LD for SEO). If Jayanth wants a visual breadcrumb, that's a build session.
+- District hero theme: already wired via `PALETTES`.
+- Mandya taluks: render correctly with all 7 hrefs.
+
+## Surfaced for next session
+
+1. **`/api/data/homepage-preview` 60s timeout** still unfixed (carried from S19.1). Endpoint runs ~50 parallel Prisma queries. Profile + index when time allows.
+2. **Pune `WeatherReading` data gap** — even when API responds, Pune has no weather row. Track in scraper backlog.
+3. **Visual breadcrumb component** — would be a small build (5-line component + mount on district pages) but didn't fit S19.2's "investigation only for breadcrumb" rule. Spec for next session if wanted.
+
+## Push status
+
+**NOT pushed.** Reversibility tag `pre-session-19-2-2026-04-27` exists; the v13.2 commits sit on local `main`. Push after Jayanth's manual review.
