@@ -15,12 +15,12 @@ datasource db {
 // ═══ CORE HIERARCHY ═══════════════════════════════════════
 
 model State {
-  id              String           @id @default(cuid())
-  name            String
-  nameLocal       String
-  slug            String           @unique
-  active          Boolean          @default(false)
-  capital         String?
+  id                  String               @id @default(cuid())
+  name                String
+  nameLocal           String
+  slug                String               @unique
+  active              Boolean              @default(false)
+  capital             String?
   districts           District[]
   governmentExams     GovernmentExam[]
   supporters          Supporter[]
@@ -29,29 +29,29 @@ model State {
 }
 
 model District {
-  id            String  @id @default(cuid())
-  stateId       String
-  state         State   @relation(fields: [stateId], references: [id])
-  name          String
-  nameLocal     String
-  slug          String
-  tagline       String?
-  taglineLocal  String?
-  active        Boolean @default(false)
+  id                  String               @id @default(cuid())
+  stateId             String
+  state               State                @relation(fields: [stateId], references: [id])
+  name                String
+  nameLocal           String
+  slug                String
+  tagline             String?
+  taglineLocal        String?
+  active              Boolean              @default(false)
   // Whether the Tenders module (Module 30) is activated for this district.
   // When false, the /tenders page renders a locked "coming soon" state
   // instead of the dashboard. See docs/TENDERS-ACTIVATION.md.
-  tendersActive Boolean @default(false)
-  population    Int?
-  area          Float?
-  talukCount    Int?
-  villageCount  Int?
-  literacy      Float?
-  sexRatio      Int?
-  density       Float?
-  avgRainfall   Float?
-  goLiveDate    DateTime? // When this district was first activated. Drives the NEW badge (45-day window).
-  taluks        Taluk[]
+  tendersActive       Boolean              @default(false)
+  population          Int?
+  area                Float?
+  talukCount          Int?
+  villageCount        Int?
+  literacy            Float?
+  sexRatio            Int?
+  density             Float?
+  avgRainfall         Float?
+  goLiveDate          DateTime? // When this district was first activated. Drives the NEW badge (45-day window).
+  taluks              Taluk[]
   responsibilityItems ResponsibilityItem[]
 
   leaders             Leader[]
@@ -450,48 +450,48 @@ enum DemographicLevel {
 }
 
 model DemographicProfile {
-  id                 String            @id @default(cuid())
+  id String @id @default(cuid())
 
   // Scope — exactly one of districtId / stateId will be set per row
-  districtId         String?
-  district           District?         @relation(fields: [districtId], references: [id])
-  stateId            String?
-  state              State?            @relation(fields: [stateId], references: [id])
-  level              DemographicLevel
+  districtId String?
+  district   District?        @relation(fields: [districtId], references: [id])
+  stateId    String?
+  state      State?           @relation(fields: [stateId], references: [id])
+  level      DemographicLevel
 
   // Observation reference
-  year               Int               // e.g. 2011, 2019, 2024
-  dataset            String            // "Census 2011" | "NFHS-5" | "NITI MPI 2023" | "SRS 2023" | "PLFS 2024-Q4" | "Karnataka ES 2024"
+  year    Int // e.g. 2011, 2019, 2024
+  dataset String // "Census 2011" | "NFHS-5" | "NITI MPI 2023" | "SRS 2023" | "PLFS 2024-Q4" | "Karnataka ES 2024"
 
   // Totals
-  totalPopulation    Int?
-  malePopulation     Int?
-  femalePopulation   Int?
-  sexRatio           Int?              // females per 1000 males
-  childSexRatio      Int?              // 0-6, females per 1000 males
+  totalPopulation  Int?
+  malePopulation   Int?
+  femalePopulation Int?
+  sexRatio         Int? // females per 1000 males
+  childSexRatio    Int? // 0-6, females per 1000 males
 
   // Age bands
-  pop_0_6            Int?
-  pop_7_14           Int?
-  pop_15_59          Int?
-  pop_60_plus        Int?
-  medianAge          Float?
+  pop_0_6     Int?
+  pop_7_14    Int?
+  pop_15_59   Int?
+  pop_60_plus Int?
+  medianAge   Float?
 
   // Literacy
-  literacyTotal      Float?
-  literacyMale       Float?
-  literacyFemale     Float?
+  literacyTotal  Float?
+  literacyMale   Float?
+  literacyFemale Float?
 
   // Urban / Rural split
-  urbanPopulation    Int?
-  ruralPopulation    Int?
-  urbanPct           Float?
+  urbanPopulation Int?
+  ruralPopulation Int?
+  urbanPct        Float?
 
   // Physical
-  density            Float?            // persons per sq km
-  areaSqKm           Float?
-  households         Int?
-  avgHouseholdSize   Float?
+  density          Float? // persons per sq km
+  areaSqKm         Float?
+  households       Int?
+  avgHouseholdSize Float?
 
   // Flexible JSONB breakdowns — keys are validated in app code, not schema
   // religion: { Buddhist, Christian, Hindu, Jain, Muslim, Sikh, Other, NotStated } — ALPHABETICAL, percentages
@@ -516,21 +516,21 @@ model DemographicProfile {
   maritalStatus      Json?
 
   // Source & provenance
-  sourceName         String            // "Office of the Registrar General & Census Commissioner, India"
-  sourceUrl          String?
-  sourceLicense      String?           // "Public" | "GODL-India" | "CC BY 4.0"
-  retrievedAt        DateTime
-  publishedAt        DateTime?
-  notes              String?
-  boundaryVintage    String?           // "Census_2011" | "BBMP_198_2010" | "BBMP_243_2022"
+  sourceName      String // "Office of the Registrar General & Census Commissioner, India"
+  sourceUrl       String?
+  sourceLicense   String? // "Public" | "GODL-India" | "CC BY 4.0"
+  retrievedAt     DateTime
+  publishedAt     DateTime?
+  notes           String?
+  boundaryVintage String? // "Census_2011" | "BBMP_198_2010" | "BBMP_243_2022"
 
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@unique([districtId, year, dataset])
   @@index([districtId, year])
   @@index([stateId, level, year])
   @@index([dataset, year])
-  @@unique([districtId, year, dataset])
 }
 
 model DemographicUpdate {
@@ -541,7 +541,7 @@ model DemographicUpdate {
   state       State?    @relation(fields: [stateId], references: [id])
   title       String
   summary     String
-  category    String    // "Vital Rates" | "Migration" | "Literacy" | "Employment" | "Housing" | "Data Release" | "Other"
+  category    String // "Vital Rates" | "Migration" | "Literacy" | "Employment" | "Housing" | "Data Release" | "Other"
   sourceUrl   String?
   source      String
   publishedAt DateTime
@@ -686,8 +686,8 @@ model NewsItem {
   titleLocal      String?
   summary         String?
   originalSummary String?   @db.Text // Pre-clean raw RSS description (audit trail)
-  publisher       String?   // Extracted from RSS description suffix (Google News pattern)
-  duplicateOf     String?   // id of the canonical (earliest) article for this story
+  publisher       String? // Extracted from RSS description suffix (Google News pattern)
+  duplicateOf     String? // id of the canonical (earliest) article for this story
   url             String
   source          String
   category        String?
@@ -1451,8 +1451,8 @@ model Supporter {
   badgeType      String? // "supporter" | "champion" | "state" | "patron"
   badgeLevel     String? // "bronze" | "silver" | "gold" | "platinum"
 
-  isPublic     Boolean  @default(true)
-  receiptSent  Boolean  @default(false)
+  isPublic     Boolean @default(true)
+  receiptSent  Boolean @default(false)
   razorpayData Json?
 
   // Name moderation (spam/promo cleanup 2026-04-24)
@@ -1460,11 +1460,11 @@ model Supporter {
   originalName String?
 
   // Message moderation (spam/promo cleanup 2026-04-25)
-  messageFlagged   Boolean @default(false)
-  originalMessage  String? @db.Text
+  messageFlagged  Boolean @default(false)
+  originalMessage String? @db.Text
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status, createdAt])
   @@index([email])
@@ -2292,29 +2292,122 @@ enum SuggestionStatus {
 // ═══ CIVIC RESPONSIBILITY ═════════════════════════════════
 
 model ResponsibilityItem {
-  id               String   @id @default(cuid())
-  districtId       String
-  district         District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  districtId String
+  district   District @relation(fields: [districtId], references: [id], onDelete: Cascade)
 
-  section          String // e.g. "Water" | "Traffic & Commute" | "Air Quality" | ...
-  sectionIcon      String // emoji for the section header
-  sectionOrder     Int // 1-8 (stable display order)
+  section      String // e.g. "Water" | "Traffic & Commute" | "Air Quality" | ...
+  sectionIcon  String // emoji for the section header
+  sectionOrder Int // 1-8 (stable display order)
 
-  action           String   @db.Text
-  whyRelevant      String   @db.Text // district-specific rationale
+  action      String @db.Text
+  whyRelevant String @db.Text // district-specific rationale
 
-  reportToName     String?
-  reportToUrl      String?
-  reportToPhone    String? // null when research marked "verify_before_use"
-  phoneVerified    Boolean  @default(true)
+  reportToName  String?
+  reportToUrl   String?
+  reportToPhone String? // null when research marked "verify_before_use"
+  phoneVerified Boolean @default(true)
 
-  sourceNotes      String?  @db.Text
+  sourceNotes String? @db.Text
 
-  itemOrder        Int
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  itemOrder Int
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([districtId, sectionOrder, itemOrder, active])
   @@index([phoneVerified])
+}
+
+// ═══ INDIA NATIONAL DASHBOARD ═════════════════════════════
+// Flexible indicator + time-series store for /[locale]/india.
+// Populated by scrapers under src/scraper/india/ — never hardcoded
+// except for constitutional constants (states_count, uts_count,
+// geographic_area, scheduled_languages). See docs/india/31 + 32.
+
+/// One indicator value (latest snapshot) for an India-level metric.
+/// Multiple snapshots over time → IndiaTimeSeries.
+model IndiaIndicator {
+  id           String   @id @default(cuid())
+  moduleSlug   String // 'demographics-population', 'economy-gdp', etc.
+  metricKey    String // 'population_total', 'gdp_nominal_inr', 'forest_cover_pct'
+  metricLabel  String // 'Total Population', 'Nominal GDP (₹)'
+  numericValue Decimal? @db.Decimal(20, 4)
+  textValue    String?
+  unit         String? // '₹ lakh crore', '%', 'million tonnes', 'count'
+  asOfDate     DateTime // source's reporting date, NOT the fetch time
+  source       String // 'MoSPI', 'RBI', 'Census of India', etc.
+  sourceUrl    String // exact URL from .gov.in / .nic.in
+  notes        String?  @db.Text
+  displayOrder Int      @default(0)
+  fetchedAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([moduleSlug, metricKey])
+  @@index([moduleSlug])
+  @@index([metricKey])
+}
+
+/// Historical / trend values for charts.
+model IndiaTimeSeries {
+  id         String   @id @default(cuid())
+  moduleSlug String
+  metricKey  String
+  date       DateTime
+  value      Decimal  @db.Decimal(20, 4)
+  unit       String?
+  source     String
+  sourceUrl  String
+
+  @@unique([moduleSlug, metricKey, date])
+  @@index([moduleSlug, metricKey])
+}
+
+/// State-level rows used inside a national module
+/// (e.g. top 5 states by GSDP, ranked literacy).
+model IndiaStateBreakdown {
+  id         String   @id @default(cuid())
+  moduleSlug String
+  metricKey  String
+  stateSlug  String // matches existing State.slug
+  stateName  String
+  value      Decimal  @db.Decimal(20, 4)
+  unit       String?
+  rank       Int?
+  asOfDate   DateTime
+  source     String
+  sourceUrl  String
+
+  @@unique([moduleSlug, metricKey, stateSlug])
+  @@index([moduleSlug, metricKey])
+}
+
+/// User-suggested India modules with vote counts.
+/// Mirrors the existing district-vote pattern (DistrictRequest).
+model IndiaModuleSuggestion {
+  id          String            @id @default(cuid())
+  title       String
+  description String?           @db.Text
+  category    String? // optional grouping suggestion
+  voteCount   Int               @default(0)
+  status      String            @default("proposed")
+  // proposed | shortlisted | in_progress | live | declined
+  submittedBy String? // ipHash of submitter (no PII)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  votes       IndiaModuleVote[]
+
+  @@index([voteCount])
+  @@index([status])
+}
+
+model IndiaModuleVote {
+  id           String                @id @default(cuid())
+  suggestionId String
+  ipHash       String // hashed IP, NOT raw — privacy
+  votedAt      DateTime              @default(now())
+  suggestion   IndiaModuleSuggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+
+  @@unique([suggestionId, ipHash])
+  @@index([suggestionId])
 }
