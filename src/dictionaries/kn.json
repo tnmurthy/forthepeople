@@ -75,5 +75,72 @@
   "footer": {
     "disclaimer": "ಸ್ವತಂತ್ರ ನಾಗರಿಕ ಉಪಕ್ರಮ. ಅಧಿಕೃತ ಸರ್ಕಾರಿ ವೆಬ್‌ಸೈಟ್ ಅಲ್ಲ. NDSAP ಅಡಿಯಲ್ಲಿ ಡೇಟಾ.",
     "builtBy": "ಜಯಂತ್ ಎಂ ಬಿ ನಿರ್ಮಿಸಿದ್ದಾರೆ"
+  },
+  "india": {
+    "title": "TODO_TRANSLATE: India in one page.",
+    "subtitle": "TODO_TRANSLATE: Every key fact about your country, sourced from official government portals.",
+    "hero": {
+      "tag": "TODO_TRANSLATE: INDIA AT A GLANCE",
+      "tiles": {
+        "population": "TODO_TRANSLATE: Population",
+        "gdp": "TODO_TRANSLATE: Nominal GDP",
+        "area": "TODO_TRANSLATE: Geographic Area",
+        "states": "TODO_TRANSLATE: States & UTs",
+        "districts": "TODO_TRANSLATE: Districts",
+        "languages": "TODO_TRANSLATE: Scheduled Languages"
+      }
+    },
+    "nav": {
+      "today": "TODO_TRANSLATE: Today",
+      "demographics": "TODO_TRANSLATE: Demographics",
+      "economy": "TODO_TRANSLATE: Economy",
+      "budget": "TODO_TRANSLATE: Budget",
+      "agriculture": "TODO_TRANSLATE: Agriculture",
+      "livestock": "TODO_TRANSLATE: Livestock",
+      "wildlife": "TODO_TRANSLATE: Wildlife",
+      "infrastructure": "TODO_TRANSLATE: Infrastructure",
+      "energy": "TODO_TRANSLATE: Energy",
+      "health": "TODO_TRANSLATE: Health",
+      "education": "TODO_TRANSLATE: Education",
+      "defence": "TODO_TRANSLATE: Defence",
+      "justice": "TODO_TRANSLATE: Justice",
+      "elections": "TODO_TRANSLATE: Elections",
+      "science": "TODO_TRANSLATE: Science",
+      "trade": "TODO_TRANSLATE: Trade",
+      "tourism": "TODO_TRANSLATE: Tourism",
+      "sports": "TODO_TRANSLATE: Sports"
+    },
+    "suggestions": {
+      "title": "TODO_TRANSLATE: Vote for the next India module",
+      "subtitle": "TODO_TRANSLATE: Help us decide what to build next.",
+      "suggest": "TODO_TRANSLATE: Suggest a module",
+      "submitted": "TODO_TRANSLATE: Thanks — your idea is now visible to others to vote on.",
+      "rateLimit": "TODO_TRANSLATE: You've already voted on this. Try tomorrow.",
+      "request": "TODO_TRANSLATE: Request your module"
+    },
+    "comingSoon": {
+      "title": "TODO_TRANSLATE: Coming Soon",
+      "tag": "TODO_TRANSLATE: COMING SOON",
+      "expected": "TODO_TRANSLATE: Expected",
+      "voteToPrioritise": "TODO_TRANSLATE: Vote to prioritise"
+    },
+    "awaitingSync": {
+      "title": "TODO_TRANSLATE: Awaiting first sync",
+      "subtitle": "TODO_TRANSLATE: We will populate this section as soon as the source publishes."
+    },
+    "sources": {
+      "title": "TODO_TRANSLATE: Data Sources",
+      "subtitle": "TODO_TRANSLATE: Every portal cited on this page.",
+      "lastUpdated": "TODO_TRANSLATE: Last updated",
+      "refresh": "TODO_TRANSLATE: Refresh"
+    },
+    "disclaimers": {
+      "top": "TODO_TRANSLATE: ForThePeople.in is NOT an official government website. Data aggregated from official portals (NDSAP), accredited research institutions, and verified public sources. Always verify at the original source.",
+      "defence": "TODO_TRANSLATE: Data on this page is limited to information publicly disclosed by the Ministry of Defence, Press Information Bureau, and Parliamentary Q&A. ForThePeople.in does not publish, infer, or speculate on classified, operational, or strategic information.",
+      "health": "TODO_TRANSLATE: Aggregated public-health statistics only. Personal health data and individual hospital outcomes are not published. Consult a registered medical practitioner for health decisions.",
+      "elections": "TODO_TRANSLATE: Electoral data is for citizen information. ForThePeople.in does not endorse, predict, or campaign for any party or candidate.",
+      "justice": "TODO_TRANSLATE: Aggregated case statistics from NJDG. Individual case details are not published.",
+      "mcc": "TODO_TRANSLATE: Model Code of Conduct in effect. ForThePeople.in is non-partisan and complies with ECI guidelines."
+    }
   }
 }

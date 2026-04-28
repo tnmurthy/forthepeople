@@ -51,11 +51,22 @@ const nextConfig: NextConfig = {
       ["panchayat", "gram-panchayat"],
       ["farm-advisory", "farm"],
     ];
-    return pairs.map(([from, to]) => ({
+    const districtModuleRedirects = pairs.map(([from, to]) => ({
       source: "/:locale/:state/:district/" + from,
       destination: "/:locale/:state/:district/" + to,
       permanent: true,
     }));
+
+    // /[locale]/india-detail → /[locale]/india (308 permanent).
+    // The old route is being deleted; this preserves bookmarks and the
+    // legacy CTAs while we migrate.
+    const indiaDetailRedirect = {
+      source: "/:locale(en|kn)/india-detail",
+      destination: "/:locale/india",
+      permanent: true,
+    };
+
+    return [...districtModuleRedirects, indiaDetailRedirect];
   },
 
   // Remove default "x-powered-by: Next.js" header (we set our own above)

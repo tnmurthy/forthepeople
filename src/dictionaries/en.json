@@ -75,5 +75,72 @@
   "footer": {
     "disclaimer": "Independent citizen initiative. NOT an official government website. Data under NDSAP.",
     "builtBy": "Built by Jayanth M B"
+  },
+  "india": {
+    "title": "India in one page.",
+    "subtitle": "Every key fact about your country, sourced from official government portals.",
+    "hero": {
+      "tag": "INDIA AT A GLANCE",
+      "tiles": {
+        "population": "Population",
+        "gdp": "Nominal GDP",
+        "area": "Geographic Area",
+        "states": "States & UTs",
+        "districts": "Districts",
+        "languages": "Scheduled Languages"
+      }
+    },
+    "nav": {
+      "today": "Today",
+      "demographics": "Demographics",
+      "economy": "Economy",
+      "budget": "Budget",
+      "agriculture": "Agriculture",
+      "livestock": "Livestock",
+      "wildlife": "Wildlife",
+      "infrastructure": "Infrastructure",
+      "energy": "Energy",
+      "health": "Health",
+      "education": "Education",
+      "defence": "Defence",
+      "justice": "Justice",
+      "elections": "Elections",
+      "science": "Science",
+      "trade": "Trade",
+      "tourism": "Tourism",
+      "sports": "Sports"
+    },
+    "suggestions": {
+      "title": "Vote for the next India module",
+      "subtitle": "Help us decide what to build next.",
+      "suggest": "Suggest a module",
+      "submitted": "Thanks — your idea is now visible to others to vote on.",
+      "rateLimit": "You've already voted on this. Try tomorrow.",
+      "request": "Request your module"
+    },
+    "comingSoon": {
+      "title": "Coming Soon",
+      "tag": "COMING SOON",
+      "expected": "Expected",
+      "voteToPrioritise": "Vote to prioritise"
+    },
+    "awaitingSync": {
+      "title": "Awaiting first sync",
+      "subtitle": "We will populate this section as soon as the source publishes."
+    },
+    "sources": {
+      "title": "Data Sources",
+      "subtitle": "Every portal cited on this page.",
+      "lastUpdated": "Last updated",
+      "refresh": "Refresh"
+    },
+    "disclaimers": {
+      "top": "ForThePeople.in is NOT an official government website. Data aggregated from official portals (NDSAP), accredited research institutions, and verified public sources. Always verify at the original source.",
+      "defence": "Data on this page is limited to information publicly disclosed by the Ministry of Defence, Press Information Bureau, and Parliamentary Q&A. ForThePeople.in does not publish, infer, or speculate on classified, operational, or strategic information.",
+      "health": "Aggregated public-health statistics only. Personal health data and individual hospital outcomes are not published. Consult a registered medical practitioner for health decisions.",
+      "elections": "Electoral data is for citizen information. ForThePeople.in does not endorse, predict, or campaign for any party or candidate.",
+      "justice": "Aggregated case statistics from NJDG. Individual case details are not published.",
+      "mcc": "Model Code of Conduct in effect. ForThePeople.in is non-partisan and complies with ECI guidelines."
+    }
   }
 }

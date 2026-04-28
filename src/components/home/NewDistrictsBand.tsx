@@ -2,7 +2,7 @@
  * NEW DISTRICTS THIS MONTH band — server component for /en.
  *
  * Reads from Prisma directly (parallels the data layer used by
- * /en/india-detail). Renders 3-up grid on desktop and horizontal
+ * /en/india). Renders 3-up grid on desktop and horizontal
  * scroll-snap row on mobile.
  */
 

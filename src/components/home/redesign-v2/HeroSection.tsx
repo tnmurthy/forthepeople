@@ -482,7 +482,7 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           <p className="ftp-hero-subtitle">
             India&apos;s first free, real-time district transparency platform.
           </p>
-          <Link href={`/${locale}/india-detail`} className="ftp-hero-banner-cta">
+          <Link href={`/${locale}/india`} className="ftp-hero-banner-cta">
             <span className="ftp-banner-icon" aria-hidden="true">🗺️</span>
             <span className="ftp-banner-label">Explore the whole India</span>
             <span className="ftp-banner-arrow" aria-hidden="true">→</span>

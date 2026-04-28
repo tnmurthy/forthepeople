@@ -9,7 +9,7 @@
 export const MODULE_LAUNCHES: Record<string, string> = {
   "suggestions":   "2026-04-24", // Session 0 — community idea submissions
   "responsibility":"2026-04-25", // Session 2 — per-district civic actions
-  "india-detail":  "2026-04-25", // Session 3 — aggregate India page
+  "india":         "2026-04-25", // Session 3 — aggregate India page (renamed from india-detail in Phase 0)
 };
 
 const NEW_WINDOW_DAYS = 30;

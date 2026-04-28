@@ -2,7 +2,7 @@
  * /en hero — Session 4 refresh.
  *
  * Three-line display headline + sub-headline + four animated counter
- * cards + solid-blue CTA pill linking to /india-detail.
+ * cards + solid-blue CTA pill linking to /india.
  *
  * Server component shell; AnimatedCounter is the only client island.
  *
@@ -105,7 +105,7 @@ export function HeroIndia({
         {/* CTA */}
         <div style={{ marginTop: 28, display: "flex", justifyContent: "center" }}>
           <Link
-            href={`/${locale}/india-detail`}
+            href={`/${locale}/india`}
             className="hero-cta-pill"
             style={{
               display: "inline-flex",
@@ -127,7 +127,7 @@ export function HeroIndia({
             <Globe size={16} aria-hidden="true" />
             <span>View India in one page</span>
             <ArrowRight size={15} aria-hidden="true" className="hero-cta-arrow" />
-            <NewPill slug="india-detail" />
+            <NewPill slug="india" />
           </Link>
         </div>
 
