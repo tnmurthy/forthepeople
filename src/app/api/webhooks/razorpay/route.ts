@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { cacheSet } from "@/lib/cache";
 import { calculateBadgeLevel } from "@/lib/badge-level";
@@ -14,9 +14,13 @@ import { alertPaymentReceived } from "@/lib/admin-alerts";
 // All contributor cache keys — bust after any payment event
 const CONTRIBUTOR_CACHES = [
   "ftp:contributors:v1",
+  "ftp:contributors:v6",
   "ftp:contributors:all",
   "ftp:contributors:leaderboard",
   "ftp:contributors:district-rankings",
+  "ftp:contributors:top-tier",
+  "ftp:contributors:top-tier:v3",
+  "ftp:contributors:growth-trend",
 ];
 
 export async function POST(req: NextRequest) {
@@ -27,14 +31,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
-  // Verify signature
+  // Verify signature (timing-safe)
   const body = await req.text();
   const signature = req.headers.get("x-razorpay-signature");
   if (!signature) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
   const expected = createHmac("sha256", webhookSecret).update(body).digest("hex");
-  if (expected !== signature) {
+  const sigsMatch =
+    expected.length === signature.length &&
+    timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(signature, "hex"));
+  if (!sigsMatch) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
@@ -58,22 +65,40 @@ export async function POST(req: NextRequest) {
   try {
     // ── Payment events (one-time) ─────────────────────────────
     if (event === "payment.captured" && paymentEntity) {
-      await prisma.supporter.upsert({
-        where: { paymentId: String(paymentEntity.id ?? "") },
-        update: { status: "success" },
-        create: {
-          name: String(paymentEntity.contact ?? paymentEntity.email ?? "Anonymous"),
-          email: paymentEntity.email ? String(paymentEntity.email) : null,
-          phone: paymentEntity.contact ? String(paymentEntity.contact) : null,
-          amount: Number(paymentEntity.amount ?? 0) / 100, // paise → rupees
-          currency: String(paymentEntity.currency ?? "INR"),
-          paymentId: String(paymentEntity.id),
-          orderId: paymentEntity.order_id ? String(paymentEntity.order_id) : null,
-          method: paymentEntity.method ? String(paymentEntity.method) : null,
-          status: "success",
-          razorpayData: paymentEntity as object,
-        },
-      });
+      const paymentId = String(paymentEntity.id ?? "");
+      // A subscription recurring charge fires BOTH `payment.captured` AND
+      // `subscription.charged`. The latter updates the existing supporter
+      // (linked via razorpaySubscriptionId). The former would otherwise
+      // CREATE a brand-new Supporter row with name=phone-number, producing
+      // a duplicate per monthly debit. Detect subscription charges via
+      // `invoice_id` (set by Razorpay on every recurring debit) and skip
+      // the create-side. The subscription.charged handler refreshes
+      // expiresAt + badgeLevel.
+      const isSubscriptionCharge = !!paymentEntity.invoice_id;
+      if (isSubscriptionCharge) {
+        // Just update if the row already exists — never create.
+        await prisma.supporter.updateMany({
+          where: { paymentId },
+          data: { status: "success" },
+        });
+      } else {
+        await prisma.supporter.upsert({
+          where: { paymentId },
+          update: { status: "success" },
+          create: {
+            name: String(paymentEntity.contact ?? paymentEntity.email ?? "Anonymous"),
+            email: paymentEntity.email ? String(paymentEntity.email) : null,
+            phone: paymentEntity.contact ? String(paymentEntity.contact) : null,
+            amount: Number(paymentEntity.amount ?? 0) / 100, // paise → rupees
+            currency: String(paymentEntity.currency ?? "INR"),
+            paymentId,
+            orderId: paymentEntity.order_id ? String(paymentEntity.order_id) : null,
+            method: paymentEntity.method ? String(paymentEntity.method) : null,
+            status: "success",
+            razorpayData: paymentEntity as object,
+          },
+        });
+      }
     } else if (event === "payment.failed" && paymentEntity) {
       // Policy (2026-04-25): no successful payment = no DB row.
       // If a Supporter was somehow created for this payment (e.g. earlier
@@ -89,6 +114,25 @@ export async function POST(req: NextRequest) {
       }
 
     // ── Subscription events ───────────────────────────────────
+    } else if (
+      (event === "subscription.activated" || event === "subscription.authenticated") &&
+      subscriptionEntity
+    ) {
+      // E-mandate auth completed on Razorpay's side. The client-side
+      // verify-subscription handler usually creates the Supporter row
+      // first; if the user closed the browser before it ran, the row
+      // is missing. Mark any existing row active; never invent a new
+      // one here (we don't have name/email/social/etc. — those come
+      // from the verify-subscription body or notes).
+      const subId = String(subscriptionEntity.id);
+      await prisma.supporter.updateMany({
+        where: { razorpaySubscriptionId: subId },
+        data: {
+          subscriptionStatus: "active",
+          status: "success",
+          activatedAt: new Date(),
+        },
+      });
     } else if (event === "subscription.charged" && subscriptionEntity) {
       const subId = String(subscriptionEntity.id);
       const supporter = await prisma.supporter.findFirst({
