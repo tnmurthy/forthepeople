@@ -1,20 +1,25 @@
 /**
  * ForThePeople.in — Your District. Your Data. Your Right.
  * © 2026 Jayanth M B. MIT License with Attribution.
- * https://github.com/jayanthmb14/forthepeople
  *
  * /[locale]/india — National Dashboard.
  *
- * Phase 0 placeholder. Hero, modules, voting widget, scraper-fed data
- * land in subsequent phases per docs/india/31 + docs/india/32.
+ * Server-rendered shell. Picks dictionary by locale (en | kn) and
+ * delegates layout to IndiaPage. Layout chrome (HeaderBar, Footer,
+ * site-wide DisclaimerBanner) is provided by [locale]/layout.tsx.
  *
- * The deprecated /[locale]/india-detail route 308-redirects here
- * (next.config.ts).
+ * Page-level ISR window: 15 min — re-evaluated whenever the snapshot
+ * cache (Redis, file 31 §17) misses.
  */
 
 import type { Metadata } from "next";
+import enDict from "@/dictionaries/en.json";
+import knDict from "@/dictionaries/kn.json";
+import IndiaPage from "@/components/india/IndiaPage";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
+
+export const revalidate = 900; // 15 min
 
 export async function generateMetadata({
   params,
@@ -39,15 +44,13 @@ export async function generateMetadata({
   };
 }
 
-export default async function IndiaPage({
+export default async function IndiaRoute({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  await params;
-  return (
-    <main style={{ background: "#FAFAF8", minHeight: "100vh", padding: "32px 16px" }}>
-      <h1>India</h1>
-    </main>
-  );
+  const { locale } = await params;
+  const dict = (locale === "kn" ? knDict : enDict).india;
+
+  return <IndiaPage locale={locale} dict={dict} />;
 }
