@@ -182,7 +182,11 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
           return (
             <div key={mod.slug}>
               {showMcc ? <IndiaMccBanner text={dict.disclaimers.mcc} /> : null}
-              <IndiaSectionBand module={mod} legalNoteText={noteText} />
+              <IndiaSectionBand
+                module={mod}
+                legalNoteText={noteText}
+                locale={locale}
+              />
             </div>
           );
         })}

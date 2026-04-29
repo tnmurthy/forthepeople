@@ -2411,3 +2411,21 @@ model IndiaModuleVote {
   @@unique([suggestionId, ipHash])
   @@index([suggestionId])
 }
+
+/// Per-module AI-authored "What this data says" paragraph for the
+/// /[locale]/india/[moduleSlug] deep-dive page. One row per module;
+/// re-authored when the underlying data crosses a notable inflection.
+/// Authored by Claude / Gemini and reviewed manually before commit
+/// (file 31 §4 — no fabrication).
+model IndiaAnalysis {
+  id         String   @id @default(cuid())
+  moduleSlug String   @unique
+  headline   String // "Tigers grew 33% over last decade"
+  body       String   @db.Text // 100-200 words
+  authoredBy String // 'manual' | 'claude-sonnet-4-7' | 'gemini-flash-2'
+  authoredAt DateTime @default(now())
+  sources    String[] // cited URLs in the analysis
+  asOfDate   DateTime // data the analysis was based on
+
+  @@index([moduleSlug])
+}

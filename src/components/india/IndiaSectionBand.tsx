@@ -31,9 +31,16 @@ interface Props {
   legalNoteText?: string | null;
   /** Caller-provided content. If null/empty, IndiaAwaitingSync renders. */
   children?: ReactNode;
+  /** Locale to build the "View full dashboard →" link. */
+  locale?: string;
 }
 
-export default function IndiaSectionBand({ module, legalNoteText, children }: Props) {
+export default function IndiaSectionBand({
+  module,
+  legalNoteText,
+  children,
+  locale,
+}: Props) {
   const accent = CATEGORY_ACCENT[module.category];
   const tint = categoryTint(module.category);
   const hasChildren =
@@ -121,6 +128,22 @@ export default function IndiaSectionBand({ module, legalNoteText, children }: Pr
                 >
                   {module.status === "beta" ? "Beta" : "Coming soon"}
                 </span>
+              ) : null}
+              {locale ? (
+                <Link
+                  href={`/${locale}/india/${module.slug}`}
+                  style={{
+                    marginLeft: "auto",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: INDIA_DESIGN.accentBlue,
+                    textDecoration: "none",
+                    padding: "2px 0",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  View full dashboard →
+                </Link>
               ) : null}
             </div>
             <div

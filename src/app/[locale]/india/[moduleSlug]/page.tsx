@@ -1,0 +1,102 @@
+/**
+ * ForThePeople.in — Your District. Your Data. Your Right.
+ * © 2026 Jayanth M B. MIT License with Attribution.
+ *
+ * Per-module deep-dive route — /[locale]/india/[moduleSlug].
+ *
+ * Renders the full ModulePage shell for any registered module
+ * (live or coming_soon). Returns 404 for unknown slugs. Static-generates
+ * params for ALL 53 modules at build time so first-paint is fast.
+ *
+ * generateMetadata produces per-module SEO metadata (title, description,
+ * OG, hreflang) — Phase 2.5f will extend with JSON-LD Dataset schema.
+ */
+
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import enDict from "@/dictionaries/en.json";
+import knDict from "@/dictionaries/kn.json";
+import {
+  INDIA_MODULES,
+  getIndiaModuleBySlug,
+} from "@/lib/india/india-modules";
+import { INDIA_SOURCES } from "@/lib/india/india-sources";
+import ModulePage from "@/components/india/module-page/ModulePage";
+
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
+
+export const revalidate = 900; // 15 min ISR
+
+export function generateStaticParams() {
+  // Pre-render all 53 module routes for the en locale at build time.
+  // (kn pages render on demand to keep the build matrix small.)
+  return INDIA_MODULES.map((m) => ({ locale: "en", moduleSlug: m.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; moduleSlug: string }>;
+}): Promise<Metadata> {
+  const { locale, moduleSlug } = await params;
+  const mod = getIndiaModuleBySlug(moduleSlug);
+  if (!mod) return {};
+
+  const sourceNames = mod.sources
+    .map((s) => INDIA_SOURCES[s.sourceKey]?.name ?? s.sourceKey)
+    .slice(0, 3)
+    .join(", ");
+  const url = `${BASE_URL}/${locale}/india/${mod.slug}`;
+  const title = `${mod.title} · India Statistics 2026 — ForThePeople.in`;
+  const desc = `${mod.description.slice(0, 130)}${
+    mod.description.length > 130 ? "…" : ""
+  } Sourced from ${sourceNames}. Independent citizen platform.`;
+
+  const keywords = [
+    mod.title,
+    `India ${mod.category}`,
+    `${mod.title} India statistics`,
+    `${mod.title} 2026`,
+    `${mod.category} India data`,
+    "ForThePeople.in",
+    "India open data",
+    "NDSAP",
+    "government statistics India",
+  ];
+
+  return {
+    title,
+    description: desc,
+    keywords,
+    alternates: {
+      canonical: url,
+      languages: {
+        en: `${BASE_URL}/en/india/${mod.slug}`,
+        kn: `${BASE_URL}/kn/india/${mod.slug}`,
+        "x-default": `${BASE_URL}/en/india/${mod.slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description: desc,
+      url,
+      siteName: "ForThePeople.in",
+      type: "website",
+    },
+    twitter: { card: "summary_large_image", title, description: desc },
+    robots: { index: true, follow: true },
+  };
+}
+
+export default async function ModuleRoute({
+  params,
+}: {
+  params: Promise<{ locale: string; moduleSlug: string }>;
+}) {
+  const { locale, moduleSlug } = await params;
+  const mod = getIndiaModuleBySlug(moduleSlug);
+  if (!mod) notFound();
+  const dict = (locale === "kn" ? knDict : enDict).india;
+
+  return <ModulePage locale={locale} module={mod} disclaimers={dict.disclaimers} />;
+}

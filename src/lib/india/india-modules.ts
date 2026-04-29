@@ -100,6 +100,17 @@ export interface IndiaModuleDef {
    * populate this module. One module can be fed by multiple scrapers.
    */
   scraperKeys: string[];
+
+  /** Optional. NewsItem search keywords. Falls back to [title, category]. */
+  newsKeywords?: string[];
+  /** Optional. metricKey driving the choropleth on the deep-dive page. */
+  primaryMetric?: string;
+  /** Optional. Explicit related-module slugs. Falls back to other modules in same category. */
+  relatedModules?: string[];
+  /** Optional. Sub-features queued for this module's deep-dive page. */
+  comingSoonFeatures?: string[];
+  /** Optional. IndiaAnalysis.moduleSlug FK for the AI summary card. Defaults to slug. */
+  aiAnalysisSlug?: string;
 }
 
 export const INDIA_MODULES: IndiaModuleDef[] = [
@@ -1044,4 +1055,63 @@ export function getIndiaModulesByCategory(
   return INDIA_MODULES.filter((m) => m.category === category).sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
+}
+
+/**
+ * News-search keywords for filtering NewsItem rows on the module
+ * deep-dive page. Falls back to [title, category] when not set.
+ */
+export function getModuleNewsKeywords(mod: IndiaModuleDef): string[] {
+  return mod.newsKeywords ?? [mod.title, mod.category];
+}
+
+/**
+ * The metricKey the deep-dive choropleth uses. Falls back to the
+ * first scraperKey, then to a sensible default.
+ */
+export function getModulePrimaryMetric(mod: IndiaModuleDef): string {
+  return mod.primaryMetric ?? mod.scraperKeys[0] ?? "population_total";
+}
+
+/**
+ * 3-5 related-module slugs for the bottom-of-page cross-link rail.
+ * Falls back to other modules in the same category, then fills with
+ * adjacent-category modules (alphabetical) until the target count is
+ * reached.
+ */
+export function getModuleRelatedSlugs(mod: IndiaModuleDef, target = 4): string[] {
+  if (mod.relatedModules && mod.relatedModules.length > 0) {
+    return mod.relatedModules.slice(0, target);
+  }
+  const sameCategory = INDIA_MODULES.filter(
+    (m) => m.category === mod.category && m.slug !== mod.slug,
+  ).map((m) => m.slug);
+  if (sameCategory.length >= target) return sameCategory.slice(0, target);
+  // Fill from other modules sorted by displayOrder distance from this one
+  const filler = INDIA_MODULES.filter(
+    (m) => m.category !== mod.category && m.slug !== mod.slug,
+  )
+    .sort(
+      (a, b) =>
+        Math.abs(a.displayOrder - mod.displayOrder) -
+        Math.abs(b.displayOrder - mod.displayOrder),
+    )
+    .map((m) => m.slug);
+  return [...sameCategory, ...filler].slice(0, target);
+}
+
+/**
+ * IndiaAnalysis FK key. Defaults to module slug — 1:1 mapping —
+ * unless an override has been set in the registry.
+ */
+export function getModuleAnalysisSlug(mod: IndiaModuleDef): string {
+  return mod.aiAnalysisSlug ?? mod.slug;
+}
+
+export function getModuleComingSoonFeatures(mod: IndiaModuleDef): string[] {
+  return mod.comingSoonFeatures ?? [
+    "Deeper time-series back to FY16",
+    "Per-state vs. peer-group benchmarking",
+    "Downloadable CSV / API endpoint",
+  ];
 }
