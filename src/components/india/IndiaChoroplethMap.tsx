@@ -104,15 +104,26 @@ export default function IndiaChoroplethMap({
 
   return (
     <div
+      className="india-choropleth-frame"
       style={{
         position: "relative",
         width: "100%",
+        maxWidth: 800,
+        margin: "0 auto",
         background: INDIA_DESIGN.bgCard,
         border: `1px solid ${INDIA_DESIGN.border}`,
         borderRadius: 12,
         overflow: "hidden",
       }}
     >
+      <style>{`
+        .india-choropleth-frame { max-height: 60vh; }
+        .india-choropleth-frame > svg { max-height: 60vh; height: 60vh !important; }
+        @media (max-width: 768px) {
+          .india-choropleth-frame { max-height: 50vh; }
+          .india-choropleth-frame > svg { max-height: 50vh; height: 50vh !important; }
+        }
+      `}</style>
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{ center: [82.5, 23.0], scale: 950 }}
