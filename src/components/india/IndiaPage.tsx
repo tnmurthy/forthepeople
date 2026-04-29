@@ -34,7 +34,7 @@ import IndiaSectionBand from "./IndiaSectionBand";
 import IndiaMccBanner from "./IndiaMccBanner";
 import IndiaModuleSuggestVote from "./IndiaModuleSuggestVote";
 import IndiaComingSoonRail from "./IndiaComingSoonRail";
-import IndiaSourcesButton from "./IndiaSourcesButton";
+import IndiaReportIssueButton from "./IndiaReportIssueButton";
 import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
 import { formatRelativeAge } from "@/lib/india/india-formatters";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
@@ -262,7 +262,7 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
           </>
         )}
 
-        <IndiaSourcesButton locale={locale} />
+        <IndiaReportIssueButton />
       </main>
 
       {/* Responsive grid styles — single source of truth for the
