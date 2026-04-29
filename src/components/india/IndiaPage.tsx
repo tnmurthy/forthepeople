@@ -28,7 +28,6 @@ import IndiaTopChipNav from "./IndiaTopChipNav";
 import IndiaViewToggle from "./IndiaViewToggle";
 import IndiaGridView from "./IndiaGridView";
 import IndiaNewDistrictsRail from "./IndiaNewDistrictsRail";
-import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
 import IndiaTodaySnapshot from "./IndiaTodaySnapshot";
 import IndiaSectionBand from "./IndiaSectionBand";
@@ -123,9 +122,11 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
         />
 
         {/* Engagement blocks — preserved 1:1 from /en/india-detail.
-            Sit ABOVE the rail+content grid so they span full width. */}
+            Sit ABOVE the rail+content grid so they span full width.
+            (IndiaNextDistrictVote intentionally omitted — that block lives
+            on the homepage; surfacing it here was confusing on the
+            All-India dashboard.) */}
         <IndiaNewDistrictsRail locale={locale} />
-        <IndiaNextDistrictVote locale={locale} />
         <IndiaNewsStrip />
 
         {/* View toggle — switches between List and Grid via ?view= query param. */}
