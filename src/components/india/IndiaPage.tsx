@@ -20,6 +20,7 @@
  *   • Per-band legal disclaimers (Phase 7)
  */
 
+import Link from "next/link";
 import IndiaLegalDisclaimer from "./IndiaLegalDisclaimer";
 import IndiaHero, { type HeroTileData } from "./IndiaHero";
 import IndiaSectionNav from "./IndiaSectionNav";
@@ -33,6 +34,7 @@ import IndiaModuleSuggestVote from "./IndiaModuleSuggestVote";
 import IndiaComingSoonRail from "./IndiaComingSoonRail";
 import IndiaDataSourcesIndex from "./IndiaDataSourcesIndex";
 import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
+import { formatRelativeAge } from "@/lib/india/india-formatters";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
 import { getLiveIndiaModules } from "@/lib/india/india-modules";
 import { DASHBOARDS_PER_DISTRICT } from "@/lib/constants";
@@ -164,6 +166,35 @@ export default async function IndiaPage({ locale, dict }: Props) {
           locale={locale}
           activeDistrictCount={activeDistrictCount}
         />
+
+        {/* Slim "see update log" footer link — transparency page link. */}
+        <div
+          style={{
+            maxWidth: INDIA_DESIGN.sectionMaxWidth,
+            margin: "0 auto",
+            padding: "8px 16px 24px",
+            textAlign: "center",
+            fontSize: 12,
+            color: INDIA_DESIGN.textMuted,
+          }}
+        >
+          {snapshot?.lastUpdated ? (
+            <span>Last updated {formatRelativeAge(snapshot.lastUpdated)}</span>
+          ) : (
+            <span>Awaiting first sync</span>
+          )}
+          <span style={{ margin: "0 6px", color: INDIA_DESIGN.textFaint }}>·</span>
+          <Link
+            href={`/${locale}/india/updates`}
+            style={{
+              color: INDIA_DESIGN.accentBlue,
+              textDecoration: "none",
+              fontWeight: 600,
+            }}
+          >
+            See update log →
+          </Link>
+        </div>
 
         <IndiaDataSourcesIndex
           title={dict.sources.title}
