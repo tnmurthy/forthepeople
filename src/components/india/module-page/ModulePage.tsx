@@ -185,17 +185,52 @@ export default async function ModulePage({ locale, module, disclaimers }: Props)
 
       {isLive ? (
         <>
-          <ModuleStateMap metricKey={choroplethMetric} metricLabel={choroplethLabel} />
+          {module.hasStateBreakdownData ? (
+            <>
+              <ModuleStateMap metricKey={choroplethMetric} metricLabel={choroplethLabel} />
+              <ModuleStateLeaderboard
+                locale={locale}
+                metricKey={choroplethMetric}
+                metricLabel={choroplethLabel}
+              />
+            </>
+          ) : (
+            <section
+              style={{
+                padding: "20px 16px",
+                background: INDIA_DESIGN.bgPage,
+                borderBottom: `1px solid ${INDIA_DESIGN.border}`,
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: 1200,
+                  margin: "0 auto",
+                  background: INDIA_DESIGN.bgCard,
+                  border: `1px dashed ${INDIA_DESIGN.border}`,
+                  borderRadius: 12,
+                  padding: "20px 24px",
+                  fontSize: 13,
+                  color: INDIA_DESIGN.textMuted,
+                  lineHeight: 1.55,
+                }}
+              >
+                <strong style={{ color: INDIA_DESIGN.textPrimary, fontSize: 14 }}>
+                  State-by-state view: Coming Soon
+                </strong>
+                <p style={{ margin: "6px 0 0" }}>
+                  This module ships with national-level data first. Per-state
+                  breakdowns will appear here once the upstream source publishes
+                  state-wise figures and the scraper is wired in.
+                </p>
+              </div>
+            </section>
+          )}
           <ModuleTimeSeries
             metricKey={choroplethMetric}
             metricLabel={choroplethLabel}
             unit={choroplethUnit}
             category={module.category}
-          />
-          <ModuleStateLeaderboard
-            locale={locale}
-            metricKey={choroplethMetric}
-            metricLabel={choroplethLabel}
           />
         </>
       ) : null}

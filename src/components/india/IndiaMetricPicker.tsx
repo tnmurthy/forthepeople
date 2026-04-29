@@ -17,6 +17,7 @@ import {
   getStateValuesForMetric,
 } from "@/lib/india/mock-state-data";
 import { CATEGORY_ACCENT, INDIA_DESIGN } from "@/lib/india/india-design";
+import { getStateBreakdownMetricKeys } from "@/lib/india/india-modules";
 
 interface Props {
   activeMetric: string;
@@ -24,6 +25,12 @@ interface Props {
 }
 
 export default function IndiaMetricPicker({ activeMetric, onSelect }: Props) {
+  // Only metrics whose owning module has hasStateBreakdownData = true
+  // surface as clickable tiles. Other metrics still exist in MOCK_METRICS
+  // for legacy use, but Grid view hides them until real per-state data
+  // lands.
+  const allowed = new Set(getStateBreakdownMetricKeys());
+  const visibleMetrics = MOCK_METRICS.filter((m) => allowed.has(m.key));
   return (
     <div
       role="tablist"
@@ -34,7 +41,7 @@ export default function IndiaMetricPicker({ activeMetric, onSelect }: Props) {
         gap: 10,
       }}
     >
-      {MOCK_METRICS.map((m) => {
+      {visibleMetrics.map((m) => {
         const isActive = activeMetric === m.key;
         const accent = CATEGORY_ACCENT[m.category];
         const values = getStateValuesForMetric(m.key);

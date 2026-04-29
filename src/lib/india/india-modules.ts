@@ -1257,3 +1257,19 @@ export function getModuleComingSoonFeatures(mod: IndiaModuleDef): string[] {
     "Downloadable CSV / API endpoint",
   ];
 }
+
+/**
+ * Headline metric keys for modules that have realistic per-state values
+ * declared in mock-state-data.REALISTIC_STATE_VALUES. The Grid view's
+ * metric picker filters its tiles against this list — only metrics with
+ * real state breakdowns become clickable tiles.
+ */
+export function getStateBreakdownMetricKeys(): string[] {
+  const keys: string[] = [];
+  for (const mod of INDIA_MODULES) {
+    if (mod.hasStateBreakdownData && mod.headlineMetric?.key) {
+      keys.push(mod.headlineMetric.key);
+    }
+  }
+  return keys;
+}

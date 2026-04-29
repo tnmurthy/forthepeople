@@ -27,10 +27,10 @@ import IndiaChoroplethMap from "./IndiaChoroplethMap";
 import IndiaMetricPicker from "./IndiaMetricPicker";
 import { CATEGORY_ACCENT, INDIA_DESIGN, categoryTint } from "@/lib/india/india-design";
 import {
-  MOCK_METRICS,
   getMockMetric,
   getStateValuesForMetric,
 } from "@/lib/india/mock-state-data";
+import { getStateBreakdownMetricKeys } from "@/lib/india/india-modules";
 
 type SubView = "map" | "bar" | "table";
 
@@ -39,7 +39,11 @@ interface Props {
 }
 
 export default function IndiaGridView({ locale }: Props) {
-  const [activeMetric, setActiveMetric] = useState<string>(MOCK_METRICS[0].key);
+  // Default to the first metric whose owning module declares state
+  // breakdown data — keeps the picker consistent with what's clickable.
+  const stateBreakdownKeys = getStateBreakdownMetricKeys();
+  const defaultMetric = stateBreakdownKeys[0] ?? "population_total";
+  const [activeMetric, setActiveMetric] = useState<string>(defaultMetric);
   const [subView, setSubView] = useState<SubView>("map");
   const [selectedStateSlug, setSelectedStateSlug] = useState<string | null>(null);
 
