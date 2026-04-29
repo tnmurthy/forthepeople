@@ -56,10 +56,12 @@ export default function IndiaTodaySnapshot({ tiles }: Props) {
 
   return (
     <section
+      id="india-today"
       style={{
         padding: "24px 16px",
         maxWidth: INDIA_DESIGN.sectionMaxWidth,
         margin: "0 auto",
+        scrollMarginTop: 80,
       }}
     >
       <SectionLabel icon="📊">India at a glance — today</SectionLabel>

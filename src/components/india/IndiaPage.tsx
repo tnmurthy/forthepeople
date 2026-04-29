@@ -23,7 +23,8 @@
 import Link from "next/link";
 import IndiaLegalDisclaimer from "./IndiaLegalDisclaimer";
 import IndiaHero, { type HeroTileData } from "./IndiaHero";
-import IndiaSectionNav from "./IndiaSectionNav";
+import IndiaLeftRailNav from "./IndiaLeftRailNav";
+import IndiaTopChipNav from "./IndiaTopChipNav";
 import IndiaNewDistrictsRail from "./IndiaNewDistrictsRail";
 import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
@@ -117,15 +118,29 @@ export default async function IndiaPage({ locale, dict }: Props) {
           totalDataPoints={totalDataPoints}
         />
 
-        {/* Engagement blocks — preserved 1:1 from /en/india-detail. */}
+        {/* Engagement blocks — preserved 1:1 from /en/india-detail.
+            Sit ABOVE the rail+content grid so they span full width. */}
         <IndiaNewDistrictsRail locale={locale} />
         <IndiaNextDistrictVote locale={locale} />
         <IndiaNewsStrip />
 
-        {/* Sticky table of contents for the deep-dive bands below. */}
-        <IndiaSectionNav />
+        {/* Mobile-only top chip nav (hidden on desktop via the
+            india-mobile-nav-only class — IndiaLeftRailNav handles
+            desktop). */}
+        <div className="india-mobile-nav-only">
+          <IndiaTopChipNav />
+        </div>
 
-        <IndiaTodaySnapshot tiles={todayTiles} />
+        {/* Two-column grid: 240px sticky rail | content column.
+            On mobile (≤1024px) the rail is hidden and content spans
+            full width — see <style> block at the bottom. */}
+        <div className="india-rail-grid">
+          <div className="india-rail-col">
+            <IndiaLeftRailNav />
+          </div>
+
+          <div className="india-content-col">
+            <IndiaTodaySnapshot tiles={todayTiles} />
 
         {/* All `live` module bands rendered from the registry. Each band's
             children slot is empty in this phase, so IndiaSectionBand falls
@@ -200,7 +215,27 @@ export default async function IndiaPage({ locale, dict }: Props) {
           title={dict.sources.title}
           subtitle={dict.sources.subtitle}
         />
+          </div>{/* /content-col */}
+        </div>{/* /rail-grid */}
       </main>
+
+      {/* Responsive grid styles — single source of truth for the
+          rail/content layout at /[locale]/india. */}
+      <style>{`
+        .india-rail-grid {
+          display: grid;
+          grid-template-columns: 240px 1fr;
+          align-items: start;
+        }
+        .india-mobile-nav-only { display: none; }
+        @media (max-width: 1024px) {
+          .india-rail-grid {
+            grid-template-columns: 1fr;
+          }
+          .india-rail-col { display: none; }
+          .india-mobile-nav-only { display: block; }
+        }
+      `}</style>
     </>
   );
 }

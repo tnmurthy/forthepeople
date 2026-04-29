@@ -24,9 +24,11 @@ export default function IndiaComingSoonRail() {
 
   return (
     <section
+      id="india-coming-soon"
       style={{
         padding: "32px 16px 28px",
         borderBottom: `1px solid ${INDIA_DESIGN.border}`,
+        scrollMarginTop: 80,
       }}
     >
       <div
