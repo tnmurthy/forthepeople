@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
 
 const STORAGE_KEY = "ftp:india-disclaimer-dismissed-v1";
@@ -23,17 +23,35 @@ interface Props {
   text: string;
 }
 
-export default function IndiaLegalDisclaimer({ text }: Props) {
-  const [visible, setVisible] = useState(false);
+// useSyncExternalStore hydrates correctly (SSR returns the snapshot, client
+// reads sessionStorage on first paint) without the "setState-in-effect"
+// anti-pattern. The store is per-component-instance because dismissal
+// notifies via a Set of subscribers.
+const subscribers = new Set<() => void>();
+function subscribe(cb: () => void): () => void {
+  subscribers.add(cb);
+  return () => {
+    subscribers.delete(cb);
+  };
+}
+function notify() {
+  for (const cb of subscribers) cb();
+}
+function getSnapshot(): boolean {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+function getServerSnapshot(): boolean {
+  // SSR has no sessionStorage — render visible by default. The first
+  // client paint reads the real value via getSnapshot.
+  return true;
+}
 
-  useEffect(() => {
-    try {
-      const dismissed = sessionStorage.getItem(STORAGE_KEY);
-      setVisible(dismissed !== "1");
-    } catch {
-      setVisible(true);
-    }
-  }, []);
+export default function IndiaLegalDisclaimer({ text }: Props) {
+  const visible = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   if (!visible) return null;
 
@@ -65,7 +83,7 @@ export default function IndiaLegalDisclaimer({ text }: Props) {
           } catch {
             /* ignore storage errors */
           }
-          setVisible(false);
+          notify();
         }}
         aria-label="Dismiss disclaimer for this session"
         style={{

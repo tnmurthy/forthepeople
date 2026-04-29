@@ -173,7 +173,7 @@ export default function IndiaUpdateLog() {
           <code style={{ background: "#FEF3C7", padding: "1px 4px", borderRadius: 3 }}>
             npx prisma db push
           </code>
-          ) and scrapers run for the first time.
+          ) and the first data sync completes.
         </div>
       ) : null}
 

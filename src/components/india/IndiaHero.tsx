@@ -75,6 +75,9 @@ export default function IndiaHero({
 }: Props) {
   const merged = mergeTiles(tiles);
 
+  // locale is plumbed for future per-locale formatting hooks; not used yet.
+  void locale;
+
   return (
     <section
       style={{
@@ -170,7 +173,7 @@ export default function IndiaHero({
   );
 }
 
-function HeroKpiTile({ tile, locale: _locale }: { tile: HeroTileData; locale: string }) {
+function HeroKpiTile({ tile }: { tile: HeroTileData; locale: string }) {
   const source = INDIA_SOURCES[tile.sourceKey];
   const hasValue = tile.value != null && tile.value !== "";
 
