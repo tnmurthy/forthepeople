@@ -16,6 +16,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const STORAGE_KEY = "ftp_disclaimer_v2";
 
@@ -24,6 +25,12 @@ export default function DisclaimerBanner() {
   const [hydrated, setHydrated] = useState(false);
   const [visible, setVisible] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const pathname = usePathname();
+
+  // /[locale]/india has its own session-aware IndiaLegalDisclaimer that
+  // carries the same NDSAP text below the header — suppress this site-wide
+  // copy on /india* routes to avoid two stacked amber banners.
+  const isIndiaRoute = /^\/[^/]+\/india(\/|$)/.test(pathname ?? "");
 
   useEffect(() => {
     try {
@@ -53,7 +60,7 @@ export default function DisclaimerBanner() {
     setVisible(false);
   }
 
-  if (!hydrated || !visible) return null;
+  if (!hydrated || !visible || isIndiaRoute) return null;
 
   return (
     <div
