@@ -14,9 +14,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
 import { formatIndianNumber } from "@/lib/india/india-formatters";
+import AnimatedProgressBar from "./animations/AnimatedProgressBar";
 
 export interface LeaderboardRow {
   stateSlug: string;
@@ -47,6 +48,8 @@ export default function IndiaStateLeaderboard({
 
   const slice =
     view === "top" ? sorted.slice(0, 5) : sorted.slice(-5).reverse();
+
+  const max = useMemo(() => Math.max(1, ...rows.map((r) => Math.abs(r.value))), [rows]);
 
   return (
     <div
@@ -103,14 +106,14 @@ export default function IndiaStateLeaderboard({
       </div>
 
       <div>
-        {slice.map((row, idx) => (
+        {slice.map((row, idx) => {
+          const pct = max > 0 ? (Math.abs(row.value) / max) * 100 : 0;
+          return (
           <Link
             key={row.stateSlug}
             href={`/${locale}/${row.stateSlug}`}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
+              display: "block",
               padding: "10px 14px",
               borderBottom:
                 idx === slice.length - 1
@@ -118,48 +121,56 @@ export default function IndiaStateLeaderboard({
                   : `1px solid ${INDIA_DESIGN.border}`,
               textDecoration: "none",
               color: INDIA_DESIGN.textPrimary,
-              minHeight: 44,
+              minHeight: 56,
             }}
           >
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: INDIA_DESIGN.textMuted,
-                fontFamily: INDIA_DESIGN.fontMono,
-                width: 22,
-              }}
-            >
-              #{row.rank ?? idx + 1}
-            </span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>
-              {row.stateName}
-            </span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                fontFamily: INDIA_DESIGN.fontMono,
-                fontVariantNumeric: "tabular-nums",
-                color: INDIA_DESIGN.textPrimary,
-              }}
-            >
-              {formatIndianNumber(row.value)}
-              {row.unit ? (
-                <span
-                  style={{
-                    fontSize: 11,
-                    color: INDIA_DESIGN.textMuted,
-                    fontWeight: 500,
-                    marginLeft: 3,
-                  }}
-                >
-                  {row.unit}
-                </span>
-              ) : null}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: INDIA_DESIGN.textMuted,
+                  fontFamily: INDIA_DESIGN.fontMono,
+                  width: 22,
+                }}
+              >
+                #{row.rank ?? idx + 1}
+              </span>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>
+                {row.stateName}
+              </span>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  fontFamily: INDIA_DESIGN.fontMono,
+                  fontVariantNumeric: "tabular-nums",
+                  color: INDIA_DESIGN.textPrimary,
+                }}
+              >
+                {formatIndianNumber(row.value)}
+                {row.unit ? (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: INDIA_DESIGN.textMuted,
+                      fontWeight: 500,
+                      marginLeft: 3,
+                    }}
+                  >
+                    {row.unit}
+                  </span>
+                ) : null}
+              </span>
+            </div>
+            <AnimatedProgressBar
+              pct={pct}
+              color={INDIA_DESIGN.accentBlue}
+              height={4}
+            />
           </Link>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

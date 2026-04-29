@@ -24,6 +24,7 @@ import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { CATEGORY_ACCENT, INDIA_DESIGN, categoryTint } from "@/lib/india/india-design";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
 import IndiaAwaitingSync from "./IndiaAwaitingSync";
+import RevealOnScroll from "./animations/RevealOnScroll";
 
 interface Props {
   module: IndiaModuleDef;
@@ -50,6 +51,7 @@ export default function IndiaSectionBand({
       !(Array.isArray(children) && children.length === 0));
 
   return (
+    <RevealOnScroll>
     <section
       id={module.slug}
       aria-labelledby={`${module.slug}-title`}
@@ -206,6 +208,7 @@ export default function IndiaSectionBand({
         <SourceBannerFooter module={module} />
       </div>
     </section>
+    </RevealOnScroll>
   );
 }
 

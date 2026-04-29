@@ -22,6 +22,7 @@ import Link from "next/link";
 import { INDIA_DESIGN, INDIA_TRICOLOR } from "@/lib/india/india-design";
 import { formatAsOfDate } from "@/lib/india/india-formatters";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
+import AnimatedCounter from "./animations/AnimatedCounter";
 
 export interface HeroTileData {
   metricKey: string;
@@ -215,7 +216,7 @@ function HeroKpiTile({ tile }: { tile: HeroTileData; locale: string }) {
               lineHeight: 1.05,
             }}
           >
-            {tile.value}
+            <AnimatedHeroValue value={tile.value as string | number} />
             {tile.unit && tile.unit !== "count" ? (
               <span style={{ fontSize: 13, color: INDIA_DESIGN.textMuted, marginLeft: 4 }}>
                 {tile.unit}
@@ -266,6 +267,19 @@ function HeroKpiTile({ tile }: { tile: HeroTileData; locale: string }) {
       </div>
     </div>
   );
+}
+
+/**
+ * Show the hero KPI value with a count-up if the value is purely
+ * numeric, else fall back to plain text (e.g. "₹3.5 lakh crore" stays
+ * static — animating mid-string numbers gets weird).
+ */
+function AnimatedHeroValue({ value }: { value: string | number }) {
+  const numeric = typeof value === "number" ? value : Number(value);
+  if (Number.isFinite(numeric) && String(numeric) === String(value).replace(/,/g, "")) {
+    return <AnimatedCounter value={numeric} />;
+  }
+  return <>{value}</>;
 }
 
 function dot(color: string): React.CSSProperties {
