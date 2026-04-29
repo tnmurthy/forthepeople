@@ -11,14 +11,9 @@
  * mock-state-data; production reads from IndiaIndicator).
  */
 
-import { Layers } from "lucide-react";
 import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { CATEGORY_ACCENT, INDIA_DESIGN, categoryTint } from "@/lib/india/india-design";
-import { CategorySvg } from "@/components/india/svg";
-import {
-  MOCK_METRICS,
-  STATE_METRIC_VALUES,
-} from "@/lib/india/mock-state-data";
+import ModuleHeroIcon from "./ModuleHeroIcon";
 
 interface Props {
   module: IndiaModuleDef;
@@ -31,22 +26,19 @@ interface KpiSeed {
 }
 
 function deriveHeadlineKpis(module: IndiaModuleDef): KpiSeed[] {
-  // Pick up to 6 metrics in this category as headline KPIs. Falls back
-  // to first few MOCK_METRICS if the category has none.
-  const inCategory = MOCK_METRICS.filter((m) => m.category === module.category);
-  const picks = (inCategory.length > 0 ? inCategory : MOCK_METRICS).slice(0, 4);
-  return picks.map((m) => {
-    const valuesForMetric = STATE_METRIC_VALUES.filter(
-      (v) => v.metricKey === m.key,
-    );
-    const sum = valuesForMetric.reduce((acc, v) => acc + v.value, 0);
-    const avg = valuesForMetric.length ? sum / valuesForMetric.length : 0;
-    return {
+  // Module-aware: read headlineMetric off the registry. The registry is
+  // the contract — if a module declares its own headline KPI, it shows
+  // exactly that, never a category-fallback (which is how the tigers page
+  // ended up showing "Forest Cover" instead of tiger population).
+  const m = module.headlineMetric;
+  if (!m) return [];
+  return [
+    {
       label: m.label,
-      value: avg.toLocaleString("en-IN", { maximumFractionDigits: 1 }),
-      unit: m.unit,
-    };
-  });
+      value: m.mockValue.toLocaleString("en-IN", { maximumFractionDigits: 2 }),
+      unit: m.mockUnit,
+    },
+  ];
 }
 
 export default function ModuleHero({ module }: Props) {
@@ -198,26 +190,44 @@ function ModuleHeroSvg({
   accent: string;
   tint: string;
 }) {
+  // Photograph wins when set (Wikimedia CC, PIB-released, etc.); otherwise
+  // a Lucide icon picked by module.slug — no more cartoon-dog SVG library.
+  if (module.heroImage) {
+    return (
+      <div
+        style={{
+          background: tint,
+          border: `1px solid ${accent}33`,
+          borderRadius: 16,
+          overflow: "hidden",
+          aspectRatio: "1 / 1",
+          maxWidth: 240,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={module.heroImage.url}
+          alt={module.heroImage.alt}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+    );
+  }
   return (
     <div
       style={{
         background: tint,
         border: `1px solid ${accent}33`,
         borderRadius: 16,
-        padding: 16,
+        padding: 24,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        aspectRatio: "1 / 1",
+        maxWidth: 240,
       }}
     >
-      <CategorySvg category={module.category} accent={accent} size={208} />
-      {/* Lucide fallback hidden behind data attribute so Jayanth can grep */}
-      <Layers
-        size={0}
-        aria-hidden="true"
-        data-testid="module-hero-svg-fallback"
-        style={{ display: "none" }}
-      />
+      <ModuleHeroIcon slug={module.slug} accent={accent} size={96} />
     </div>
   );
 }

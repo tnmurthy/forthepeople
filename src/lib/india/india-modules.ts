@@ -111,6 +111,31 @@ export interface IndiaModuleDef {
   comingSoonFeatures?: string[];
   /** Optional. IndiaAnalysis.moduleSlug FK for the AI summary card. Defaults to slug. */
   aiAnalysisSlug?: string;
+  /**
+   * The headline KPI shown in the module hero. Without this, ModuleHero
+   * falls back to the first metric in the module's category — which is
+   * how the tigers page ended up showing "Forest Cover" instead of tiger
+   * population. mockValue is a placeholder until real data lands.
+   */
+  headlineMetric?: {
+    key: string;
+    label: string;
+    unit: string;
+    mockValue: number;
+    mockUnit: string;
+  };
+  /**
+   * True if hand-crafted realistic per-state values exist for this
+   * module's leaderboard + choropleth. When false, the deep-dive page
+   * shows a "State-by-state view: Coming Soon" card instead.
+   */
+  hasStateBreakdownData?: boolean;
+  /**
+   * Future per-module photograph for the hero (Wikimedia CC, PIB-released,
+   * etc.). When set, ModuleHero renders the photo instead of the Lucide
+   * icon. Add by editing the registry — no code change needed.
+   */
+  heroImage?: { url: string; alt: string; credit: string; license: string };
 }
 
 export const INDIA_MODULES: IndiaModuleDef[] = [
@@ -133,6 +158,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "NationalSnapshotModule",
     scraperKeys: ["mha-states-uts", "lgd-districts-count"],
+    // MOCK — Constitutionally-fixed: 28 states + 8 UTs.
+    headlineMetric: { key: "states_uts_total", label: "States & UTs", unit: "count", mockValue: 36, mockUnit: "" },
   },
   {
     slug: "demographics-population",
@@ -152,6 +179,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "DemographicsModule",
     hasTimeSeries: true,
     scraperKeys: ["srs-population"],
+    // MOCK — round number near current UN/SRS estimate (~1.44 bn).
+    headlineMetric: { key: "population_total", label: "Population", unit: "cr", mockValue: 144, mockUnit: "cr" },
+    hasStateBreakdownData: true,
   },
 
   // ── Economy ────────────────────────────────────────────────
@@ -173,6 +203,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "EconomyGdpModule",
     hasTimeSeries: true,
     scraperKeys: ["mospi-gdp"],
+    // MOCK — order-of-magnitude India nominal GDP (~₹295 lakh crore range).
+    headlineMetric: { key: "gdp_nominal_inr", label: "Nominal GDP", unit: "₹ lakh cr", mockValue: 295, mockUnit: "₹ lakh cr" },
   },
   {
     slug: "economy-inflation",
@@ -192,6 +224,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "EconomyInflationModule",
     hasTimeSeries: true,
     scraperKeys: ["mospi-cpi", "dpiit-wpi"],
+    // MOCK — recent CPI YoY range placeholder.
+    headlineMetric: { key: "cpi_inflation", label: "CPI Inflation (YoY)", unit: "%", mockValue: 5.0, mockUnit: "%" },
   },
   {
     slug: "economy-employment",
@@ -208,6 +242,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "EconomyEmploymentModule",
     hasTimeSeries: true,
     scraperKeys: ["mospi-plfs"],
+    // MOCK — PLFS unemployment rate placeholder.
+    headlineMetric: { key: "unemployment_rate", label: "Unemployment Rate", unit: "%", mockValue: 4.0, mockUnit: "%" },
+    hasStateBreakdownData: true,
   },
 
   // ── Budget ────────────────────────────────────────────────
@@ -228,6 +265,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "BudgetUnionModule",
     scraperKeys: ["indiabudget-allocations", "cga-monthly-accounts"],
+    // MOCK — Union Budget total outlay placeholder (~₹48 lakh cr range).
+    headlineMetric: { key: "union_budget_outlay", label: "Total Outlay", unit: "₹ lakh cr", mockValue: 48, mockUnit: "₹ lakh cr" },
   },
   {
     slug: "budget-gst",
@@ -245,6 +284,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     hasTimeSeries: true,
     hasStateBreakdown: true,
     scraperKeys: ["gst-collections"],
+    // MOCK — typical monthly gross GST collection (~₹1.7 lakh cr range).
+    headlineMetric: { key: "gst_monthly_collection", label: "Monthly GST Collection", unit: "₹ lakh cr", mockValue: 1.7, mockUnit: "₹ lakh cr" },
   },
 
   // ── Agriculture ───────────────────────────────────────────
@@ -265,6 +306,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "AgricultureProductionModule",
     scraperKeys: ["dafw-crop-estimates", "agmarknet-mandi-count"],
+    // MOCK — annual foodgrain production placeholder (~330 million tonnes range).
+    headlineMetric: { key: "foodgrain_production", label: "Foodgrain Production", unit: "MT", mockValue: 330, mockUnit: "million tonnes" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "agriculture-plantation",
@@ -280,6 +324,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "AgriculturePlantationModule",
     scraperKeys: [],
+    // MOCK — annual tea production placeholder.
+    headlineMetric: { key: "tea_production", label: "Tea Production", unit: "mn kg", mockValue: 1400, mockUnit: "million kg" },
   },
   {
     slug: "agriculture-pmkisan",
@@ -296,6 +342,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "AgriculturePmKisanModule",
     hasTimeSeries: true,
     scraperKeys: ["pmkisan-beneficiaries"],
+    // MOCK — cumulative PM-KISAN beneficiary count placeholder (~11 cr).
+    headlineMetric: { key: "pmkisan_beneficiaries", label: "PM-KISAN Beneficiaries", unit: "cr", mockValue: 11, mockUnit: "cr" },
   },
 
   // ── Livestock ─────────────────────────────────────────────
@@ -313,6 +361,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "LivestockCensusModule",
     scraperKeys: [],
+    // MOCK — total livestock from 20th Livestock Census order-of-magnitude.
+    headlineMetric: { key: "livestock_total", label: "Total Livestock", unit: "mn", mockValue: 535, mockUnit: "million" },
   },
   {
     slug: "livestock-fisheries",
@@ -328,6 +378,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "LivestockFisheriesModule",
     scraperKeys: [],
+    // MOCK — annual fish production placeholder (~175 lakh tonnes range).
+    headlineMetric: { key: "fish_production", label: "Total Fish Production", unit: "lakh tonnes", mockValue: 175, mockUnit: "lakh tonnes" },
   },
 
   // ── Wildlife ──────────────────────────────────────────────
@@ -346,6 +398,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "WildlifeForestsModule",
     hasStateBreakdown: true,
     scraperKeys: ["fsi-forest-cover"],
+    // MOCK — total forest cover share of geographic area (ISFR ~21.7%).
+    headlineMetric: { key: "forest_cover_pct", label: "Forest Cover", unit: "%", mockValue: 21.7, mockUnit: "%" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "wildlife-tigers",
@@ -361,6 +416,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "NTCA", type: "Collected", refresh: "Annual" }],
     componentName: "WildlifeTigersModule",
     scraperKeys: ["ntca-tigers"],
+    // MOCK — NTCA Status of Tigers 2022 published 3,682; rounded as a placeholder.
+    headlineMetric: { key: "tiger_population", label: "Tiger Population", unit: "individuals", mockValue: 3500, mockUnit: "individuals" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "wildlife-protected-areas",
@@ -376,6 +434,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "WII", type: "Collected", refresh: "Quarterly" }],
     componentName: "WildlifeProtectedAreasModule",
     scraperKeys: ["wii-protected-areas"],
+    // MOCK — WII PA network total order-of-magnitude (~1,000+).
+    headlineMetric: { key: "protected_areas_count", label: "Protected Areas", unit: "count", mockValue: 1000, mockUnit: "" },
   },
 
   // ── Infrastructure ────────────────────────────────────────
@@ -393,6 +453,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Quarterly" }],
     componentName: "InfraRoadsModule",
     scraperKeys: ["morth-highways"],
+    // MOCK — National Highway length placeholder (~146,000 km).
+    headlineMetric: { key: "national_highway_km", label: "National Highway Length", unit: "km", mockValue: 146000, mockUnit: "km" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "infra-railways",
@@ -408,6 +471,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "RAILWAYS", type: "Collected", refresh: "Annual" }],
     componentName: "InfraRailwaysModule",
     scraperKeys: ["railways-yearbook"],
+    // MOCK — Indian Railways route + track km order-of-magnitude.
+    headlineMetric: { key: "rail_route_km", label: "Route Length", unit: "km", mockValue: 68000, mockUnit: "km" },
   },
   {
     slug: "infra-aviation",
@@ -424,6 +489,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "InfraAviationModule",
     hasStateBreakdown: true,
     scraperKeys: ["dgca-aviation"],
+    // MOCK — annual domestic + international air passengers placeholder.
+    headlineMetric: { key: "aviation_passengers", label: "Annual Air Passengers", unit: "mn", mockValue: 376, mockUnit: "million" },
   },
   {
     slug: "infra-ports",
@@ -439,6 +506,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraPortsModule",
     scraperKeys: [],
+    // MOCK — total port cargo throughput order-of-magnitude.
+    headlineMetric: { key: "ports_cargo_mt", label: "Annual Cargo Throughput", unit: "mn tonnes", mockValue: 800, mockUnit: "million tonnes" },
   },
   {
     slug: "infra-telecom",
@@ -455,6 +524,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "InfraTelecomModule",
     hasStateBreakdown: true,
     scraperKeys: ["trai-telecom"],
+    // MOCK — total wireless subscribers placeholder (~115 cr range).
+    headlineMetric: { key: "telecom_wireless_subscribers", label: "Wireless Subscribers", unit: "cr", mockValue: 115, mockUnit: "cr" },
   },
   {
     slug: "infra-smart-cities",
@@ -470,6 +541,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraSmartCitiesModule",
     scraperKeys: [],
+    // MOCK — SCM cohort size is fixed at 100 cities.
+    headlineMetric: { key: "smart_cities_count", label: "Smart Cities", unit: "count", mockValue: 100, mockUnit: "" },
   },
 
   // ── Energy ────────────────────────────────────────────────
@@ -489,6 +562,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     hasStateBreakdown: true,
     hasTimeSeries: true,
     scraperKeys: ["cea-power-monthly"],
+    // MOCK — total installed capacity order-of-magnitude (CEA ~440 GW).
+    headlineMetric: { key: "power_installed_gw", label: "Installed Capacity", unit: "GW", mockValue: 440, mockUnit: "GW" },
   },
   {
     slug: "energy-renewables",
@@ -506,6 +581,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     hasStateBreakdown: true,
     hasTimeSeries: true,
     scraperKeys: ["mnre-renewable"],
+    // MOCK — non-fossil installed capacity order-of-magnitude (~190 GW).
+    headlineMetric: { key: "renewable_installed_gw", label: "Renewable Capacity", unit: "GW", mockValue: 190, mockUnit: "GW" },
   },
   {
     slug: "energy-fuels",
@@ -521,6 +598,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "MNRE", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyFuelsModule",
     scraperKeys: [],
+    // MOCK — annual crude imports order-of-magnitude.
+    headlineMetric: { key: "crude_imports_mt", label: "Annual Crude Imports", unit: "mn tonnes", mockValue: 232, mockUnit: "million tonnes" },
   },
   {
     slug: "energy-coal",
@@ -536,6 +615,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "CEA", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyCoalModule",
     scraperKeys: [],
+    // MOCK — annual coal production order-of-magnitude.
+    headlineMetric: { key: "coal_production_mt", label: "Annual Coal Production", unit: "mn tonnes", mockValue: 990, mockUnit: "million tonnes" },
   },
 
   // ── Health ────────────────────────────────────────────────
@@ -558,6 +639,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     legalNote: "health",
     hasStateBreakdown: true,
     scraperKeys: ["nfhs5-indicators"],
+    // MOCK — NFHS-5 IMR national headline placeholder (~35 per 1k).
+    headlineMetric: { key: "infant_mortality", label: "Infant Mortality Rate", unit: "per 1k", mockValue: 35, mockUnit: "per 1,000 live births" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "health-pmjay",
@@ -574,6 +658,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "HealthPmJayModule",
     legalNote: "health",
     scraperKeys: [],
+    // MOCK — cumulative Ayushman card issuance order-of-magnitude.
+    headlineMetric: { key: "pmjay_cards", label: "Ayushman Cards Issued", unit: "cr", mockValue: 36, mockUnit: "cr" },
   },
   {
     slug: "health-immunisation",
@@ -590,6 +676,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "HealthImmunisationModule",
     legalNote: "health",
     scraperKeys: ["uwin-immunisation"],
+    // MOCK — cumulative U-WIN beneficiary registrations order-of-magnitude.
+    headlineMetric: { key: "uwin_beneficiaries", label: "U-WIN Beneficiaries", unit: "cr", mockValue: 26, mockUnit: "cr" },
   },
 
   // ── Education ─────────────────────────────────────────────
@@ -608,6 +696,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "EducationSchoolsModule",
     hasStateBreakdown: true,
     scraperKeys: [],
+    // MOCK — UDISE+ total schools order-of-magnitude (~14.9 lakh).
+    headlineMetric: { key: "schools_total", label: "Total Schools", unit: "lakh", mockValue: 14.9, mockUnit: "lakh" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "education-higher",
@@ -627,6 +718,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "EducationHigherModule",
     scraperKeys: ["aishe-higher"],
+    // MOCK — AISHE total higher-ed enrolment order-of-magnitude (~4.3 cr).
+    headlineMetric: { key: "higher_ed_enrolment", label: "Higher-Ed Enrolment", unit: "cr", mockValue: 4.3, mockUnit: "cr" },
   },
   {
     slug: "education-skills",
@@ -642,6 +735,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "AICTE", type: "Collected", refresh: "Annual" }],
     componentName: "EducationSkillsModule",
     scraperKeys: [],
+    // MOCK — cumulative PMKVY trained candidates placeholder.
+    headlineMetric: { key: "pmkvy_trained", label: "PMKVY Trained", unit: "cr", mockValue: 1.4, mockUnit: "cr" },
   },
 
   // ── Defence ───────────────────────────────────────────────
@@ -663,6 +758,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "DefenceBudgetModule",
     legalNote: "defence",
     scraperKeys: ["mod-budget"],
+    // MOCK — Demand for Grants (Defence) total allocation placeholder.
+    headlineMetric: { key: "defence_allocation", label: "Defence Allocation", unit: "₹ lakh cr", mockValue: 6.2, mockUnit: "₹ lakh cr" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "defence-exports",
@@ -682,6 +780,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "DefenceExportsModule",
     legalNote: "defence",
     scraperKeys: ["pib-defence-exports"],
+    // MOCK — annual defence exports order-of-magnitude (~₹21,000 cr).
+    headlineMetric: { key: "defence_exports", label: "Annual Defence Exports", unit: "₹ '000 cr", mockValue: 21, mockUnit: "₹ '000 cr" },
   },
   {
     slug: "defence-dpsu",
@@ -698,6 +798,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "DefenceDpsuModule",
     legalNote: "defence",
     scraperKeys: [],
+    // MOCK — combined DPSU revenue order-of-magnitude.
+    headlineMetric: { key: "dpsu_revenue", label: "Combined DPSU Revenue", unit: "₹ '000 cr", mockValue: 70, mockUnit: "₹ '000 cr" },
   },
 
   // ── Justice ───────────────────────────────────────────────
@@ -716,6 +818,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "JusticePendencyModule",
     legalNote: "justice",
     scraperKeys: [],
+    // MOCK — NJDG total pending cases order-of-magnitude.
+    headlineMetric: { key: "pending_cases", label: "Pending Cases", unit: "cr", mockValue: 5, mockUnit: "cr" },
   },
   {
     slug: "justice-crime",
@@ -732,6 +836,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "JusticeCrimeModule",
     legalNote: "justice",
     scraperKeys: [],
+    // MOCK — NCRB Crime in India total IPC cases order-of-magnitude.
+    headlineMetric: { key: "ipc_cases", label: "Total IPC Cases", unit: "lakh", mockValue: 58, mockUnit: "lakh" },
   },
   {
     slug: "justice-police",
@@ -749,6 +855,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     legalNote: "justice",
     hasStateBreakdown: true,
     scraperKeys: ["bprd-police"],
+    // MOCK — civil police actual strength order-of-magnitude (~21 lakh).
+    headlineMetric: { key: "police_strength", label: "Civil Police Strength", unit: "lakh", mockValue: 21, mockUnit: "lakh" },
   },
   {
     slug: "justice-prisons",
@@ -765,6 +873,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "JusticePrisonsModule",
     legalNote: "justice",
     scraperKeys: [],
+    // MOCK — total prison population order-of-magnitude (~5.7 lakh).
+    headlineMetric: { key: "prison_population", label: "Prison Population", unit: "lakh", mockValue: 5.7, mockUnit: "lakh" },
   },
 
   // ── Elections ─────────────────────────────────────────────
@@ -783,6 +893,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "ElectionsLokSabhaModule",
     legalNote: "elections",
     scraperKeys: [],
+    // MOCK — Lok Sabha is constitutionally fixed at 543 elected seats.
+    headlineMetric: { key: "loksabha_seats", label: "Lok Sabha Seats", unit: "count", mockValue: 543, mockUnit: "" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "elections-rajyasabha",
@@ -801,6 +914,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "ElectionsRajyaSabhaModule",
     legalNote: "elections",
     scraperKeys: [],
+    // MOCK — Rajya Sabha sanctioned strength (245 = 233 elected + 12 nominated).
+    headlineMetric: { key: "rajyasabha_seats", label: "Rajya Sabha Members", unit: "count", mockValue: 245, mockUnit: "" },
   },
   {
     slug: "elections-turnout",
@@ -818,6 +933,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     legalNote: "elections",
     hasTimeSeries: true,
     scraperKeys: [],
+    // MOCK — Lok Sabha turnout 66% range placeholder.
+    headlineMetric: { key: "loksabha_turnout_pct", label: "Lok Sabha Turnout", unit: "%", mockValue: 66, mockUnit: "%" },
   },
 
   // ── Science ───────────────────────────────────────────────
@@ -835,6 +952,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "ISRO", type: "Collected", refresh: "Event-driven" }],
     componentName: "ScienceIsroModule",
     scraperKeys: [],
+    // MOCK — total ISRO mission count order-of-magnitude.
+    headlineMetric: { key: "isro_launches_total", label: "Total ISRO Launches", unit: "count", mockValue: 120, mockUnit: "" },
   },
   {
     slug: "science-rd",
@@ -853,6 +972,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "ScienceRdModule",
     scraperKeys: ["dst-rd"],
+    // MOCK — GERD as % GDP placeholder (~0.65%).
+    headlineMetric: { key: "rd_pct_gdp", label: "R&D Spend (% GDP)", unit: "%", mockValue: 0.65, mockUnit: "%" },
   },
   {
     slug: "science-startups",
@@ -872,6 +993,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "ScienceStartupsModule",
     hasStateBreakdown: true,
     scraperKeys: ["dpiit-startups"],
+    // MOCK — DPIIT-recognised startups cumulative order-of-magnitude.
+    headlineMetric: { key: "dpiit_startups", label: "DPIIT-recognised Startups", unit: "lakh", mockValue: 1.4, mockUnit: "lakh" },
+    hasStateBreakdownData: true,
   },
   {
     slug: "science-digital",
@@ -891,6 +1015,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "ScienceDigitalModule",
     hasTimeSeries: true,
     scraperKeys: ["npci-upi"],
+    // MOCK — monthly UPI transaction count order-of-magnitude.
+    headlineMetric: { key: "upi_monthly_txns", label: "Monthly UPI Transactions", unit: "cr", mockValue: 1700, mockUnit: "cr" },
   },
 
   // ── Trade ─────────────────────────────────────────────────
@@ -912,6 +1038,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "TradeOverviewModule",
     hasTimeSeries: true,
     scraperKeys: ["commerce-trade"],
+    // MOCK — annual merchandise exports order-of-magnitude.
+    headlineMetric: { key: "exports_annual", label: "Annual Merchandise Exports", unit: "₹ lakh cr", mockValue: 37, mockUnit: "₹ lakh cr" },
   },
   {
     slug: "trade-fdi",
@@ -927,6 +1055,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "DPIIT", type: "Collected", refresh: "Quarterly" }],
     componentName: "TradeFdiModule",
     scraperKeys: [],
+    // MOCK — annual FDI equity inflow order-of-magnitude (~$70 bn).
+    headlineMetric: { key: "fdi_equity_inflow", label: "Annual FDI Equity Inflow", unit: "$ bn", mockValue: 70, mockUnit: "$ bn" },
   },
   {
     slug: "trade-diaspora",
@@ -941,6 +1071,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "RBI", type: "Collected", refresh: "Annual" }],
     componentName: "TradeDiasporaModule",
     scraperKeys: [],
+    // MOCK — annual remittance inflows order-of-magnitude (~$125 bn).
+    headlineMetric: { key: "remittances_annual_usd", label: "Annual Remittances", unit: "$ bn", mockValue: 125, mockUnit: "$ bn" },
   },
 
   // ── Tourism ───────────────────────────────────────────────
@@ -959,6 +1091,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     componentName: "TourismOverviewModule",
     hasTimeSeries: true,
     scraperKeys: ["tourism-arrivals"],
+    // MOCK — annual foreign tourist arrivals order-of-magnitude.
+    headlineMetric: { key: "fta_annual", label: "Foreign Tourist Arrivals", unit: "lakh", mockValue: 94, mockUnit: "lakh" },
   },
   {
     slug: "tourism-heritage",
@@ -974,6 +1108,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "ASI", type: "Collected", refresh: "Quarterly" }],
     componentName: "TourismHeritageModule",
     scraperKeys: ["asi-heritage"],
+    // MOCK — ASI centrally protected monuments order-of-magnitude (~3,700).
+    headlineMetric: { key: "asi_monuments", label: "ASI Protected Monuments", unit: "count", mockValue: 3700, mockUnit: "" },
   },
   {
     slug: "tourism-gi-tags",
@@ -989,6 +1125,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "IPINDIA", type: "Collected", refresh: "Annual" }],
     componentName: "TourismGiTagsModule",
     scraperKeys: [],
+    // MOCK — total GI tags registered order-of-magnitude (~570).
+    headlineMetric: { key: "gi_tags_total", label: "GI Tags Registered", unit: "count", mockValue: 570, mockUnit: "" },
   },
 
   // ── Sports ────────────────────────────────────────────────
@@ -1009,6 +1147,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "SportsOlympicsModule",
     scraperKeys: ["ioa-medals"],
+    // MOCK — India's all-time Olympic medal count.
+    headlineMetric: { key: "olympic_medals_total", label: "Olympic Medals (all-time)", unit: "count", mockValue: 41, mockUnit: "" },
   },
   {
     slug: "sports-khelo-india",
@@ -1024,6 +1164,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     sources: [{ sourceKey: "SAI", type: "Collected", refresh: "Annual" }],
     componentName: "SportsKheloIndiaModule",
     scraperKeys: [],
+    // MOCK — Khelo India scholar athletes supported, order-of-magnitude.
+    headlineMetric: { key: "khelo_india_athletes", label: "Khelo India Athletes", unit: "count", mockValue: 3000, mockUnit: "" },
   },
 ];
 
