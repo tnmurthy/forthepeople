@@ -123,7 +123,7 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
               totalDataPoints={totalDataPoints}
             />
             <IndiaNewDistrictsRail locale={locale} />
-            <IndiaNewsStrip />
+            <IndiaNewsStrip locale={locale} />
             <div
               style={{
                 maxWidth: INDIA_DESIGN.sectionMaxWidth,
@@ -166,7 +166,7 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
               totalDataPoints={totalDataPoints}
             />
             <IndiaNewDistrictsRail locale={locale} />
-            <IndiaNewsStrip />
+            <IndiaNewsStrip locale={locale} />
             <div
               style={{
                 maxWidth: INDIA_DESIGN.sectionMaxWidth,
