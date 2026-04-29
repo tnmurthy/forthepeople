@@ -113,37 +113,30 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
           minHeight: "100vh",
         }}
       >
-        <IndiaHero
-          locale={locale}
-          tiles={heroTiles}
-          activeDistrictCount={activeDistrictCount}
-          dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
-          totalDataPoints={totalDataPoints}
-        />
-
-        {/* Engagement blocks — preserved 1:1 from /en/india-detail.
-            Sit ABOVE the rail+content grid so they span full width.
-            (IndiaNextDistrictVote intentionally omitted — that block lives
-            on the homepage; surfacing it here was confusing on the
-            All-India dashboard.) */}
-        <IndiaNewDistrictsRail locale={locale} />
-        <IndiaNewsStrip />
-
-        {/* View toggle — switches between List and Grid via ?view= query param. */}
-        <div
-          style={{
-            maxWidth: INDIA_DESIGN.sectionMaxWidth,
-            margin: "0 auto",
-            padding: "8px 16px 0",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <IndiaViewToggle />
-        </div>
-
         {view === "grid" ? (
-          <IndiaGridView locale={locale} />
+          <>
+            <IndiaHero
+              locale={locale}
+              tiles={heroTiles}
+              activeDistrictCount={activeDistrictCount}
+              dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
+              totalDataPoints={totalDataPoints}
+            />
+            <IndiaNewDistrictsRail locale={locale} />
+            <IndiaNewsStrip />
+            <div
+              style={{
+                maxWidth: INDIA_DESIGN.sectionMaxWidth,
+                margin: "0 auto",
+                padding: "8px 16px 0",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <IndiaViewToggle />
+            </div>
+            <IndiaGridView locale={locale} />
+          </>
         ) : (
           <>
         {/* Mobile-only top chip nav (hidden on desktop via the
@@ -155,13 +148,36 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
 
         {/* Two-column grid: 240px sticky rail | content column.
             On mobile (≤1024px) the rail is hidden and content spans
-            full width — see <style> block at the bottom. */}
+            full width — see <style> block at the bottom.
+            The grid wraps everything below the disclaimer (hero +
+            engagement blocks included) so the rail is visible from
+            the top of the page, not just from mid-scroll. */}
         <div className="india-rail-grid">
           <div className="india-rail-col">
             <IndiaLeftRailNav />
           </div>
 
           <div className="india-content-col">
+            <IndiaHero
+              locale={locale}
+              tiles={heroTiles}
+              activeDistrictCount={activeDistrictCount}
+              dashboardsPerDistrict={DASHBOARDS_PER_DISTRICT}
+              totalDataPoints={totalDataPoints}
+            />
+            <IndiaNewDistrictsRail locale={locale} />
+            <IndiaNewsStrip />
+            <div
+              style={{
+                maxWidth: INDIA_DESIGN.sectionMaxWidth,
+                margin: "0 auto",
+                padding: "8px 16px 0",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <IndiaViewToggle />
+            </div>
             <IndiaTodaySnapshot tiles={todayTiles} />
 
         {/* All `live` module bands rendered from the registry. Each band's
