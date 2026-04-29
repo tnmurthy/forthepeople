@@ -35,7 +35,7 @@ import IndiaSectionBand from "./IndiaSectionBand";
 import IndiaMccBanner from "./IndiaMccBanner";
 import IndiaModuleSuggestVote from "./IndiaModuleSuggestVote";
 import IndiaComingSoonRail from "./IndiaComingSoonRail";
-import IndiaDataSourcesIndex from "./IndiaDataSourcesIndex";
+import IndiaSourcesButton from "./IndiaSourcesButton";
 import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
 import { formatRelativeAge } from "@/lib/india/india-formatters";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
@@ -236,14 +236,16 @@ export default async function IndiaPage({ locale, dict, view = "list" }: Props) 
           </Link>
         </div>
 
-        <IndiaDataSourcesIndex
-          title={dict.sources.title}
-          subtitle={dict.sources.subtitle}
-        />
+        {/* IndiaDataSourcesIndex was deleted in Phase 2.5f — replaced
+            by the floating IndiaSourcesButton + slide-out panel mounted
+            below, which is reachable from anywhere on the page rather
+            than only when the user scrolls to the bottom. */}
           </div>{/* /content-col */}
         </div>{/* /rail-grid */}
           </>
         )}
+
+        <IndiaSourcesButton locale={locale} />
       </main>
 
       {/* Responsive grid styles — single source of truth for the

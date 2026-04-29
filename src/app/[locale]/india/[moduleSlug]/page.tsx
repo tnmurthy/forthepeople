@@ -98,5 +98,41 @@ export default async function ModuleRoute({
   if (!mod) notFound();
   const dict = (locale === "kn" ? knDict : enDict).india;
 
-  return <ModulePage locale={locale} module={mod} disclaimers={dict.disclaimers} />;
+  // schema.org/Dataset JSON-LD — makes the module page eligible for
+  // Google Dataset Search (file 31 §18 + Phase 2.5f).
+  const dataset = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: mod.title,
+    description: mod.description,
+    url: `${BASE_URL}/${locale}/india/${mod.slug}`,
+    keywords: [mod.title, `India ${mod.category}`, "ForThePeople.in", "NDSAP"],
+    license: "https://data.gov.in/national-data-sharing-and-accessibility-policy-ndsap-0",
+    isAccessibleForFree: true,
+    creator: {
+      "@type": "Organization",
+      name: "ForThePeople.in",
+      url: BASE_URL,
+    },
+    distribution: mod.sources.map((s) => {
+      const src = INDIA_SOURCES[s.sourceKey];
+      return src
+        ? {
+            "@type": "DataDownload",
+            contentUrl: src.url,
+            name: src.name,
+          }
+        : null;
+    }).filter(Boolean),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }}
+      />
+      <ModulePage locale={locale} module={mod} disclaimers={dict.disclaimers} />
+    </>
+  );
 }

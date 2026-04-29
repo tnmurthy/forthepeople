@@ -46,6 +46,7 @@ import ModuleNewsStrip from "./ModuleNewsStrip";
 import ModuleSourcePanel from "./ModuleSourcePanel";
 import ModuleRelatedModules from "./ModuleRelatedModules";
 import ModuleComingSoonRail from "./ModuleComingSoonRail";
+import IndiaSourcesButton from "@/components/india/IndiaSourcesButton";
 
 type Disclaimers = {
   top: string;
@@ -210,6 +211,8 @@ export default async function ModulePage({ locale, module, disclaimers }: Props)
       <ModuleRelatedModules locale={locale} module={module} />
 
       <ModuleSourcePanel module={module} />
+
+      <IndiaSourcesButton locale={locale} />
     </main>
   );
 }

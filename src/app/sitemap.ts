@@ -6,6 +6,7 @@
 
 import { MetadataRoute } from "next";
 import { INDIA_STATES } from "@/lib/constants/districts";
+import { INDIA_MODULES } from "@/lib/india/india-modules";
 
 const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 const LOCALE = "en";
@@ -22,12 +23,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [
     { url: `${BASE}/${LOCALE}`, lastModified: new Date(), changeFrequency: "weekly", priority: 1.0 },
     { url: `${BASE}/${LOCALE}/india`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/${LOCALE}/india/updates`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
     { url: `${BASE}/${LOCALE}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE}/${LOCALE}/support`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/${LOCALE}/contribute`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/${LOCALE}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
     { url: `${BASE}/${LOCALE}/disclaimer`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
   ];
+
+  // Per-module deep-dive routes (53 modules). Live modules get
+  // weekly cadence + 0.8 priority; coming-soon get monthly + 0.5
+  // since they're SEO-soft until populated.
+  for (const mod of INDIA_MODULES) {
+    const live = mod.status === "live";
+    const url = `${BASE}/${LOCALE}/india/${mod.slug}`;
+    entries.push({
+      url,
+      lastModified: new Date(),
+      changeFrequency: live ? "weekly" : "monthly",
+      priority: live ? 0.8 : 0.5,
+    });
+  }
 
   // Add only ACTIVE state + district + module pages (not locked coming-soon districts)
   for (const state of INDIA_STATES) {
