@@ -28,6 +28,7 @@ import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
 import IndiaTodaySnapshot from "./IndiaTodaySnapshot";
 import IndiaSectionBand from "./IndiaSectionBand";
+import IndiaModuleSuggestVote from "./IndiaModuleSuggestVote";
 import IndiaComingSoonRail from "./IndiaComingSoonRail";
 import IndiaDataSourcesIndex from "./IndiaDataSourcesIndex";
 import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
@@ -118,7 +119,7 @@ export default async function IndiaPage({ locale, dict }: Props) {
           <IndiaSectionBand key={mod.slug} module={mod} />
         ))}
 
-        {/* Phase 6 inserts: voting widget here, between bands and rail */}
+        <IndiaModuleSuggestVote />
 
         <IndiaComingSoonRail />
 
