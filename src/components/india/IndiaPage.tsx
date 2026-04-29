@@ -28,6 +28,7 @@ import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
 import IndiaTodaySnapshot from "./IndiaTodaySnapshot";
 import IndiaSectionBand from "./IndiaSectionBand";
+import IndiaMccBanner from "./IndiaMccBanner";
 import IndiaModuleSuggestVote from "./IndiaModuleSuggestVote";
 import IndiaComingSoonRail from "./IndiaComingSoonRail";
 import IndiaDataSourcesIndex from "./IndiaDataSourcesIndex";
@@ -60,13 +61,22 @@ async function fetchIndiaSnapshot(): Promise<IndiaSnapshotResponse | null> {
   }
 }
 
+type Disclaimers = {
+  top: string;
+  defence: string;
+  health: string;
+  elections: string;
+  justice: string;
+  mcc: string;
+};
+
 interface Props {
   locale: string;
   /** Dictionary block from src/dictionaries/<locale>.json#india. */
   dict: {
     title: string;
     subtitle: string;
-    disclaimers: { top: string };
+    disclaimers: Disclaimers;
     sources: { title: string; subtitle: string };
   };
 }
@@ -79,6 +89,11 @@ export default async function IndiaPage({ locale, dict }: Props) {
   const activeDistrictCount = getTotalActiveDistrictCount();
   const totalDataPoints = activeDistrictCount * DASHBOARDS_PER_DISTRICT;
   const liveModules = getLiveIndiaModules();
+  const mccMode = process.env.NEXT_PUBLIC_ELECTION_MODE === "true";
+
+  // Index of the first elections-category live module — drives MCC banner
+  // placement. -1 if no elections modules are currently live.
+  const firstElectionsIdx = liveModules.findIndex((m) => m.category === "elections");
 
   return (
     <>
@@ -114,10 +129,32 @@ export default async function IndiaPage({ locale, dict }: Props) {
             children slot is empty in this phase, so IndiaSectionBand falls
             back to <IndiaAwaitingSync sourceKey={...} /> automatically.
             Phase 5+ will inject real KPI cards / charts / leaderboards
-            once IndiaIndicator has rows. */}
-        {liveModules.map((mod) => (
-          <IndiaSectionBand key={mod.slug} module={mod} />
-        ))}
+            once IndiaIndicator has rows.
+
+            Per-band legal disclaimer: when mod.legalNote is set, the
+            corresponding text from dict.disclaimers is rendered as an
+            italic muted note inside the band header. MCC banner shown
+            once before the first elections band when election mode is on. */}
+        {liveModules.map((mod, idx) => {
+          const noteText =
+            mod.legalNote && mod.legalNote in dict.disclaimers
+              ? dict.disclaimers[mod.legalNote as keyof Disclaimers]
+              : null;
+          const showMcc = mccMode && idx === firstElectionsIdx;
+          return (
+            <div key={mod.slug}>
+              {showMcc ? <IndiaMccBanner text={dict.disclaimers.mcc} /> : null}
+              <IndiaSectionBand module={mod} legalNoteText={noteText} />
+            </div>
+          );
+        })}
+
+        {/* Fallback: if MCC mode is on but no elections modules are live yet
+            (Session A's Correction-3 demoted all 3), still surface the
+            notice once near the bottom of the bands so visitors see it. */}
+        {mccMode && firstElectionsIdx === -1 ? (
+          <IndiaMccBanner text={dict.disclaimers.mcc} />
+        ) : null}
 
         <IndiaModuleSuggestVote />
 

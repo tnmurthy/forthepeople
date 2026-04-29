@@ -544,9 +544,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       { sourceKey: "RCHIIPS_NFHS", type: "Collected", refresh: "Annual" },
     ],
     componentName: "HealthOverviewModule",
-    legalNote:
-      "Aggregated public-health statistics only. Personal health data and " +
-      "individual hospital outcomes are not published.",
+    legalNote: "health",
     hasStateBreakdown: true,
     scraperKeys: ["nfhs5-indicators"],
   },
@@ -563,9 +561,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 27,
     sources: [{ sourceKey: "NHA_PMJAY", type: "Collected", refresh: "Monthly" }],
     componentName: "HealthPmJayModule",
-    legalNote:
-      "Aggregate enrolment / utilisation only. ForThePeople.in does not " +
-      "publish patient-identifying data.",
+    legalNote: "health",
     scraperKeys: [],
   },
   {
@@ -581,6 +577,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 28,
     sources: [{ sourceKey: "UWIN", type: "Collected", refresh: "Monthly" }],
     componentName: "HealthImmunisationModule",
+    legalNote: "health",
     scraperKeys: ["uwin-immunisation"],
   },
 
@@ -653,10 +650,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       { sourceKey: "MoF_BUDGET", type: "Collected", refresh: "Annual" },
     ],
     componentName: "DefenceBudgetModule",
-    legalNote:
-      "Limited to publicly disclosed Ministry of Defence figures. " +
-      "ForThePeople.in does not publish, infer, or speculate on classified, " +
-      "operational, or strategic information.",
+    legalNote: "defence",
     scraperKeys: ["mod-budget"],
   },
   {
@@ -675,9 +669,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       { sourceKey: "PIB", type: "Collected", refresh: "Quarterly" },
     ],
     componentName: "DefenceExportsModule",
-    legalNote:
-      "Aggregate export totals as released by MoD/PIB. Item-level breakdowns " +
-      "are not published unless announced by the ministry.",
+    legalNote: "defence",
     scraperKeys: ["pib-defence-exports"],
   },
   {
@@ -693,9 +685,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 34,
     sources: [{ sourceKey: "MOD", type: "Collected", refresh: "Annual" }],
     componentName: "DefenceDpsuModule",
-    legalNote:
-      "Listed-company annual report data only. Operational details are not " +
-      "published.",
+    legalNote: "defence",
     scraperKeys: [],
   },
 
@@ -713,9 +703,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 35,
     sources: [{ sourceKey: "NJDG", type: "Collected", refresh: "Weekly" }],
     componentName: "JusticePendencyModule",
-    legalNote:
-      "Aggregate case statistics only. Individual case details are not " +
-      "published.",
+    legalNote: "justice",
     scraperKeys: [],
   },
   {
@@ -731,9 +719,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 36,
     sources: [{ sourceKey: "NCRB", type: "Collected", refresh: "Annual" }],
     componentName: "JusticeCrimeModule",
-    legalNote:
-      "Published NCRB summary figures only. Individual case details are not " +
-      "shown. Crime data is presented neutrally — no state-shaming framing.",
+    legalNote: "justice",
     scraperKeys: [],
   },
   {
@@ -749,9 +735,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 37,
     sources: [{ sourceKey: "BPRD", type: "Collected", refresh: "Annual" }],
     componentName: "JusticePoliceModule",
-    legalNote:
-      "Aggregate organisational data from BPRD. Individual personnel data " +
-      "is not published.",
+    legalNote: "justice",
     hasStateBreakdown: true,
     scraperKeys: ["bprd-police"],
   },
@@ -768,9 +752,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 38,
     sources: [{ sourceKey: "NCRB", type: "Collected", refresh: "Annual" }],
     componentName: "JusticePrisonsModule",
-    legalNote:
-      "Aggregate prison-system statistics. Individual prisoner data is not " +
-      "published.",
+    legalNote: "justice",
     scraperKeys: [],
   },
 
@@ -788,9 +770,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 39,
     sources: [{ sourceKey: "ECI", type: "Collected", refresh: "Event-driven" }],
     componentName: "ElectionsLokSabhaModule",
-    legalNote:
-      "Electoral data is for citizen information. ForThePeople.in does not " +
-      "endorse, predict, or campaign for any party or candidate.",
+    legalNote: "elections",
     scraperKeys: [],
   },
   {
@@ -808,9 +788,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       { sourceKey: "RAJYA_SABHA", type: "Collected", refresh: "Monthly" },
     ],
     componentName: "ElectionsRajyaSabhaModule",
-    legalNote:
-      "Electoral data is for citizen information. ForThePeople.in does not " +
-      "endorse, predict, or campaign for any party or candidate.",
+    legalNote: "elections",
     scraperKeys: [],
   },
   {
@@ -826,9 +804,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     displayOrder: 41,
     sources: [{ sourceKey: "ECI", type: "Collected", refresh: "Annual" }],
     componentName: "ElectionsTurnoutModule",
-    legalNote:
-      "Electoral data is for citizen information. ForThePeople.in does not " +
-      "endorse, predict, or campaign for any party or candidate.",
+    legalNote: "elections",
     hasTimeSeries: true,
     scraperKeys: [],
   },
