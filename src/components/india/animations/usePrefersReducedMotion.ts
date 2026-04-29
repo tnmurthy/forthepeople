@@ -20,6 +20,10 @@ export function usePrefersReducedMotion(): boolean {
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    // Legitimate setState-in-effect: hydrating from a browser-only API
+    // (matchMedia) that's unavailable during SSR. Defaulting to true
+    // (motion-disabled) prevents an animation flash on first paint.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReduced(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
     if (mq.addEventListener) mq.addEventListener("change", handler);

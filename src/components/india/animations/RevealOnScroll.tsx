@@ -38,11 +38,16 @@ export default function RevealOnScroll({
 
   useEffect(() => {
     if (reduced) {
+      // No-animation path: jump straight to revealed. setState-in-effect
+      // is the right idiom here — we're synchronising state to a
+      // browser-derived value (the prefers-reduced-motion query).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRevealed(true);
       return;
     }
     if (!ref.current || typeof window === "undefined") return;
     if (!("IntersectionObserver" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRevealed(true);
       return;
     }

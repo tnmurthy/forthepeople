@@ -13,6 +13,43 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
 
+interface ToggleItemProps {
+  href: string;
+  active: boolean;
+  label: string;
+  icon: string;
+}
+
+// Declared at module scope (not inside render) so React doesn't
+// re-create the component on every render — react-hooks/static-components.
+function ToggleItem({ href, active, label, icon }: ToggleItemProps) {
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      prefetch={false}
+      aria-current={active ? "true" : undefined}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "5px 10px",
+        fontSize: 12,
+        fontWeight: 600,
+        color: active ? "#FFFFFF" : INDIA_DESIGN.textSecondary,
+        background: active ? INDIA_DESIGN.accentBlue : "transparent",
+        borderRadius: 6,
+        textDecoration: "none",
+        minHeight: 26,
+        transition: "background-color 120ms ease, color 120ms ease",
+      }}
+    >
+      <span aria-hidden="true">{icon}</span>
+      {label}
+    </Link>
+  );
+}
+
 export default function IndiaViewToggle() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -25,43 +62,6 @@ export default function IndiaViewToggle() {
     const qs = params.toString();
     return qs ? `${pathname}?${qs}` : pathname;
   }
-
-  const Item = ({
-    target,
-    label,
-    icon,
-  }: {
-    target: "list" | "grid";
-    label: string;
-    icon: string;
-  }) => {
-    const active = view === target;
-    return (
-      <Link
-        href={urlFor(target)}
-        scroll={false}
-        prefetch={false}
-        aria-current={active ? "true" : undefined}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          padding: "5px 10px",
-          fontSize: 12,
-          fontWeight: 600,
-          color: active ? "#FFFFFF" : INDIA_DESIGN.textSecondary,
-          background: active ? INDIA_DESIGN.accentBlue : "transparent",
-          borderRadius: 6,
-          textDecoration: "none",
-          minHeight: 26,
-          transition: "background-color 120ms ease, color 120ms ease",
-        }}
-      >
-        <span aria-hidden="true">{icon}</span>
-        {label}
-      </Link>
-    );
-  };
 
   return (
     <div
@@ -76,8 +76,8 @@ export default function IndiaViewToggle() {
         borderRadius: 8,
       }}
     >
-      <Item target="list" label="List" icon="≣" />
-      <Item target="grid" label="Grid" icon="▦" />
+      <ToggleItem href={urlFor("list")} active={view === "list"} label="List" icon="≣" />
+      <ToggleItem href={urlFor("grid")} active={view === "grid"} label="Grid" icon="▦" />
     </div>
   );
 }

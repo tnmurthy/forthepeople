@@ -40,11 +40,13 @@ export default function AnimatedDemographicBar({
 
   useEffect(() => {
     if (reduced) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlayed(true);
       return;
     }
     if (typeof window === "undefined" || !ref.current) return;
     if (!("IntersectionObserver" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlayed(true);
       return;
     }

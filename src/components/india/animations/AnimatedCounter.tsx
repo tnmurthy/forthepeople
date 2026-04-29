@@ -51,11 +51,14 @@ export default function AnimatedCounter({
 
   useEffect(() => {
     if (reduced) {
+      // Reduced-motion: jump straight to the target value, no animation.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplay(value);
       return;
     }
     if (typeof window === "undefined" || !ref.current) return;
     if (!("IntersectionObserver" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplay(value);
       return;
     }

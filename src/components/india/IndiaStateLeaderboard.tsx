@@ -40,6 +40,8 @@ export default function IndiaStateLeaderboard({
   higherIsBetter = true,
 }: Props) {
   const [view, setView] = useState<"top" | "bottom">("top");
+  // All hooks must run before any early return (rules-of-hooks).
+  const max = useMemo(() => Math.max(1, ...rows.map((r) => Math.abs(r.value))), [rows]);
   if (rows.length === 0) return null;
 
   const sorted = [...rows].sort((a, b) =>
@@ -48,8 +50,6 @@ export default function IndiaStateLeaderboard({
 
   const slice =
     view === "top" ? sorted.slice(0, 5) : sorted.slice(-5).reverse();
-
-  const max = useMemo(() => Math.max(1, ...rows.map((r) => Math.abs(r.value))), [rows]);
 
   return (
     <div
