@@ -27,8 +27,12 @@ import IndiaNewDistrictsRail from "./IndiaNewDistrictsRail";
 import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
 import IndiaTodaySnapshot from "./IndiaTodaySnapshot";
+import IndiaSectionBand from "./IndiaSectionBand";
+import IndiaComingSoonRail from "./IndiaComingSoonRail";
+import IndiaDataSourcesIndex from "./IndiaDataSourcesIndex";
 import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
+import { getLiveIndiaModules } from "@/lib/india/india-modules";
 import { DASHBOARDS_PER_DISTRICT } from "@/lib/constants";
 import { getTotalActiveDistrictCount } from "@/lib/constants/districts";
 
@@ -73,6 +77,7 @@ export default async function IndiaPage({ locale, dict }: Props) {
   const todayTiles = snapshot?.today ?? [];
   const activeDistrictCount = getTotalActiveDistrictCount();
   const totalDataPoints = activeDistrictCount * DASHBOARDS_PER_DISTRICT;
+  const liveModules = getLiveIndiaModules();
 
   return (
     <>
@@ -104,35 +109,28 @@ export default async function IndiaPage({ locale, dict }: Props) {
 
         <IndiaTodaySnapshot tiles={todayTiles} />
 
-        {/* Phase 4 inserts: 31 module bands here */}
-        {/* Phase 6 inserts: voting widget here */}
-        {/* Phase 4 inserts: Coming Soon Rail here */}
+        {/* All `live` module bands rendered from the registry. Each band's
+            children slot is empty in this phase, so IndiaSectionBand falls
+            back to <IndiaAwaitingSync sourceKey={...} /> automatically.
+            Phase 5+ will inject real KPI cards / charts / leaderboards
+            once IndiaIndicator has rows. */}
+        {liveModules.map((mod) => (
+          <IndiaSectionBand key={mod.slug} module={mod} />
+        ))}
+
+        {/* Phase 6 inserts: voting widget here, between bands and rail */}
+
+        <IndiaComingSoonRail />
 
         <IndiaRoyalContributorCard
           locale={locale}
           activeDistrictCount={activeDistrictCount}
         />
 
-        {/* Phase 4 inserts: IndiaDataSourcesIndex here */}
-
-        <div
-          style={{
-            maxWidth: INDIA_DESIGN.sectionMaxWidth,
-            margin: "0 auto",
-            padding: "8px 16px 32px",
-          }}
-        >
-          <p
-            style={{
-              fontSize: 12,
-              color: INDIA_DESIGN.textFaint,
-              textAlign: "center",
-              fontStyle: "italic",
-            }}
-          >
-            Module bands and the Data Sources Index land in the next build phase.
-          </p>
-        </div>
+        <IndiaDataSourcesIndex
+          title={dict.sources.title}
+          subtitle={dict.sources.subtitle}
+        />
       </main>
     </>
   );
