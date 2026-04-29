@@ -12,19 +12,24 @@
  *   Today Snapshot → Module Bands → Voting → Coming Soon → Royal →
  *   Sources Index
  *
- * Phase 2 stops at Hero + Nav. Phase 3 fills in the engagement blocks.
- * Phase 4 adds the module bands + Coming Soon + Sources. Phase 6 adds
- * the voting widget. Phase 7 wires legal disclaimers per band.
+ * Phase 3 status:
+ *   ✓ Hero, Sticky Nav, Disclaimer (Phase 2)
+ *   ✓ New Districts, Vote Next District, News, Today, Royal (Phase 3)
+ *   • Module Bands + Coming Soon Rail + Sources Index (Phase 4)
+ *   • Voting widget (Phase 6)
+ *   • Per-band legal disclaimers (Phase 7)
  */
 
 import IndiaLegalDisclaimer from "./IndiaLegalDisclaimer";
 import IndiaHero, { type HeroTileData } from "./IndiaHero";
 import IndiaSectionNav from "./IndiaSectionNav";
+import IndiaNewDistrictsRail from "./IndiaNewDistrictsRail";
+import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
+import IndiaNewsStrip from "./IndiaNewsStrip";
+import IndiaTodaySnapshot from "./IndiaTodaySnapshot";
+import IndiaRoyalContributorCard from "./IndiaRoyalContributorCard";
 import { INDIA_DESIGN } from "@/lib/india/india-design";
-import {
-  DASHBOARDS_PER_DISTRICT,
-  TOTAL_INDIA_DISTRICTS,
-} from "@/lib/constants";
+import { DASHBOARDS_PER_DISTRICT } from "@/lib/constants";
 import { getTotalActiveDistrictCount } from "@/lib/constants/districts";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
@@ -65,12 +70,9 @@ export default async function IndiaPage({ locale, dict }: Props) {
   const snapshot = await fetchIndiaSnapshot();
 
   const heroTiles = snapshot?.hero ?? [];
+  const todayTiles = snapshot?.today ?? [];
   const activeDistrictCount = getTotalActiveDistrictCount();
   const totalDataPoints = activeDistrictCount * DASHBOARDS_PER_DISTRICT;
-  // (Coming districts = TOTAL_INDIA_DISTRICTS - activeDistrictCount; rendered
-  //  in subsequent phases as "districts coming" copy. Kept here so the const
-  //  import is preserved when Phase 3 adds it to the new-districts strip.)
-  void TOTAL_INDIA_DISTRICTS;
 
   return (
     <>
@@ -92,32 +94,43 @@ export default async function IndiaPage({ locale, dict }: Props) {
           totalDataPoints={totalDataPoints}
         />
 
-        {/* Phase 3 inserts: New Districts → Vote Next District → News here */}
+        {/* Engagement blocks — preserved 1:1 from /en/india-detail. */}
+        <IndiaNewDistrictsRail locale={locale} />
+        <IndiaNextDistrictVote locale={locale} />
+        <IndiaNewsStrip />
 
+        {/* Sticky table of contents for the deep-dive bands below. */}
         <IndiaSectionNav />
 
-        {/* Phase 3 inserts: Today Snapshot here */}
-        {/* Phase 4 inserts: 31 module bands + Coming Soon Rail + Sources Index */}
-        {/* Phase 6 inserts: voting widget between bands and coming-soon rail */}
-        {/* Phase 3 inserts: Royal Contributor card near the bottom */}
+        <IndiaTodaySnapshot tiles={todayTiles} />
+
+        {/* Phase 4 inserts: 31 module bands here */}
+        {/* Phase 6 inserts: voting widget here */}
+        {/* Phase 4 inserts: Coming Soon Rail here */}
+
+        <IndiaRoyalContributorCard
+          locale={locale}
+          activeDistrictCount={activeDistrictCount}
+        />
+
+        {/* Phase 4 inserts: IndiaDataSourcesIndex here */}
 
         <div
           style={{
             maxWidth: INDIA_DESIGN.sectionMaxWidth,
             margin: "0 auto",
-            padding: "32px 16px 48px",
+            padding: "8px 16px 32px",
           }}
         >
           <p
             style={{
-              fontSize: 13,
-              color: INDIA_DESIGN.textMuted,
-              fontStyle: "italic",
+              fontSize: 12,
+              color: INDIA_DESIGN.textFaint,
               textAlign: "center",
+              fontStyle: "italic",
             }}
           >
-            More sections coming online — module bands and the data sources
-            index land in subsequent build phases.
+            Module bands and the Data Sources Index land in the next build phase.
           </p>
         </div>
       </main>
