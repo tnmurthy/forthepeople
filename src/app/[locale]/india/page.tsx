@@ -46,11 +46,15 @@ export async function generateMetadata({
 
 export default async function IndiaRoute({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { locale } = await params;
+  const sp = await searchParams;
+  const view = sp.view === "grid" ? "grid" : "list";
   const dict = (locale === "kn" ? knDict : enDict).india;
 
-  return <IndiaPage locale={locale} dict={dict} />;
+  return <IndiaPage locale={locale} dict={dict} view={view} />;
 }

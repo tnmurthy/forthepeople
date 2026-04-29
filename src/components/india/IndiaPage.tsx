@@ -25,6 +25,8 @@ import IndiaLegalDisclaimer from "./IndiaLegalDisclaimer";
 import IndiaHero, { type HeroTileData } from "./IndiaHero";
 import IndiaLeftRailNav from "./IndiaLeftRailNav";
 import IndiaTopChipNav from "./IndiaTopChipNav";
+import IndiaViewToggle from "./IndiaViewToggle";
+import IndiaGridView from "./IndiaGridView";
 import IndiaNewDistrictsRail from "./IndiaNewDistrictsRail";
 import IndiaNextDistrictVote from "./IndiaNextDistrictVote";
 import IndiaNewsStrip from "./IndiaNewsStrip";
@@ -82,9 +84,11 @@ interface Props {
     disclaimers: Disclaimers;
     sources: { title: string; subtitle: string };
   };
+  /** "list" = current band-stack layout; "grid" = choropleth + tiles + sidebar. */
+  view?: "list" | "grid";
 }
 
-export default async function IndiaPage({ locale, dict }: Props) {
+export default async function IndiaPage({ locale, dict, view = "list" }: Props) {
   const snapshot = await fetchIndiaSnapshot();
 
   const heroTiles = snapshot?.hero ?? [];
@@ -124,6 +128,23 @@ export default async function IndiaPage({ locale, dict }: Props) {
         <IndiaNextDistrictVote locale={locale} />
         <IndiaNewsStrip />
 
+        {/* View toggle — switches between List and Grid via ?view= query param. */}
+        <div
+          style={{
+            maxWidth: INDIA_DESIGN.sectionMaxWidth,
+            margin: "0 auto",
+            padding: "8px 16px 0",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <IndiaViewToggle />
+        </div>
+
+        {view === "grid" ? (
+          <IndiaGridView locale={locale} />
+        ) : (
+          <>
         {/* Mobile-only top chip nav (hidden on desktop via the
             india-mobile-nav-only class — IndiaLeftRailNav handles
             desktop). */}
@@ -217,6 +238,8 @@ export default async function IndiaPage({ locale, dict }: Props) {
         />
           </div>{/* /content-col */}
         </div>{/* /rail-grid */}
+          </>
+        )}
       </main>
 
       {/* Responsive grid styles — single source of truth for the
