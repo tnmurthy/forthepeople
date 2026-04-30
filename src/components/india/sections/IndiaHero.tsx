@@ -16,8 +16,20 @@
  */
 
 import * as React from "react";
-import { BookOpen } from "lucide-react";
-import { BilingualRotator } from "./BilingualRotator";
+import {
+  BookOpenText,
+  Building2,
+  ChevronRight,
+  Crown,
+  Film,
+  Globe2,
+  Languages as LanguagesIcon,
+  Moon,
+  TrendingUp,
+  Users,
+  Workflow,
+} from "lucide-react";
+import { LanguageRotator } from "@/components/india/primitives/LanguageRotator";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
 import { IndiaTricolor } from "@/lib/india/design-tokens";
@@ -29,65 +41,54 @@ import {
 } from "@/data/india-outline";
 
 interface IdentityChip {
-  emoji: string;
-  text: string;
-  family: string;
-  bg: string;
-  fg: string;
-  worldFirst?: boolean;
+  id: string;
+  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
+  label: string;
+  isGold?: boolean;
 }
 
-const ROW_1: IdentityChip[] = [
-  { emoji: "🥇", text: "World's largest democracy", family: "blue", bg: "#E6F1FB", fg: "#0C447C", worldFirst: true },
-  { emoji: "🥇", text: "Most populous nation", family: "teal", bg: "#E1F5EE", fg: "#085041", worldFirst: true },
-  { emoji: "🥇", text: "Largest film industry", family: "red", bg: "#FAECE7", fg: "#712B13", worldFirst: true },
-];
-const ROW_2: IdentityChip[] = [
-  { emoji: "🪙", text: "3rd largest economy (PPP)", family: "purple", bg: "#EEEDFE", fg: "#26215C" },
-  { emoji: "🌙", text: "4th nation on the Moon", family: "amber", bg: "#FAEEDA", fg: "#633806" },
-  { emoji: "🗣️", text: "22 official languages", family: "pink", bg: "#FBEAF0", fg: "#72243E" },
-];
-const ROW_3: IdentityChip[] = [
-  { emoji: "🌐", text: "G20 founding member", family: "green", bg: "#EAF3DE", fg: "#27500A" },
-  { emoji: "🧘", text: "Birthplace of yoga & chess", family: "coral", bg: "#FAECE7", fg: "#712B13" },
-  { emoji: "🏺", text: "5,000-year civilization", family: "gray", bg: "#E8EAEC", fg: "#2C3033" },
+const HERO_CHIPS: IdentityChip[] = [
+  { id: "democracy", icon: Crown, label: "World's largest democracy", isGold: true },
+  { id: "population", icon: Users, label: "Most populous nation", isGold: true },
+  { id: "films", icon: Film, label: "Largest film industry", isGold: true },
+  { id: "gdp", icon: TrendingUp, label: "3rd largest economy (PPP)" },
+  { id: "moon", icon: Moon, label: "4th nation on the Moon" },
+  { id: "languages", icon: LanguagesIcon, label: "22 official languages" },
+  { id: "g20", icon: Globe2, label: "G20 founding member" },
+  { id: "origin", icon: Workflow, label: "Birthplace of yoga & chess" },
+  { id: "civilization", icon: Building2, label: "5,000-year civilization" },
 ];
 
-function ChipRow({ chips }: { chips: IdentityChip[] }) {
+function ChipsList() {
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-      {chips.map((c) => (
-        <span
-          key={c.text}
-          style={{
-            background: c.bg,
-            color: c.fg,
-            opacity: 0.92,
-            fontSize: "11px",
-            padding: "2px 8px",
-            borderRadius: "999px",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            lineHeight: 1.5,
-          }}
-        >
-          {c.worldFirst && (
-            <span
-              aria-hidden
-              style={{
-                width: "4px",
-                height: "4px",
-                borderRadius: "50%",
-                background: "#BA7517",
-                display: "inline-block",
-              }}
-            />
-          )}
-          <span>{c.emoji}</span>
-          <span>{c.text}</span>
-        </span>
-      ))}
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+      {HERO_CHIPS.map((chip) => {
+        const Icon = chip.icon;
+        return (
+          <span
+            key={chip.id}
+            style={{
+              border: chip.isGold
+                ? "0.5px solid rgba(239, 159, 39, 0.40)"
+                : "0.5px solid rgba(0,0,0,0.08)",
+              background: chip.isGold
+                ? "linear-gradient(90deg, rgba(239, 159, 39, 0.10) 0%, rgba(239, 159, 39, 0.04) 100%)"
+                : "var(--color-background)",
+              color: chip.isGold ? "#633806" : "var(--color-text-secondary)",
+              borderRadius: "999px",
+              padding: "3px 9px",
+              fontSize: "10.5px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              transition: "border-color 150ms",
+            }}
+          >
+            <Icon size={11} />
+            {chip.label}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -173,29 +174,21 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
           padding: "22px 26px",
           borderRadius: "var(--border-radius-lg)",
           overflow: "hidden",
-          background: "var(--color-surface)",
-          border: "0.5px solid var(--color-border-tertiary)",
+          border: "0.5px solid rgba(0, 0, 0, 0.08)",
+          background: `
+            radial-gradient(ellipse 400px 240px at 0% 0%, rgba(255, 153, 51, 0.08), transparent 60%),
+            radial-gradient(ellipse 400px 240px at 100% 100%, rgba(19, 136, 8, 0.08), transparent 60%),
+            linear-gradient(180deg, #FEFEFB 0%, #FAFAF8 100%)
+          `,
         }}
       >
-        {/* tricolor washes */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: IndiaTricolor.containerOpacity,
-            pointerEvents: "none",
-            background: `radial-gradient(60% 60% at 0% 0%, rgba(255, 153, 51, ${IndiaTricolor.saffronWashOpacity}) 0%, transparent 60%), radial-gradient(60% 60% at 100% 100%, rgba(19, 136, 8, ${IndiaTricolor.greenWashOpacity}) 0%, transparent 60%)`,
-          }}
-        />
-
         <div
           className="india-hero-grid"
           style={{
             position: "relative",
             display: "grid",
-            gridTemplateColumns: "1.4fr 1fr",
-            gap: "32px",
+            gridTemplateColumns: "1fr 220px",
+            gap: "22px",
             alignItems: "start",
           }}
         >
@@ -203,38 +196,47 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
           <div>
             <div
               style={{
-                fontSize: "12px",
+                fontSize: "11px",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
                 color: "var(--color-text-tertiary)",
                 marginBottom: "10px",
               }}
             >
-              South Asia · Republic
+              South Asia · Republic · Constitution adopted 26 Jan 1950
             </div>
-
-            <h1
-              style={{
-                fontFamily: "var(--font-jakarta)",
-                fontSize: "60px",
-                fontWeight: 500,
-                lineHeight: 1.05,
-                letterSpacing: "-0.02em",
-                margin: "0 0 4px",
-              }}
-              className="india-hero-headline"
-            >
-              India
-            </h1>
-
-            <BilingualRotator />
 
             <div
               style={{
-                fontSize: "15px",
+                display: "flex",
+                alignItems: "baseline",
+                gap: "14px",
+                marginBottom: "6px",
+                flexWrap: "wrap",
+              }}
+            >
+              <h1
+                style={{
+                  fontFamily: "var(--font-jakarta)",
+                  fontSize: "42px",
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  letterSpacing: "-0.025em",
+                  margin: 0,
+                }}
+                className="india-hero-headline"
+              >
+                India
+              </h1>
+              <LanguageRotator />
+            </div>
+
+            <div
+              style={{
+                fontSize: "14px",
                 fontStyle: "italic",
                 color: "var(--color-text-secondary)",
-                margin: "8px 0",
+                margin: "0 0 12px",
               }}
             >
               &quot;Sovereign, socialist, secular, democratic republic&quot;
@@ -247,29 +249,44 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "6px",
-                fontSize: "12px",
-                color: "var(--color-text-info)",
-                background: "var(--color-background-info)",
-                padding: "5px 10px",
+                gap: "8px",
+                padding: "7px 14px 7px 12px",
+                background:
+                  "linear-gradient(90deg, rgba(83, 74, 183, 0.10) 0%, rgba(83, 74, 183, 0.04) 100%)",
+                border: "0.5px solid rgba(83, 74, 183, 0.30)",
+                color: "#3C3489",
                 borderRadius: "999px",
+                fontSize: "12px",
+                fontWeight: 500,
+                marginBottom: "14px",
                 textDecoration: "none",
+                width: "fit-content",
               }}
             >
-              <BookOpen size={13} />
+              <BookOpenText size={13} />
               Read the Preamble — every Indian should
+              <ChevronRight size={11} style={{ opacity: 0.7 }} />
             </a>
 
-            {/* 3 rows of identity chips */}
-            <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <ChipRow chips={ROW_1} />
-              <ChipRow chips={ROW_2} />
-              <ChipRow chips={ROW_3} />
-            </div>
+            {/* Identity chips */}
+            <ChipsList />
             <div
               style={{ fontSize: "10px", color: "var(--color-text-tertiary)", marginTop: "8px" }}
             >
-              ● denotes a current world #1 ranking
+              <span
+                aria-hidden
+                style={{
+                  display: "inline-block",
+                  width: "6px",
+                  height: "6px",
+                  marginRight: "4px",
+                  background: "rgba(239, 159, 39, 0.30)",
+                  border: "0.5px solid rgba(239, 159, 39, 0.55)",
+                  borderRadius: "999px",
+                  verticalAlign: "middle",
+                }}
+              />
+              gold-tinted chips denote a current world #1 ranking
             </div>
           </div>
 
