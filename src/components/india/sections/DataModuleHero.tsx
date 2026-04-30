@@ -20,17 +20,14 @@ import { IndiaSuperCategoryAccents } from "@/lib/india/design-tokens";
 import { DataQualityChip, type DataQualityKind } from "@/components/india/primitives/DataQualityChip";
 import { SourceHealthDot, type ScraperCadence } from "@/components/india/primitives/SourceHealthDot";
 import { SourcePill } from "@/components/india/primitives/SourcePill";
+import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
+import { formatIndiaNumber } from "@/lib/india/format-number";
 
 export interface DataModuleHeroProps {
   module: IndiaModuleDef;
   headlineMetricKey: string;       // moduleSlug + metricKey identifies the IndiaIndicator row
   expectedCadence?: ScraperCadence;
   scraperKey?: string;             // overrides module.scraperKeys[0] if needed
-}
-
-function formatNumber(n: number | null): string {
-  if (n === null) return "—";
-  return n.toLocaleString("en-IN");
 }
 
 function formatDate(d: Date | null | undefined): string {
@@ -174,18 +171,32 @@ export async function DataModuleHero({
 
           {/* Headline KPI block */}
           <div style={{ display: "flex", alignItems: "baseline", gap: "10px", flexWrap: "wrap" }}>
-            <span
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "44px",
-                fontWeight: 500,
-                lineHeight: 1,
-                color: accent.text,
-              }}
-              className="data-hero-bignum"
-            >
-              {formatNumber(value)}
-            </span>
+            {value !== null ? (
+              <CountUpNumber
+                target={value}
+                className="data-hero-bignum"
+                inlineStyle={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "44px",
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  color: accent.text,
+                }}
+              />
+            ) : (
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "44px",
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  color: accent.text,
+                }}
+                className="data-hero-bignum"
+              >
+                —
+              </span>
+            )}
             {indicator?.unit && (
               <span style={{ fontSize: "13px", color: "var(--color-text-secondary)" }}>
                 {indicator.unit}

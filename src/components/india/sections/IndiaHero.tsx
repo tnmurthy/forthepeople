@@ -21,6 +21,7 @@ import { BookOpen } from "lucide-react";
 import { BilingualRotator } from "./BilingualRotator";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { ModuleDropdown } from "@/components/india/primitives/ModuleDropdown";
+import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
 import { IndiaTricolor } from "@/lib/india/design-tokens";
 
 interface IdentityChip {
@@ -332,11 +333,73 @@ export function IndiaHero({ locale, freshnessLine }: IndiaHeroProps) {
           marginTop: "1rem",
         }}
       >
-        <KpiCell label="Population" value="1.43" unit="billion · 2024 est." />
-        <KpiCell label="Area" value="3.29" unit="million km²" />
-        <KpiCell label="Nominal GDP" value="$4.1T" unit="FY26 · IMF" />
+        <KpiCell
+          label="Population"
+          value={
+            <CountUpNumber
+              target={1.43}
+              decimals={2}
+              inlineStyle={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "24px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+              }}
+            />
+          }
+          unit="billion · 2024 est."
+        />
+        <KpiCell
+          label="Area"
+          value={
+            <CountUpNumber
+              target={3.29}
+              decimals={2}
+              inlineStyle={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "24px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+              }}
+            />
+          }
+          unit="million km²"
+        />
+        <KpiCell
+          label="Nominal GDP"
+          value={
+            <CountUpNumber
+              target={4.1}
+              decimals={1}
+              prefix="$"
+              suffix="T"
+              inlineStyle={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "24px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+              }}
+            />
+          }
+          unit="FY26 · IMF"
+        />
         <KpiCell label="States · UTs" value="28 · 8" unit="780 districts" />
-        <KpiCell label="Languages" value="22" unit="scheduled · Schedule 8" />
+        <KpiCell
+          label="Languages"
+          value={
+            <CountUpNumber
+              target={22}
+              decimals={0}
+              inlineStyle={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "24px",
+                fontWeight: 500,
+                lineHeight: 1.1,
+              }}
+            />
+          }
+          unit="scheduled · Schedule 8"
+        />
       </div>
 
       {/* Freshness strip */}
@@ -384,7 +447,15 @@ export function IndiaHero({ locale, freshnessLine }: IndiaHeroProps) {
   );
 }
 
-function KpiCell({ label, value, unit }: { label: string; value: string; unit: string }) {
+function KpiCell({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: React.ReactNode;
+  unit: string;
+}) {
   return (
     <div
       style={{
@@ -404,16 +475,20 @@ function KpiCell({ label, value, unit }: { label: string; value: string; unit: s
       >
         {label}
       </div>
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "24px",
-          fontWeight: 500,
-          lineHeight: 1.1,
-        }}
-      >
-        {value}
-      </div>
+      {typeof value === "string" ? (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "24px",
+            fontWeight: 500,
+            lineHeight: 1.1,
+          }}
+        >
+          {value}
+        </div>
+      ) : (
+        <div>{value}</div>
+      )}
       <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
         {unit}
       </div>

@@ -7,6 +7,7 @@
 
 import * as React from "react";
 import { DataQualityChip, DataQualityKind } from "./DataQualityChip";
+import { formatIndiaNumber } from "@/lib/india/format-number";
 
 export interface KPITileProps {
   label: string;
@@ -41,7 +42,7 @@ export function KPITile({
   span,
   className,
 }: KPITileProps) {
-  const formatted = typeof value === "number" ? value.toLocaleString("en-IN") : value;
+  const formatted = typeof value === "number" ? formatIndiaNumber(value) : value;
 
   return (
     <div
