@@ -183,6 +183,11 @@
         "title": "Culture and Heritage",
         "tagline": "Tourism, monuments, sports, GI tags — what makes India distinctly Indian."
       }
+    },
+    "breadcrumb": {
+      "home": "ಮುಖಪುಟ",
+      "india": "ಭಾರತ",
+      "selectModule": "ಮಾಡ್ಯೂಲ್ ಆಯ್ಕೆಮಾಡಿ"
     }
   }
 }

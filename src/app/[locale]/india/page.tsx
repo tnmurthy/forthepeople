@@ -15,11 +15,15 @@
 import type { Metadata } from "next";
 import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
+import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
+import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import {
   getOrderedSuperCategories,
   getModulesForSuperCategory,
 } from "@/lib/india/india-super-categories";
 import { INDIA_MODULES } from "@/lib/india/india-modules";
+import enDict from "@/dictionaries/en.json";
+import knDict from "@/dictionaries/kn.json";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -55,16 +59,21 @@ export default async function IndiaRoute({
 }) {
   const { locale } = await params;
   const superCategories = getOrderedSuperCategories();
+  const dict = locale === "kn" ? knDict : enDict;
+  const breadcrumbDict = (dict as { india?: { breadcrumb?: { home: string; india: string; selectModule: string } } })
+    .india?.breadcrumb;
 
   return (
     <main
       style={{
         background: "var(--color-background)",
         minHeight: "100vh",
-        padding: "1.25rem 1rem 3rem",
+        padding: "0 1rem 3rem",
       }}
     >
-      <div style={{ width: "100%" }}>
+      <ScrollProgressBar />
+      <div style={{ width: "100%", paddingTop: "0.5rem" }}>
+        <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
         <IndiaHero locale={locale} />
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (

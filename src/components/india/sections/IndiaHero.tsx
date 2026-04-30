@@ -16,11 +16,9 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { BilingualRotator } from "./BilingualRotator";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
-import { ModuleDropdown } from "@/components/india/primitives/ModuleDropdown";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
 import { IndiaTricolor } from "@/lib/india/design-tokens";
 import {
@@ -159,7 +157,7 @@ interface IndiaHeroProps {
   freshnessLine?: string;
 }
 
-export function IndiaHero({ locale, freshnessLine }: IndiaHeroProps) {
+export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
   const ceremonialDots = [
     { color: IndiaTricolor.saffron, border: false },
     { color: IndiaTricolor.white, border: true },
@@ -168,27 +166,6 @@ export function IndiaHero({ locale, freshnessLine }: IndiaHeroProps) {
 
   return (
     <section style={{ padding: "0 0 1rem 0" }}>
-      {/* Breadcrumb */}
-      <nav
-        aria-label="Breadcrumb"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          fontSize: "12px",
-          color: "var(--color-text-tertiary)",
-          marginBottom: "12px",
-        }}
-      >
-        <Link href={`/${locale}`} style={{ color: "var(--color-text-tertiary)" }}>
-          Home
-        </Link>
-        <span>›</span>
-        <span style={{ color: "var(--color-text-secondary)" }}>India</span>
-        <span>›</span>
-        <ModuleDropdown currentLabel="Select module" scope="all-india" locale={locale} />
-      </nav>
-
       {/* Hero stage */}
       <div
         style={{
