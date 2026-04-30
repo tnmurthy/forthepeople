@@ -1,9 +1,27 @@
+/**
+ * /[locale]/india/category/[superCategorySlug] — Level-2 super-category page.
+ *
+ * Phase 4.3 replaces the Phase 3A skeleton with the full design per file 45 §4 Level 2.
+ * Renders:
+ *  - Breadcrumb with module-picker dropdown scoped to the super-category
+ *  - Optional ElectionPeriodNotice (governance only, env-flag-driven)
+ *  - SuperCategoryHero (compact, with up to 3 KPI tiles)
+ *  - Two-column layout: SubGroupedLeftRail + ModulePreviewCard grid
+ *  - "N modules activating soon" CTA at the bottom
+ */
+
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   getSuperCategoryBySlug,
-  getModulesGroupedBySubGroup,
+  getModulesForSuperCategory,
 } from "@/lib/india/india-super-categories";
 import { INDIA_MODULES } from "@/lib/india/india-modules";
+import { ModuleDropdown } from "@/components/india/primitives/ModuleDropdown";
+import { ModulePreviewCard } from "@/components/india/primitives/ModulePreviewCard";
+import { SuperCategoryHero } from "@/components/india/sections/SuperCategoryHero";
+import { SubGroupedLeftRail } from "@/components/india/sections/SubGroupedLeftRail";
+import { ElectionPeriodNotice } from "@/components/india/sections/ElectionPeriodNotice";
 
 interface PageProps {
   params: Promise<{
@@ -20,61 +38,121 @@ export default async function IndiaSuperCategoryPage({ params }: PageProps) {
     notFound();
   }
 
-  const groupedModules = getModulesGroupedBySubGroup(superCategorySlug, INDIA_MODULES);
+  const modules = getModulesForSuperCategory(superCategorySlug, INDIA_MODULES);
+  const plannedCount = modules.filter(
+    (m) => m.status === "planned" || m.status === "coming_soon",
+  ).length;
 
-  // SKELETON RENDERING — Phase 4 will replace with file 45 Section 4 styled implementation
   return (
-    <div className="min-h-screen bg-[#FAFAF8] p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-sm text-stone-500 mb-2">
-          Home / India / {superCategory.title}
-        </div>
-        <h1 className="text-4xl font-medium tracking-tight mb-2">
-          {superCategory.icon} {superCategory.title}
-        </h1>
-        <p className="text-stone-600 mb-8">{superCategory.tagline}</p>
+    <main
+      style={{
+        background: "var(--color-background)",
+        minHeight: "100vh",
+        padding: "1.25rem 1rem 3rem",
+      }}
+    >
+      <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+        {/* Breadcrumb */}
+        <nav
+          aria-label="Breadcrumb"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "12px",
+            color: "var(--color-text-tertiary)",
+            marginBottom: "12px",
+            flexWrap: "wrap",
+          }}
+        >
+          <Link href={`/${locale}`} style={{ color: "var(--color-text-tertiary)" }}>
+            Home
+          </Link>
+          <span>›</span>
+          <Link href={`/${locale}/india`} style={{ color: "var(--color-text-tertiary)" }}>
+            India
+          </Link>
+          <span>›</span>
+          <span style={{ color: "var(--color-text-secondary)" }}>{superCategory.title}</span>
+          <span>›</span>
+          <ModuleDropdown
+            currentLabel="Select module"
+            scope="super-category"
+            superCategorySlug={superCategorySlug}
+            locale={locale}
+          />
+        </nav>
 
-        <div className="grid grid-cols-12 gap-8">
-          <aside className="col-span-3 border-r border-stone-200 pr-6">
-            {Array.from(groupedModules.entries()).map(([groupLabel, modules]) => (
-              <div key={groupLabel} className="mb-6">
-                {groupLabel !== "UNGROUPED" && (
-                  <div className="text-xs uppercase tracking-wider text-stone-500 font-medium mb-2">
-                    {groupLabel}
-                  </div>
-                )}
-                <ul className="space-y-1">
-                  {modules.map((mod) => (
-                    <li key={mod.slug}>
-                      <a
-                        href={`/${locale}/india/${mod.slug}`}
-                        className="text-sm text-stone-700 hover:text-stone-900 block py-1"
-                      >
-                        {mod.icon} {mod.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </aside>
+        {superCategorySlug === "governance" && <ElectionPeriodNotice />}
 
-          <main className="col-span-9">
-            <div className="border border-stone-200 rounded-lg p-8 bg-white">
-              <p className="text-stone-500 text-sm">
-                Module content rendering will be implemented in Phase 4.
-              </p>
-              <p className="text-stone-400 text-xs mt-4">
-                {Array.from(groupedModules.entries()).reduce(
-                  (sum, [, m]) => sum + m.length,
-                  0,
-                )}{" "}
-                modules registered for this super-category.
-              </p>
+        <SuperCategoryHero superCategory={superCategory} />
+
+        <div
+          className="super-cat-layout"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "260px 1fr",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          <SubGroupedLeftRail
+            superCategorySlug={superCategorySlug}
+            modules={modules}
+            accentColor={superCategory.accentColor}
+            locale={locale}
+          />
+
+          <div>
+            <div
+              className="super-cat-grid"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {modules.map((m) => (
+                <ModulePreviewCard
+                  key={m.slug}
+                  module={m}
+                  accentColor={superCategory.accentColor}
+                  locale={locale}
+                />
+              ))}
             </div>
-          </main>
+
+            {plannedCount > 0 && (
+              <div
+                style={{
+                  marginTop: "1.5rem",
+                  padding: "14px 16px",
+                  background: "var(--color-background-secondary)",
+                  borderRadius: "var(--border-radius-lg)",
+                  fontSize: "13px",
+                  color: "var(--color-text-secondary)",
+                }}
+              >
+                <strong style={{ color: "var(--color-text-primary)" }}>
+                  {plannedCount} modules activating soon.
+                </strong>{" "}
+                Vote up the ones you&apos;d like to see first — feedback drives our scraper roadmap.
+              </div>
+            )}
+          </div>
         </div>
+
+        <style>{`
+          @media (max-width: 900px) {
+            .super-cat-layout {
+              grid-template-columns: 1fr !important;
+            }
+            .super-cat-grid {
+              grid-template-columns: 1fr !important;
+            }
+          }
+        `}</style>
       </div>
-    </div>
+    </main>
   );
 }
