@@ -153,12 +153,26 @@ function IndiaOutlineSVG() {
   );
 }
 
+export interface IndiaHeroDict {
+  eyebrow: string;
+  motto: string;
+  readPreamble: string;
+}
+
 interface IndiaHeroProps {
   locale: string;
   freshnessLine?: string;
+  dict?: IndiaHeroDict;
 }
 
-export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
+const HERO_FALLBACK: IndiaHeroDict = {
+  eyebrow: "South Asia · Republic · Constitution adopted 26 Jan 1950",
+  motto: '"Sovereign, socialist, secular, democratic republic"',
+  readPreamble: "Read the Preamble — every Indian should",
+};
+
+export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
+  const t = dict ?? HERO_FALLBACK;
   const ceremonialDots = [
     { color: IndiaTricolor.saffron, border: false },
     { color: IndiaTricolor.white, border: true },
@@ -203,7 +217,7 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
                 marginBottom: "10px",
               }}
             >
-              South Asia · Republic · Constitution adopted 26 Jan 1950
+              {t.eyebrow}
             </div>
 
             <div
@@ -239,7 +253,7 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
                 margin: "0 0 12px",
               }}
             >
-              &quot;Sovereign, socialist, secular, democratic republic&quot;
+              {t.motto}
             </div>
 
             <a
@@ -264,7 +278,7 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
               }}
             >
               <BookOpenText size={13} />
-              Read the Preamble — every Indian should
+              {t.readPreamble}
               <ChevronRight size={11} style={{ opacity: 0.7 }} />
             </a>
 
@@ -290,9 +304,17 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
             </div>
           </div>
 
-          {/* RIGHT — India outline */}
+          {/* RIGHT — India outline (file 48 §4.7.3 map zone polish) */}
           <div
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              borderLeft: "0.5px solid rgba(0, 0, 0, 0.08)",
+              paddingLeft: "18px",
+            }}
             className="india-hero-outline"
           >
             <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
@@ -311,8 +333,17 @@ export function IndiaHero({ freshnessLine }: IndiaHeroProps) {
               ))}
             </div>
             <IndiaOutlineSVG />
-            <div style={{ fontSize: "10px", color: "var(--color-text-tertiary)" }}>
-              — Tropic of Cancer —
+            <div
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "9px",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "var(--color-text-tertiary)",
+                marginTop: "8px",
+              }}
+            >
+              Tropic of Cancer · 23.5°N
             </div>
           </div>
         </div>

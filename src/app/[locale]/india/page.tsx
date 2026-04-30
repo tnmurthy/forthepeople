@@ -61,8 +61,16 @@ export default async function IndiaRoute({
   const { locale } = await params;
   const superCategories = getOrderedSuperCategories();
   const dict = locale === "kn" ? knDict : enDict;
-  const breadcrumbDict = (dict as { india?: { breadcrumb?: { home: string; india: string; selectModule: string } } })
-    .india?.breadcrumb;
+  const indiaDict = (
+    dict as {
+      india?: {
+        breadcrumb?: { home: string; india: string; selectModule: string };
+        hero?: { eyebrow: string; motto: string; readPreamble: string };
+      };
+    }
+  ).india;
+  const breadcrumbDict = indiaDict?.breadcrumb;
+  const heroDict = indiaDict?.hero;
 
   return (
     <main
@@ -76,7 +84,7 @@ export default async function IndiaRoute({
       <div style={{ width: "100%", paddingTop: "0.5rem" }}>
         <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
         <LiveStrip />
-        <IndiaHero locale={locale} />
+        <IndiaHero locale={locale} dict={heroDict} />
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (
             <SuperCategoryPreviewBand
