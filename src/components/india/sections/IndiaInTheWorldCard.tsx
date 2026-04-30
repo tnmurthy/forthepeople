@@ -1,53 +1,265 @@
 /**
- * IndiaInTheWorldCard — homepage rankings card.
+ * IndiaInTheWorldCard — homepage rankings card v5 (file 48 §4.7.5).
  *
- * File 38 + file 45 §4 Level 1. 8 verified rankings shown in 2-col grid.
- * Static seed sourced from external authorities (IMF, UN, UNESCO, IRENA, ISRO).
+ * Tiered medal SVGs (gold star / silver disc / bronze disc / plain circle),
+ * gold/silver/bronze gradient row tints fading horizontally to the page bg,
+ * Lucide mini-icons per ranking category, color-coded trend pills.
+ *
+ * Static seed of 8 verified rankings sourced from external authorities (IMF,
+ * UN, UNESCO, IRENA, ISRO, WTO, TRAI, Global Firepower). Data lives in
+ * src/data/india-world-rankings.json so future updates are a registry edit.
  */
 
 import * as React from "react";
+import {
+  Film,
+  Globe2,
+  IndianRupee,
+  Moon,
+  Pill,
+  Shield,
+  Trophy,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import rawRankings from "@/data/india-world-rankings.json";
 
-interface RankingMovement {
-  kind: "up" | "down" | "stable" | "new";
-  from?: number;
-}
+type TrendKind = "up" | "down" | "stable" | "new";
 
-interface RankingEntry {
+interface Ranking {
   rank: number;
+  category: string;
   title: string;
   source: string;
   year: string;
   annotation?: string;
-  movement: RankingMovement;
+  movement: { kind: TrendKind; from?: number };
 }
 
-const rankings = (rawRankings as { rankings: RankingEntry[] }).rankings;
+const rankings = (rawRankings as { rankings: Ranking[] }).rankings;
 
-function tierColor(rank: number): string {
-  if (rank === 1) return "#185FA5";
-  if (rank === 2 || rank === 3) return "#0F6E56";
-  if (rank === 4) return "#854F0B";
-  return "#3C3489";
-}
+const ICON_BY_CATEGORY: Record<string, LucideIcon> = {
+  population: Users,
+  films: Film,
+  internet: Globe2,
+  pharma: Pill,
+  military: Shield,
+  renewable: Zap,
+  moon: Moon,
+  economy: IndianRupee,
+};
 
-function MovementChip({ movement }: { movement: RankingMovement }) {
-  if (movement.kind === "stable") {
+function MedalSVG({ rank }: { rank: number }) {
+  if (rank === 1) {
     return (
-      <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>— stable</span>
+      <svg viewBox="0 0 30 30" style={{ width: "30px", height: "30px" }} aria-hidden>
+        <circle cx="15" cy="15" r="14" fill="#FAEEDA" stroke="#EF9F27" strokeWidth="1.5" />
+        <path
+          d="M15 8 L17 13 L22 13 L18 16 L19.5 21 L15 18 L10.5 21 L12 16 L8 13 L13 13 Z"
+          fill="#854F0B"
+          opacity="0.85"
+        />
+      </svg>
+    );
+  }
+  if (rank === 2) {
+    return (
+      <svg viewBox="0 0 30 30" style={{ width: "30px", height: "30px" }} aria-hidden>
+        <circle cx="15" cy="15" r="14" fill="#F1EFE8" stroke="#888780" strokeWidth="1.5" />
+        <circle cx="15" cy="15" r="10" fill="#D3D1C7" />
+      </svg>
+    );
+  }
+  if (rank === 3) {
+    return (
+      <svg viewBox="0 0 30 30" style={{ width: "30px", height: "30px" }} aria-hidden>
+        <circle cx="15" cy="15" r="14" fill="#FAECE7" stroke="#D85A30" strokeWidth="1.5" />
+        <circle cx="15" cy="15" r="10" fill="#F0997B" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 30 30" style={{ width: "30px", height: "30px" }} aria-hidden>
+      <circle
+        cx="15"
+        cy="15"
+        r="14"
+        fill="var(--color-background)"
+        stroke="rgba(0,0,0,0.18)"
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+}
+
+function rowBackground(rank: number): string {
+  if (rank === 1) {
+    return "linear-gradient(90deg, rgba(239, 159, 39, 0.08) 0%, rgba(239, 159, 39, 0.02) 60%, var(--color-background) 100%)";
+  }
+  if (rank === 2) {
+    return "linear-gradient(90deg, rgba(136, 135, 128, 0.08) 0%, rgba(136, 135, 128, 0.02) 60%, var(--color-background) 100%)";
+  }
+  if (rank === 3) {
+    return "linear-gradient(90deg, rgba(216, 90, 48, 0.08) 0%, rgba(216, 90, 48, 0.02) 60%, var(--color-background) 100%)";
+  }
+  return "var(--color-background)";
+}
+
+function medalNumColor(rank: number): string {
+  if (rank === 1) return "#633806";
+  if (rank === 2) return "#2C2C2A";
+  if (rank === 3) return "#4A1B0C";
+  return "var(--color-text-secondary)";
+}
+
+function rowClass(rank: number): string {
+  if (rank === 1) return "ftp-rank-row ftp-rank-row--gold";
+  if (rank === 2) return "ftp-rank-row ftp-rank-row--silver";
+  if (rank === 3) return "ftp-rank-row ftp-rank-row--bronze";
+  return "ftp-rank-row";
+}
+
+function TrendNode({ movement }: { movement: Ranking["movement"] }) {
+  if (movement.kind === "up") {
+    return (
+      <span
+        style={{
+          color: "#16A34A",
+          fontWeight: 500,
+          fontFamily: "var(--font-mono)",
+          fontSize: "10px",
+        }}
+      >
+        ↑ from #{movement.from}
+      </span>
+    );
+  }
+  if (movement.kind === "down") {
+    return (
+      <span
+        style={{
+          color: "#A32D2D",
+          fontWeight: 500,
+          fontFamily: "var(--font-mono)",
+          fontSize: "10px",
+        }}
+      >
+        ↓ from #{movement.from}
+      </span>
     );
   }
   if (movement.kind === "new") {
     return (
-      <span style={{ fontSize: "11px", color: "#185FA5" }}>new entry</span>
+      <span
+        style={{
+          color: "#534AB7",
+          background: "rgba(83, 74, 183, 0.10)",
+          padding: "1px 6px",
+          borderRadius: "999px",
+          fontSize: "9px",
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+          fontWeight: 500,
+          fontFamily: "var(--font-mono)",
+        }}
+      >
+        new
+      </span>
     );
   }
-  const glyph = movement.kind === "up" ? "↑" : "↓";
-  const color = movement.kind === "up" ? "#16A34A" : "#A32D2D";
   return (
-    <span style={{ fontSize: "11px", color }}>
-      {glyph} from #{movement.from}
+    <span
+      style={{
+        color: "var(--color-text-tertiary)",
+        fontFamily: "var(--font-mono)",
+        fontSize: "10px",
+      }}
+    >
+      — stable
     </span>
+  );
+}
+
+function RankRow({ ranking }: { ranking: Ranking }) {
+  const Icon = ICON_BY_CATEGORY[ranking.category] ?? Trophy;
+  const numColor = medalNumColor(ranking.rank);
+
+  return (
+    <div
+      className={rowClass(ranking.rank)}
+      style={{
+        background: rowBackground(ranking.rank),
+        padding: "9px 14px 9px 10px",
+        display: "grid",
+        gridTemplateColumns: "36px 1fr 84px",
+        gap: "10px",
+        alignItems: "center",
+        transition: "background 150ms",
+      }}
+    >
+      <div
+        style={{
+          width: "30px",
+          height: "30px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+        }}
+      >
+        <MedalSVG rank={ranking.rank} />
+        <span
+          style={{
+            position: "absolute",
+            fontFamily: "var(--font-mono)",
+            fontWeight: 500,
+            fontSize: "13px",
+            zIndex: 2,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            color: numColor,
+          }}
+        >
+          {ranking.rank}
+        </span>
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <Icon size={11} style={{ color: "var(--color-text-secondary)", flexShrink: 0 }} />
+          <span style={{ fontSize: "13px", fontWeight: 500, lineHeight: 1.2 }}>
+            {ranking.title}
+            {ranking.annotation && (
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-text-tertiary)",
+                  marginLeft: "6px",
+                  fontWeight: 400,
+                }}
+              >
+                · {ranking.annotation}
+              </span>
+            )}
+          </span>
+        </div>
+        <div
+          style={{
+            fontSize: "10px",
+            color: "var(--color-text-tertiary)",
+            marginTop: "2px",
+            fontFamily: "var(--font-mono)",
+            letterSpacing: "0.02em",
+          }}
+        >
+          {ranking.source} · {ranking.year}
+        </div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <TrendNode movement={ranking.movement} />
+      </div>
+    </div>
   );
 }
 
@@ -55,11 +267,13 @@ export function IndiaInTheWorldCard() {
   return (
     <section
       style={{
-        background: "var(--color-surface)",
-        border: "0.5px solid var(--color-border-tertiary)",
+        border: "0.5px solid rgba(0, 0, 0, 0.08)",
+        background: "var(--color-background)",
         borderRadius: "var(--border-radius-lg)",
-        padding: "20px 22px",
+        padding: "14px 18px 16px",
+        marginBottom: "12px",
         marginTop: "1.5rem",
+        overflow: "hidden",
       }}
     >
       <div
@@ -85,70 +299,30 @@ export function IndiaInTheWorldCard() {
           Where India ranks globally
         </span>
       </div>
-      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: "0 0 14px" }}>
+      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: "0 0 12px" }}>
         Each rank cites the issuing authority and report year.
       </p>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: "0 24px",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "1px",
+          background: "rgba(0, 0, 0, 0.06)",
+          border: "0.5px solid rgba(0, 0, 0, 0.06)",
+          borderRadius: "6px",
+          overflow: "hidden",
         }}
         className="india-rankings-grid"
       >
-        {rankings.map((r, i) => {
-          const improved = r.movement.kind === "up";
-          return (
-            <div
-              key={i}
-              className="india-ranking-row"
-              style={{
-                display: "flex",
-                gap: "14px",
-                alignItems: "baseline",
-                padding: "14px 12px 14px 10px",
-                borderBottom: "0.5px solid var(--color-border-tertiary)",
-                borderLeft: improved ? "2px solid #534AB7" : "2px solid transparent",
-                transition: "background 150ms",
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "22px",
-                  fontWeight: 500,
-                  color: tierColor(r.rank),
-                  lineHeight: 1,
-                  minWidth: "32px",
-                }}
-              >
-                #{r.rank}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>
-                  {r.title}
-                  {r.annotation && (
-                    <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginLeft: "6px" }}>
-                      · {r.annotation}
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
-                  {r.source} · {r.year}
-                </div>
-                <div style={{ marginTop: "3px" }}>
-                  <MovementChip movement={r.movement} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {rankings.map((r, i) => (
+          <RankRow key={i} ranking={r} />
+        ))}
       </div>
 
       <div
         style={{
-          marginTop: "14px",
+          marginTop: "12px",
           fontSize: "11px",
           color: "var(--color-text-tertiary)",
           display: "flex",
@@ -156,12 +330,21 @@ export function IndiaInTheWorldCard() {
         }}
       >
         <span>{rankings.length} of 24 tracked rankings shown</span>
-        <span>View all rankings ›</span>
+        <span style={{ color: "var(--color-text-info)" }}>View all rankings ›</span>
       </div>
 
       <style>{`
-        .india-ranking-row:hover {
-          background: rgba(83, 74, 183, 0.04);
+        .ftp-rank-row--gold:hover {
+          background: linear-gradient(90deg, rgba(239, 159, 39, 0.16) 0%, rgba(239, 159, 39, 0.06) 60%, var(--color-background) 100%) !important;
+        }
+        .ftp-rank-row--silver:hover {
+          background: linear-gradient(90deg, rgba(136, 135, 128, 0.16) 0%, rgba(136, 135, 128, 0.06) 60%, var(--color-background) 100%) !important;
+        }
+        .ftp-rank-row--bronze:hover {
+          background: linear-gradient(90deg, rgba(216, 90, 48, 0.16) 0%, rgba(216, 90, 48, 0.06) 60%, var(--color-background) 100%) !important;
+        }
+        .ftp-rank-row:not(.ftp-rank-row--gold):not(.ftp-rank-row--silver):not(.ftp-rank-row--bronze):hover {
+          background: rgba(0, 0, 0, 0.02) !important;
         }
         @media (max-width: 768px) {
           .india-rankings-grid {
