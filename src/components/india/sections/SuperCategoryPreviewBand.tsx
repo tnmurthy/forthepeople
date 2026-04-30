@@ -30,7 +30,6 @@ import {
 import type { IndiaSuperCategoryDef } from "@/lib/india/india-super-categories";
 import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
-import { MiniTrendSparkline } from "@/components/india/primitives/MiniTrendSparkline";
 import { SourceDot } from "@/components/india/primitives/SourceDot";
 import { formatIndiaNumber } from "@/lib/india/format-number";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
@@ -120,14 +119,18 @@ function moduleCadenceLine(m: IndiaModuleDef): string {
   return `${refresh} cadence · Initial dataset`;
 }
 
-function deriveSparkline(value: number | null): number[] {
-  // Phase 4.6: synthetic gentle-uptrend sparkline (decorative, no real
-  // time-series wiring on the homepage band — Phase 5 wires the real
-  // IndiaTimeSeries data).
-  if (value === null || value === 0) return [10, 12, 11, 14, 16, 18, 20];
-  const base = Math.abs(value);
-  return [base * 0.78, base * 0.84, base * 0.88, base * 0.91, base * 0.95, base * 0.98, base];
-}
+const ACCENT_RGB_TUPLE: Record<IndiaAccentColorKey, string> = {
+  blue: "24, 95, 165",
+  indigo: "83, 74, 183",
+  teal: "15, 110, 86",
+  "forest-green": "90, 143, 46",
+  wheat: "181, 138, 30",
+  slate: "74, 83, 88",
+  amber: "186, 117, 23",
+  purple: "60, 52, 137",
+  coral: "153, 60, 29",
+  pink: "153, 53, 86",
+};
 
 interface ModuleHoverContentProps {
   module: IndiaModuleDef;
@@ -165,9 +168,8 @@ interface FeaturedCardProps {
 }
 
 function FeaturedCard({ module, accentColor, locale }: FeaturedCardProps) {
-  const accent = IndiaSuperCategoryAccents[accentColor];
   const { value, unit } = moduleHeadlineValue(module);
-  const sparkValues = deriveSparkline(value);
+  const accentRgb = ACCENT_RGB_TUPLE[accentColor];
 
   return (
     <Link
@@ -176,7 +178,7 @@ function FeaturedCard({ module, accentColor, locale }: FeaturedCardProps) {
       style={{
         display: "block",
         padding: "16px 18px 14px",
-        background: "var(--color-surface)",
+        background: `linear-gradient(180deg, rgba(${accentRgb}, 0.025) 0%, var(--color-surface) 100%)`,
         textDecoration: "none",
         color: "inherit",
         height: "100%",
@@ -235,7 +237,53 @@ function FeaturedCard({ module, accentColor, locale }: FeaturedCardProps) {
         {module.tagline}
       </p>
 
-      <MiniTrendSparkline values={sparkValues} accentHex={accent.hex} />
+      {module.featuredCardDataGrid && module.featuredCardDataGrid.length > 0 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "1px",
+            background: "rgba(0,0,0,0.06)",
+            marginTop: "8px",
+            border: "0.5px solid rgba(0,0,0,0.06)",
+            borderRadius: "4px",
+            overflow: "hidden",
+          }}
+        >
+          {module.featuredCardDataGrid.slice(0, 4).map((cell, i) => (
+            <div
+              key={i}
+              style={{
+                background: "var(--color-surface)",
+                padding: "6px 8px",
+                fontSize: "10.5px",
+              }}
+            >
+              <div
+                style={{
+                  color: "var(--color-text-tertiary)",
+                  fontSize: "9px",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  marginBottom: "1px",
+                }}
+              >
+                {cell.label}
+              </div>
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 500,
+                  fontSize: "11.5px",
+                  color: "var(--color-text-primary)",
+                }}
+              >
+                {cell.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <ModuleHoverReveal module={module} />
     </Link>

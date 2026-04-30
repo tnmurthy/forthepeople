@@ -144,6 +144,13 @@ export interface IndiaModuleDef {
   contentType: "data" | "editorial";
   /** Optional sub-group label within a super-category (ALL CAPS), e.g. 'JUSTICE'. */
   subGroup?: string;
+
+  /**
+   * Optional 2x2 mini data grid shown on the featured-module card in the
+   * super-category band (file 48 §4.7.6). Replaces the legacy sparkline.
+   * Up to 4 entries; modules without this field render the description only.
+   */
+  featuredCardDataGrid?: ReadonlyArray<{ label: string; value: string }>;
 }
 
 export const INDIA_MODULES: IndiaModuleDef[] = [
@@ -219,6 +226,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     scraperKeys: ["mospi-gdp"],
     // MOCK — order-of-magnitude India nominal GDP (~₹295 lakh crore range).
     headlineMetric: { key: "gdp_nominal_inr", label: "Nominal GDP", unit: "₹ lakh cr", mockValue: 295, mockUnit: "₹ lakh cr" },
+    featuredCardDataGrid: [
+      { label: 'Top sector', value: 'Services · 53%' },
+      { label: 'Growth', value: '7.4% YoY' },
+      { label: 'Per capita', value: '₹2.4 lakh' },
+      { label: 'Source', value: 'MoSPI · Q3 FY26' },
+    ],
+
   },
   {
     slug: "economy-inflation",
@@ -334,6 +348,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     // MOCK — annual foodgrain production placeholder (~330 million tonnes range).
     headlineMetric: { key: "foodgrain_production", label: "Foodgrain Production", unit: "MT", mockValue: 330, mockUnit: "million tonnes" },
     hasStateBreakdownData: true,
+    featuredCardDataGrid: [
+      { label: 'Rice', value: '130 MT' },
+      { label: 'Wheat', value: '110 MT' },
+      { label: 'Top state', value: 'UP' },
+      { label: 'Source', value: 'DA&FW · 2024' },
+    ],
+
   },
   {
     slug: "agriculture-plantation",
@@ -440,6 +461,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     // MOCK — total forest cover share of geographic area (ISFR ~21.7%).
     headlineMetric: { key: "forest_cover_pct", label: "Forest Cover", unit: "%", mockValue: 21.7, mockUnit: "%" },
     hasStateBreakdownData: true,
+    featuredCardDataGrid: [
+      { label: 'Forest cover', value: '21.7%' },
+      { label: 'Top state', value: 'MP · 26.6%' },
+      { label: 'Tree cover', value: '2.91%' },
+      { label: 'Source', value: 'FSI ISFR 2023' },
+    ],
+
   },
   {
     slug: "wildlife-tigers",
@@ -507,6 +535,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     // MOCK — National Highway length placeholder (~146,000 km).
     headlineMetric: { key: "national_highway_km", label: "National Highway Length", unit: "km", mockValue: 146000, mockUnit: "km" },
     hasStateBreakdownData: true,
+    featuredCardDataGrid: [
+      { label: 'NH length', value: '146,145 km' },
+      { label: 'Top state', value: 'Maharashtra' },
+      { label: 'FY25 added', value: '12,349 km' },
+      { label: 'Source', value: 'MoRTH' },
+    ],
+
   },
   {
     slug: "infra-railways",
@@ -674,6 +709,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     scraperKeys: [],
     // MOCK — annual crude imports order-of-magnitude.
     headlineMetric: { key: "crude_imports_mt", label: "Annual Crude Imports", unit: "mn tonnes", mockValue: 232, mockUnit: "million tonnes" },
+    featuredCardDataGrid: [
+      { label: 'Crude imports', value: '232 MT' },
+      { label: 'Refining cap.', value: '256 MT' },
+      { label: 'Top supplier', value: 'Russia' },
+      { label: 'Source', value: 'PPAC · FY25' },
+    ],
+
   },
   {
     slug: "energy-coal",
@@ -721,6 +763,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     // MOCK — NFHS-5 IMR national headline placeholder (~35 per 1k).
     headlineMetric: { key: "infant_mortality", label: "Infant Mortality Rate", unit: "per 1k", mockValue: 35, mockUnit: "per 1,000 live births" },
     hasStateBreakdownData: true,
+    featuredCardDataGrid: [
+      { label: 'Life expectancy', value: '70.8 yrs' },
+      { label: 'IMR', value: '28 per 1k' },
+      { label: 'Doctors / 1k', value: '0.74' },
+      { label: 'Source', value: 'NFHS-5 / SRS' },
+    ],
+
   },
   {
     slug: "health-pmjay",
@@ -926,6 +975,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     scraperKeys: [],
     // MOCK — NJDG total pending cases order-of-magnitude.
     headlineMetric: { key: "pending_cases", label: "Pending Cases", unit: "cr", mockValue: 5, mockUnit: "cr" },
+    featuredCardDataGrid: [
+      { label: 'Total pending', value: '5.2 cr' },
+      { label: 'District courts', value: '4.5 cr' },
+      { label: 'High Courts', value: '0.6 cr' },
+      { label: 'Source', value: 'NJDG · weekly' },
+    ],
+
   },
   {
     slug: "justice-crime",
@@ -1129,6 +1185,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     // MOCK — DPIIT-recognised startups cumulative order-of-magnitude.
     headlineMetric: { key: "dpiit_startups", label: "DPIIT-recognised Startups", unit: "lakh", mockValue: 1.4, mockUnit: "lakh" },
     hasStateBreakdownData: true,
+    featuredCardDataGrid: [
+      { label: 'DPIIT recognised', value: '1.4 lakh' },
+      { label: 'Unicorns', value: '110+' },
+      { label: 'Top sector', value: 'IT' },
+      { label: 'Source', value: 'DPIIT · 2024' },
+    ],
+
   },
   {
     slug: "science-digital",
@@ -1261,6 +1324,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     scraperKeys: ["asi-heritage"],
     // MOCK — ASI centrally protected monuments order-of-magnitude (~3,700).
     headlineMetric: { key: "asi_monuments", label: "ASI Protected Monuments", unit: "count", mockValue: 3700, mockUnit: "" },
+    featuredCardDataGrid: [
+      { label: 'UNESCO sites', value: '43' },
+      { label: 'ASI monuments', value: '3,696' },
+      { label: 'Top state', value: 'Maharashtra' },
+      { label: 'Source', value: 'ASI · 2024' },
+    ],
+
   },
   {
     slug: "tourism-gi-tags",
@@ -1350,6 +1420,13 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     hasStateBreakdown: false,
     hasTimeSeries: false,
     scraperKeys: [],
+    featuredCardDataGrid: [
+      { label: 'Articles', value: '470+' },
+      { label: 'Schedules', value: '12' },
+      { label: 'Parts', value: '22' },
+      { label: 'Adopted', value: '26 Jan 1950' },
+    ],
+
   },
   {
     slug: "know-india-history-timeline",
