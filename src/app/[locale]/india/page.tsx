@@ -17,6 +17,7 @@ import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
+import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
   getOrderedSuperCategories,
   getModulesForSuperCategory,
@@ -74,6 +75,7 @@ export default async function IndiaRoute({
       <ScrollProgressBar />
       <div style={{ width: "100%", paddingTop: "0.5rem" }}>
         <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
+        <LiveStrip />
         <IndiaHero locale={locale} />
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (
