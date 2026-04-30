@@ -1,6 +1,6 @@
 /**
- * SourcesCard — 4-row source list with health dots + discrepancy disclosure
- * + scraper-run-log link. Authenticity moves #2, #3, #6, #7 (file 45 §6).
+ * SourcesCard — source list with freshness dots + discrepancy disclosure
+ * + source-sync history link. Authenticity moves #2, #3, #6, #7 (file 45 §6).
  */
 
 import * as React from "react";
@@ -8,9 +8,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import {
-  ScraperHealthDot,
+  SourceHealthDot,
   type ScraperCadence,
-} from "@/components/india/primitives/ScraperHealthDot";
+} from "@/components/india/primitives/SourceHealthDot";
 import { SourcePill } from "@/components/india/primitives/SourcePill";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
 
@@ -92,8 +92,8 @@ export async function SourcesCard({
                 fontSize: "12px",
               }}
             >
-              <ScraperHealthDot
-                scraperKey={module.scraperKeys[i] ?? `${module.slug}-no-scraper`}
+              <SourceHealthDot
+                scraperKey={module.scraperKeys[i] ?? `${module.slug}-no-source-sync`}
                 expectedCadence={expectedCadence}
                 size="medium"
               />
@@ -135,7 +135,7 @@ export async function SourcesCard({
           href="/en/india/data-sources"
           style={{ color: "var(--color-text-info)" }}
         >
-          Public scraper run log ›
+          Source sync history ›
         </Link>
       </div>
     </section>

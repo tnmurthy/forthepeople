@@ -124,7 +124,7 @@ export function SuperCategoryHero({ superCategory }: SuperCategoryHeroProps) {
                 value={m.headlineMetric!.mockValue}
                 unit={m.headlineMetric!.mockUnit}
                 quality="published"
-                source={m.status === "live" ? `${m.sources[0]?.sourceKey ?? ""} · seed` : "Awaiting first sync"}
+                source={m.status === "live" ? m.sources[0]?.sourceKey ?? "" : "Awaiting first sync"}
               />
             ))}
           </div>
@@ -132,7 +132,7 @@ export function SuperCategoryHero({ superCategory }: SuperCategoryHeroProps) {
 
         {isEditorial && (
           <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)", margin: "12px 0 0" }}>
-            Editorial super-category — NCERT-aligned content seeds. No live KPIs in hero.
+            {superCategory.tagline}
           </p>
         )}
       </div>

@@ -18,7 +18,7 @@ import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { getSuperCategoryBySlug } from "@/lib/india/india-super-categories";
 import { IndiaSuperCategoryAccents } from "@/lib/india/design-tokens";
 import { DataQualityChip, type DataQualityKind } from "@/components/india/primitives/DataQualityChip";
-import { ScraperHealthDot, type ScraperCadence } from "@/components/india/primitives/ScraperHealthDot";
+import { SourceHealthDot, type ScraperCadence } from "@/components/india/primitives/SourceHealthDot";
 import { SourcePill } from "@/components/india/primitives/SourcePill";
 
 export interface DataModuleHeroProps {
@@ -213,7 +213,7 @@ export async function DataModuleHero({
             }}
           >
             <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-              <ScraperHealthDot
+              <SourceHealthDot
                 scraperKey={resolvedScraperKey}
                 expectedCadence={expectedCadence}
               />

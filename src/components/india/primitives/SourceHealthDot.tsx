@@ -1,12 +1,13 @@
 /**
- * ScraperHealthDot — green/amber/red dot per authenticity move #3 (file 45 §6).
+ * SourceHealthDot — green/amber/red freshness dot per authenticity move #3 (file 45 §6).
  *
- * Server Component. Queries IndiaScraperRun for the latest run row matching
- * `scraperKey` and computes health vs. expected cadence.
+ * Server Component. Queries IndiaScraperRun for the latest sync row matching
+ * the source key (the `scraperKey` prop name persists in code per spec — only
+ * user-facing copy says "source freshness" / "data sync").
  *
- * Phase 4 reality: most scrapers haven't been built yet, so the dot defaults
- * to amber with an honest tooltip ("Static seed data — scraper builds in
- * Phase 5"). This is honest disclosure, not a UX defect.
+ * Phase 4.6 reality: most automated syncs haven't been wired yet, so the dot
+ * defaults to amber with an honest tooltip ("Initial dataset · Automated sync
+ * planned"). Honest disclosure, not a UX defect.
  */
 
 import * as React from "react";
@@ -21,7 +22,7 @@ export type ScraperCadence =
   | "quadrennial"
   | "event-driven";
 
-export interface ScraperHealthDotProps {
+export interface SourceHealthDotProps {
   scraperKey: string;
   expectedCadence?: ScraperCadence;
   size?: "small" | "medium";
@@ -36,8 +37,8 @@ const HEALTH_COLOR: Record<Health, string> = {
   red: "#A32D2D",
 };
 
-// Cadence threshold in milliseconds — scraper is healthy if last successful
-// run is within this window.
+// Cadence threshold in milliseconds — source is fresh if the last successful
+// sync ran within this window.
 const CADENCE_MS: Record<ScraperCadence, number> = {
   daily: 24 * 60 * 60 * 1000,
   weekly: 7 * 24 * 60 * 60 * 1000,
@@ -61,7 +62,7 @@ async function computeHealth(
   if (!latest) {
     return {
       health: "amber",
-      tooltip: "Static seed data — scraper builds in Phase 5",
+      tooltip: "Initial dataset · Automated sync planned",
     };
   }
 
@@ -76,19 +77,19 @@ async function computeHealth(
   return { health: "red", tooltip: "Source has not synced for over 2× cadence" };
 }
 
-export async function ScraperHealthDot({
+export async function SourceHealthDot({
   scraperKey,
   expectedCadence = "annual",
   size = "small",
   className,
-}: ScraperHealthDotProps) {
+}: SourceHealthDotProps) {
   const { health, tooltip } = await computeHealth(scraperKey, expectedCadence);
   const diameter = size === "small" ? 6 : 8;
 
   return (
     <span
       title={tooltip}
-      aria-label={`Scraper status: ${health} — ${tooltip}`}
+      aria-label={`Source freshness: ${health} — ${tooltip}`}
       className={className}
       style={{
         display: "inline-block",
@@ -102,4 +103,4 @@ export async function ScraperHealthDot({
   );
 }
 
-export default ScraperHealthDot;
+export default SourceHealthDot;

@@ -66,9 +66,7 @@ export function IndiaChoropleth({
           marginBottom: "12px",
         }}
       >
-        Choropleth map renders in Phase 5.
-        <br />
-        State-level seed data is already in IndiaStateBreakdown.
+        State-level distribution map — coming soon
       </div>
 
       <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>

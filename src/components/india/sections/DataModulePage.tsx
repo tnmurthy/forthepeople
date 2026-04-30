@@ -20,7 +20,7 @@ import { TimeSeriesChart } from "@/components/india/charts/TimeSeriesChart";
 import { StateLeaderboard } from "@/components/india/charts/StateLeaderboard";
 import { IndiaChoropleth } from "@/components/india/charts/IndiaChoropleth";
 import { prisma } from "@/lib/db";
-import type { ScraperCadence } from "@/components/india/primitives/ScraperHealthDot";
+import type { ScraperCadence } from "@/components/india/primitives/SourceHealthDot";
 
 export interface DataModulePageProps {
   module: IndiaModuleDef;
@@ -239,7 +239,7 @@ export async function DataModulePage({
                 Related editorial
               </div>
               <div style={{ fontSize: "13px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
-                Editorial seeds activate in Phase 5
+                Editorial reading — coming soon
               </div>
             </div>
           </div>

@@ -128,15 +128,12 @@ export default function Footer() {
           <span style={{ color: "#C0C0C0" }} className="hidden sm:inline">·</span>
           <Link href="/support"     style={{ color: "#DC2626", textDecoration: "none", fontWeight: 600 }}>Support ❤️</Link>
           <span style={{ color: "#C0C0C0" }} className="hidden sm:inline">·</span>
-          <a
-            href="https://www.instagram.com/jayanth_m_b/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#6B6B6B", textDecoration: "none" }}
+          <span
+            style={{ color: "#6B6B6B" }}
             className="hidden sm:inline"
           >
-            Built by Jayanth M B
-          </a>
+            An independent citizen-transparency initiative
+          </span>
         </div>
       </div>
     </footer>

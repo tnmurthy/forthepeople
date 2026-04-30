@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { BookOpen, Search } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { BilingualRotator } from "./BilingualRotator";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { ModuleDropdown } from "@/components/india/primitives/ModuleDropdown";
@@ -325,59 +325,12 @@ export function IndiaHero({ locale, freshnessLine }: IndiaHeroProps) {
       >
         <span>{freshnessLine ?? "● Live"}</span>
         <span style={{ color: "var(--color-text-tertiary)" }}>
-          Foundation page — module data syncs in Phase 5
+          Independent · Sourced from .gov.in &amp; NDSAP
         </span>
       </div>
 
       {/* India in the world */}
       <IndiaInTheWorldCard />
-
-      {/* Search anchor */}
-      <div
-        style={{
-          marginTop: "1.5rem",
-          padding: "1rem 1.25rem",
-          background: "var(--color-background-secondary)",
-          borderRadius: "var(--border-radius-lg)",
-          display: "flex",
-          alignItems: "center",
-          gap: "14px",
-        }}
-      >
-        <span
-          aria-hidden
-          style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "50%",
-            background: "var(--color-background-info)",
-            color: "var(--color-text-info)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Search size={16} />
-        </span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: "14px", fontWeight: 500 }}>Search across India</div>
-          <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
-            53 modules · 36 state breakdowns · 780 districts · 320 verified data points
-          </div>
-        </div>
-        <kbd
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "10px",
-            background: "var(--color-surface)",
-            border: "0.5px solid var(--color-border-tertiary)",
-            padding: "2px 6px",
-            borderRadius: "4px",
-          }}
-        >
-          ⌘K
-        </kbd>
-      </div>
 
       <style>{`
         @media (max-width: 768px) {

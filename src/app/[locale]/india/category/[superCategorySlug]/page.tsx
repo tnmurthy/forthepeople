@@ -136,7 +136,7 @@ export default async function IndiaSuperCategoryPage({ params }: PageProps) {
                 <strong style={{ color: "var(--color-text-primary)" }}>
                   {plannedCount} modules activating soon.
                 </strong>{" "}
-                Vote up the ones you&apos;d like to see first — feedback drives our scraper roadmap.
+                Vote up the ones you&apos;d like to see first — feedback drives our data-sync roadmap.
               </div>
             )}
           </div>
