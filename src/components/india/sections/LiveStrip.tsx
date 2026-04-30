@@ -5,19 +5,24 @@
  * at ~4% opacity each). Five metadata items: last sync, sources, modules,
  * districts, states. Pulsing green LIVE dot on the left.
  *
- * Phase 4.7 ships placeholder values that match the current platform state
- * (10 districts live, 7 states, 53 data + 6 editorial modules, 320 sources).
- * Wiring real DB-derived counts is a future phase task — see TODO.
+ * Server Component. Two values are derived from the live system:
+ *   - `lastSync`: MAX(IndiaScraperRun.startedAt) formatted via timeAgoLabel
+ *   - `liveDistrictCount`: getTotalActiveDistrictCount() from the registry
+ *
+ * The other four values (sourceCount, liveModuleCount, editorialModuleCount,
+ * liveStateCount, totalStates, totalDistricts) are slow-drift aggregates that
+ * stay as hardcoded placeholders for Phase 4.7. Wire them when needed.
  */
 
 import * as React from "react";
+import { prisma } from "@/lib/db";
+import { timeAgoLabel } from "@/lib/utils/timeAgo";
+import { getTotalActiveDistrictCount } from "@/lib/constants/districts";
 
 interface LiveStripProps {
-  lastSync?: string;
   sourceCount?: number;
   liveModuleCount?: number;
   editorialModuleCount?: number;
-  liveDistrictCount?: number;
   totalDistricts?: number;
   liveStateCount?: number;
   totalStates?: number;
@@ -55,18 +60,31 @@ function Divider() {
   return <span style={{ width: "1px", height: "11px", background: "rgba(0,0,0,0.08)" }} />;
 }
 
-export function LiveStrip({
-  // TODO Phase 5+: derive from DB (last successful IndiaScraperRun, INDIA_SOURCES count,
-  // INDIA_MODULES live count, District table count, State table count).
-  lastSync = "14m ago",
+export async function LiveStrip({
+  // TODO Phase 5+: derive from DB (INDIA_SOURCES count, INDIA_MODULES live/editorial split,
+  // State table count). These drift slowly so placeholder is acceptable for now.
   sourceCount = 320,
   liveModuleCount = 53,
   editorialModuleCount = 6,
-  liveDistrictCount = 10,
   totalDistricts = 780,
   liveStateCount = 7,
   totalStates = 36,
 }: LiveStripProps = {}) {
+  // Latest scraper run across all sources — drives the freshness label.
+  const latestRun = await prisma.indiaScraperRun.findFirst({
+    orderBy: { startedAt: "desc" },
+    select: { startedAt: true },
+  });
+
+  // Use a 30-day stale threshold instead of the default 2h. The "LIVE" pill
+  // on the strip already conveys live status; the freshness label is meant
+  // to show actual time since last sync ("14m ago" / "2h ago" / "3d ago").
+  const lastSync = timeAgoLabel(latestRun?.startedAt ?? null, {
+    staleThresholdMinutes: 30 * 24 * 60,
+  }).label;
+
+  const liveDistrictCount = getTotalActiveDistrictCount();
+
   return (
     <div
       style={{
@@ -85,9 +103,7 @@ export function LiveStrip({
       role="status"
       aria-label="Platform freshness and coverage"
     >
-      <span
-        style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}
-      >
+      <span style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
         <span
           aria-hidden
           className="ftp-live-dot"
