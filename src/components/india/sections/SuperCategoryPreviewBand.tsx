@@ -1,143 +1,864 @@
+"use client";
+
 /**
- * SuperCategoryPreviewBand — one band per super-category on /en/india.
+ * SuperCategoryPreviewBand — v3 Split Hero pattern (file 47 §4.6.4).
  *
- * 10 bands total below the hero. File 45 §4 Level 1.
+ * Layout:
+ *   ┌──────────────────┬─────────────────────────────────┐
+ *   │                  │  Featured + 2 stacked (grid)    │
+ *   │  Identity zone   │     OR                           │
+ *   │  (320px, accent  │  Module table (5 cols)           │
+ *   │   gradient)      │                                  │
+ *   └──────────────────┴─────────────────────────────────┘
  *
- * Reads INDIA_MODULES via getModulesForSuperCategory and renders the
- * top 4 modules as preview cards plus a "View all N modules ›" link.
+ * Identity zone holds: watermarks (3 layered emoji), eyebrow, section
+ * name, tagline, mini-stats (live count + headline KPI), browse-all CTA,
+ * grid/table toggle. Modules zone swaps content based on toggle state.
+ *
+ * Entrance animation: opacity + translateY, delay = bandIndex × 200ms.
+ * Featured-card headline number wraps in CountUpNumber.
+ * Hover on grid cards reveals a metadata strip.
+ * Hover on table row source dot surfaces a tooltip.
  */
 
 import * as React from "react";
 import Link from "next/link";
-import type { IndiaSuperCategoryDef } from "@/lib/india/india-super-categories";
-import {
-  INDIA_MODULES,
-  getLiveModuleCountInSuperCategory,
-} from "@/lib/india/india-modules";
-import { getModulesForSuperCategory } from "@/lib/india/india-super-categories";
 import {
   IndiaSuperCategoryAccents,
+  type IndiaAccentColorKey,
 } from "@/lib/india/design-tokens";
-import { ModulePreviewCard } from "@/components/india/primitives/ModulePreviewCard";
+import type { IndiaSuperCategoryDef } from "@/lib/india/india-super-categories";
+import type { IndiaModuleDef } from "@/lib/india/india-modules";
+import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
+import { MiniTrendSparkline } from "@/components/india/primitives/MiniTrendSparkline";
+import { SourceDot } from "@/components/india/primitives/SourceDot";
+import { formatIndiaNumber } from "@/lib/india/format-number";
+import { INDIA_SOURCES } from "@/lib/india/india-sources";
 
 export interface SuperCategoryPreviewBandProps {
   superCategory: IndiaSuperCategoryDef;
+  modules: IndiaModuleDef[];
+  defaultView?: "grid" | "table";
   locale: string;
+  bandIndex: number;
+}
+
+type ViewMode = "grid" | "table";
+
+const WATERMARK_GLYPH: Record<string, string> = {
+  "macro-snapshot": "📊",
+  "know-india": "📖",
+  "living-standards": "🌐",
+  "wildlife-forests": "🐾",
+  "agriculture-livestock": "🌾",
+  "natural-resources-energy": "⛏",
+  infrastructure: "🏗",
+  governance: "⚖",
+  innovation: "🚀",
+  culture: "🎭",
+};
+
+const accentVarName = (key: IndiaAccentColorKey, stop: 700 | 800 | 900): string =>
+  `var(--accent-${key}-${stop})`;
+
+function StatusPill({ status }: { status: IndiaModuleDef["status"] }) {
+  if (status === "live") {
+    return (
+      <span
+        style={{
+          fontSize: "9px",
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          background: "#E1F5EE",
+          color: "#16A34A",
+          padding: "1px 6px",
+          borderRadius: "3px",
+          textTransform: "uppercase",
+        }}
+      >
+        Live
+      </span>
+    );
+  }
+  return (
+    <span
+      style={{
+        fontSize: "9px",
+        fontWeight: 500,
+        letterSpacing: "0.04em",
+        background: "#FAEEDA",
+        color: "#854F0B",
+        padding: "1px 6px",
+        borderRadius: "3px",
+        textTransform: "uppercase",
+      }}
+    >
+      Soon
+    </span>
+  );
+}
+
+function moduleHeadlineValue(m: IndiaModuleDef): { value: number | null; unit: string } {
+  if (!m.headlineMetric) return { value: null, unit: "" };
+  return { value: m.headlineMetric.mockValue, unit: m.headlineMetric.mockUnit };
+}
+
+function moduleSourceDomain(m: IndiaModuleDef): string {
+  const key = m.sources[0]?.sourceKey;
+  if (!key) return "—";
+  const meta = INDIA_SOURCES[key];
+  if (!meta?.url) return key;
+  try {
+    return new URL(meta.url).hostname.replace(/^www\./, "");
+  } catch {
+    return key;
+  }
+}
+
+function moduleCadenceLine(m: IndiaModuleDef): string {
+  const refresh = m.sources[0]?.refresh ?? "Annual";
+  return `${refresh} cadence · Initial dataset`;
+}
+
+function deriveSparkline(value: number | null): number[] {
+  // Phase 4.6: synthetic gentle-uptrend sparkline (decorative, no real
+  // time-series wiring on the homepage band — Phase 5 wires the real
+  // IndiaTimeSeries data).
+  if (value === null || value === 0) return [10, 12, 11, 14, 16, 18, 20];
+  const base = Math.abs(value);
+  return [base * 0.78, base * 0.84, base * 0.88, base * 0.91, base * 0.95, base * 0.98, base];
+}
+
+interface ModuleHoverContentProps {
+  module: IndiaModuleDef;
+}
+
+function ModuleHoverReveal({ module }: ModuleHoverContentProps) {
+  return (
+    <div
+      className="band-hover-reveal"
+      style={{
+        marginTop: "10px",
+        paddingTop: "8px",
+        borderTop: "1px dashed var(--color-border-tertiary)",
+        display: "grid",
+        gap: "3px",
+        fontSize: "10.5px",
+        color: "var(--color-text-secondary)",
+        lineHeight: 1.5,
+      }}
+    >
+      <div>
+        Source · <span style={{ fontWeight: 500 }}>{moduleSourceDomain(module)}</span>
+      </div>
+      <div style={{ color: "var(--color-text-tertiary)" }}>
+        {moduleCadenceLine(module)}
+      </div>
+    </div>
+  );
+}
+
+interface FeaturedCardProps {
+  module: IndiaModuleDef;
+  accentColor: IndiaAccentColorKey;
+  locale: string;
+}
+
+function FeaturedCard({ module, accentColor, locale }: FeaturedCardProps) {
+  const accent = IndiaSuperCategoryAccents[accentColor];
+  const { value, unit } = moduleHeadlineValue(module);
+  const sparkValues = deriveSparkline(value);
+
+  return (
+    <Link
+      href={`/${locale}/india/${module.slug}`}
+      className="band-featured-card"
+      style={{
+        display: "block",
+        padding: "16px 18px 14px",
+        background: "var(--color-surface)",
+        textDecoration: "none",
+        color: "inherit",
+        height: "100%",
+        gridColumn: "1",
+        gridRow: "1 / span 2",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+        <span style={{ fontSize: "18px" }}>{module.icon}</span>
+        <span style={{ fontSize: "13.5px", fontWeight: 500, flex: 1 }}>{module.title}</span>
+        <StatusPill status={module.status} />
+      </div>
+
+      <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "6px" }}>
+        {value !== null ? (
+          <CountUpNumber
+            target={value}
+            inlineStyle={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "36px",
+              fontWeight: 500,
+              lineHeight: 1,
+              color: accentVarName(accentColor, 800),
+            }}
+          />
+        ) : (
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "36px",
+              fontWeight: 500,
+              lineHeight: 1,
+              color: accentVarName(accentColor, 800),
+            }}
+          >
+            —
+          </span>
+        )}
+        {unit && (
+          <span style={{ fontSize: "11.5px", color: "var(--color-text-secondary)" }}>{unit}</span>
+        )}
+      </div>
+
+      <p
+        style={{
+          fontSize: "11.5px",
+          color: "var(--color-text-secondary)",
+          lineHeight: 1.45,
+          margin: "0 0 10px",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
+      >
+        {module.tagline}
+      </p>
+
+      <MiniTrendSparkline values={sparkValues} accentHex={accent.hex} />
+
+      <ModuleHoverReveal module={module} />
+    </Link>
+  );
+}
+
+interface StackedCardProps {
+  module: IndiaModuleDef;
+  accentColor: IndiaAccentColorKey;
+  locale: string;
+}
+
+function StackedCard({ module, accentColor, locale }: StackedCardProps) {
+  const { value, unit } = moduleHeadlineValue(module);
+  const isSoon = module.status !== "live";
+
+  return (
+    <Link
+      href={`/${locale}/india/${module.slug}`}
+      className="band-stacked-card"
+      style={{
+        display: "block",
+        padding: "14px 16px 12px",
+        background: "var(--color-surface)",
+        textDecoration: "none",
+        color: "inherit",
+        opacity: isSoon ? 0.78 : 1,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+        <span style={{ fontSize: "16px" }}>{module.icon}</span>
+        <span style={{ fontSize: "12.5px", fontWeight: 500, flex: 1 }}>{module.title}</span>
+        <StatusPill status={module.status} />
+      </div>
+
+      {isSoon ? (
+        <p
+          style={{
+            fontSize: "11px",
+            color: "var(--color-text-secondary)",
+            lineHeight: 1.45,
+            margin: "0 0 6px",
+          }}
+        >
+          {module.tagline}
+        </p>
+      ) : (
+        <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "6px" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "22px",
+              fontWeight: 500,
+              lineHeight: 1.1,
+              color: accentVarName(accentColor, 800),
+            }}
+          >
+            {value !== null ? formatIndiaNumber(value) : "—"}
+          </span>
+          {unit && (
+            <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>{unit}</span>
+          )}
+        </div>
+      )}
+
+      <ModuleHoverReveal module={module} />
+    </Link>
+  );
+}
+
+interface ModuleTableProps {
+  modules: IndiaModuleDef[];
+  accentColor: IndiaAccentColorKey;
+  locale: string;
+}
+
+function ModuleTable({ modules, accentColor, locale }: ModuleTableProps) {
+  const accent = IndiaSuperCategoryAccents[accentColor];
+
+  return (
+    <div
+      role="table"
+      style={{
+        width: "100%",
+        background: "var(--color-surface)",
+        fontSize: "12px",
+      }}
+    >
+      <div
+        role="row"
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "32px minmax(180px, 2fr) minmax(160px, 1.6fr) minmax(140px, 1.4fr) 80px",
+          gap: "18px",
+          padding: "11px 22px",
+          background: "var(--color-background-secondary)",
+          borderBottom: "0.5px solid var(--color-border-tertiary)",
+          fontFamily: "var(--font-mono)",
+          fontSize: "9.5px",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--color-text-tertiary)",
+        }}
+      >
+        <span aria-hidden></span>
+        <span>Module</span>
+        <span>Headline</span>
+        <span>Top state</span>
+        <span style={{ textAlign: "right" }}>Trend</span>
+      </div>
+
+      {modules.map((m) => {
+        const { value, unit } = moduleHeadlineValue(m);
+        const isSoon = m.status !== "live";
+        return (
+          <Link
+            key={m.slug}
+            role="row"
+            href={`/${locale}/india/${m.slug}`}
+            className="band-table-row"
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "32px minmax(180px, 2fr) minmax(160px, 1.6fr) minmax(140px, 1.4fr) 80px",
+              gap: "18px",
+              padding: "13px 22px",
+              borderBottom: "0.5px solid var(--color-border-tertiary)",
+              textDecoration: "none",
+              color: "var(--color-text-primary)",
+              opacity: isSoon ? 0.6 : 1,
+              alignItems: "center",
+            }}
+          >
+            <span aria-hidden style={{ fontSize: "16px" }}>
+              {m.icon}
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 500 }}>{m.title}</span>
+              <SourceDot
+                accentHex={accent.hex}
+                domain={moduleSourceDomain(m)}
+                cadence={moduleCadenceLine(m)}
+              />
+              <StatusPill status={m.status} />
+            </span>
+            <span style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+              {isSoon ? (
+                <span style={{ fontSize: "11.5px", color: "var(--color-text-secondary)" }}>
+                  {m.tagline}
+                </span>
+              ) : (
+                <>
+                  {value !== null ? (
+                    <CountUpNumber
+                      target={value}
+                      inlineStyle={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "16px",
+                        fontWeight: 500,
+                        letterSpacing: "-0.01em",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontSize: "16px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      —
+                    </span>
+                  )}
+                  {unit && (
+                    <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+                      {unit}
+                    </span>
+                  )}
+                </>
+              )}
+            </span>
+            <span style={{ fontSize: "11.5px", color: "var(--color-text-secondary)" }}>
+              {isSoon ? (
+                "—"
+              ) : (
+                <span
+                  style={{
+                    color: "var(--color-text-tertiary)",
+                  }}
+                >
+                  state-wise breakdown coming soon
+                </span>
+              )}
+            </span>
+            <span style={{ textAlign: "right", paddingRight: "4px" }}>
+              {isSoon ? (
+                <span
+                  style={{
+                    fontSize: "11px",
+                    color: "var(--color-text-tertiary)",
+                  }}
+                >
+                  vote ▲
+                </span>
+              ) : (
+                <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>—</span>
+              )}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 export function SuperCategoryPreviewBand({
   superCategory,
+  modules,
+  defaultView = "grid",
   locale,
+  bandIndex,
 }: SuperCategoryPreviewBandProps) {
+  const [view, setView] = React.useState<ViewMode>(defaultView);
   const accent = IndiaSuperCategoryAccents[superCategory.accentColor];
-  const modules = getModulesForSuperCategory(superCategory.slug, INDIA_MODULES).slice(0, 4);
-  const totalInSuperCategory = INDIA_MODULES.filter(
-    (m) => m.superCategory === superCategory.slug,
-  ).length;
-  const liveCount = getLiveModuleCountInSuperCategory(superCategory.slug);
+  const accentColorKey = superCategory.accentColor;
+
+  const ordered = [...modules].sort((a, b) => a.displayOrder - b.displayOrder);
+  const featured = ordered[0];
+  const stacked = ordered.slice(1, 3);
+  const totalLive = modules.filter((m) => m.status === "live").length;
+  const headlineKpi = featured?.headlineMetric;
+  const watermark = WATERMARK_GLYPH[superCategory.slug] ?? superCategory.icon;
+
+  const eyebrow = `SECTION ${String(bandIndex + 1).padStart(2, "0")} · OF 10`;
+
+  // Heuristic mini-stat #2: pick one of the stacked modules with a headline
+  const secondaryKpi = stacked.find((m) => m.headlineMetric)?.headlineMetric;
+  const secondaryLabel = stacked.find((m) => m.headlineMetric)?.title ?? "";
 
   return (
-    <section style={{ marginBottom: "2.5rem" }}>
-      {/* Band hero strip with accent radial wash */}
+    <section
+      className="band-root"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "320px 1fr",
+        borderRadius: "var(--border-radius-lg)",
+        overflow: "hidden",
+        border: "0.5px solid var(--color-border-tertiary)",
+        minHeight: "320px",
+        marginBottom: "1.5rem",
+        background: "var(--color-surface)",
+        opacity: 0,
+        transform: "translateY(8px)",
+        animation: "band-enter 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        animationDelay: `${bandIndex * 200}ms`,
+      }}
+    >
+      {/* Identity zone */}
       <div
         style={{
           position: "relative",
-          padding: "18px 22px",
-          borderRadius: "var(--border-radius-lg)",
-          background: "var(--color-surface)",
-          border: "0.5px solid var(--color-border-tertiary)",
-          marginBottom: "14px",
+          padding: "24px 22px 20px",
+          color: "white",
+          display: "flex",
+          flexDirection: "column",
+          background: `linear-gradient(165deg, ${accentVarName(accentColorKey, 700)}, ${accentVarName(
+            accentColorKey,
+            900,
+          )})`,
           overflow: "hidden",
         }}
       >
-        <div
+        {/* Watermarks */}
+        <span
           aria-hidden
           style={{
             position: "absolute",
-            inset: 0,
-            background: `radial-gradient(50% 100% at 0% 0%, ${accent.hex}1F 0%, transparent 70%)`,
+            right: "-28px",
+            bottom: "-36px",
+            fontSize: "220px",
+            opacity: 0.1,
+            transform: "rotate(-12deg)",
             pointerEvents: "none",
+            userSelect: "none",
+            lineHeight: 1,
           }}
-        />
+        >
+          {watermark}
+        </span>
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            right: "32px",
+            top: "56%",
+            fontSize: "88px",
+            opacity: 0.06,
+            transform: "rotate(20deg)",
+            pointerEvents: "none",
+            userSelect: "none",
+            lineHeight: 1,
+          }}
+        >
+          {watermark}
+        </span>
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: "60%",
+            top: "22%",
+            fontSize: "56px",
+            opacity: 0.05,
+            transform: "rotate(-8deg)",
+            pointerEvents: "none",
+            userSelect: "none",
+            lineHeight: 1,
+          }}
+        >
+          {watermark}
+        </span>
+
+        <div
+          style={{
+            position: "relative",
+            fontFamily: "var(--font-mono)",
+            fontSize: "10px",
+            letterSpacing: "0.12em",
+            opacity: 0.78,
+            marginBottom: "14px",
+          }}
+        >
+          {eyebrow}
+        </div>
+
+        <h2
+          style={{
+            position: "relative",
+            fontFamily: "var(--font-jakarta)",
+            fontSize: "26px",
+            fontWeight: 500,
+            lineHeight: 1.05,
+            letterSpacing: "-0.02em",
+            margin: "0 0 8px",
+          }}
+        >
+          {superCategory.title}
+        </h2>
+
+        <p
+          style={{
+            position: "relative",
+            fontSize: "12.5px",
+            opacity: 0.92,
+            lineHeight: 1.55,
+            margin: "0 0 18px",
+          }}
+        >
+          {superCategory.tagline}
+        </p>
+
+        {/* Mini-stats — pushed to bottom via flex-1 spacer */}
+        <div style={{ flex: 1 }} />
+        <div
+          style={{
+            position: "relative",
+            paddingTop: "12px",
+            borderTop: "0.5px solid rgba(255,255,255,0.22)",
+            display: "grid",
+            gap: "6px",
+            marginBottom: "14px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <span style={{ fontSize: "11px", opacity: 0.82 }}>Modules</span>
+            <span
+              style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "13px",
+                fontWeight: 500,
+              }}
+            >
+              {totalLive} of {modules.length} live
+            </span>
+          </div>
+          {headlineKpi && (
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  opacity: 0.82,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "60%",
+                }}
+              >
+                {headlineKpi.label}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <CountUpNumber
+                  target={headlineKpi.mockValue}
+                  inlineStyle={{
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                  }}
+                />{" "}
+                {headlineKpi.mockUnit}
+              </span>
+            </div>
+          )}
+          {secondaryKpi && (
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
+            >
+              <span
+                style={{
+                  fontSize: "11px",
+                  opacity: 0.82,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "60%",
+                }}
+              >
+                {secondaryLabel}
+              </span>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {formatIndiaNumber(secondaryKpi.mockValue)} {secondaryKpi.mockUnit}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Footer row */}
         <div
           style={{
             position: "relative",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            flexWrap: "wrap",
             gap: "8px",
+            alignItems: "center",
           }}
         >
-          <div>
-            <div
+          <Link
+            href={`/${locale}/india/category/${superCategory.slug}`}
+            style={{
+              flex: 1,
+              padding: "8px 12px",
+              fontSize: "12px",
+              fontWeight: 500,
+              borderRadius: "999px",
+              background: "rgba(255,255,255,0.18)",
+              border: "0.5px solid rgba(255,255,255,0.26)",
+              color: "white",
+              textDecoration: "none",
+              textAlign: "center",
+              backdropFilter: "blur(2px)",
+            }}
+          >
+            Browse all {modules.length} →
+          </Link>
+
+          <div
+            role="tablist"
+            aria-label="View toggle"
+            style={{
+              display: "inline-flex",
+              gap: "2px",
+              borderRadius: "999px",
+              border: "0.5px solid rgba(255,255,255,0.26)",
+              padding: "2px",
+            }}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "grid"}
+              onClick={() => setView("grid")}
               style={{
-                fontSize: "11px",
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-                color: accent.hex,
-                marginBottom: "2px",
-                fontWeight: 500,
+                width: "28px",
+                height: "24px",
+                borderRadius: "999px",
+                border: "none",
+                background: view === "grid" ? "rgba(255,255,255,0.28)" : "transparent",
+                color: "white",
+                cursor: "pointer",
+                fontSize: "12px",
+                lineHeight: 1,
               }}
+              title="Grid view"
             >
-              {superCategory.icon} {superCategory.title}
-            </div>
-            <h2
+              ⊞
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "table"}
+              onClick={() => setView("table")}
               style={{
-                fontFamily: "var(--font-jakarta)",
-                fontSize: "22px",
-                fontWeight: 500,
-                margin: "0 0 4px",
-                letterSpacing: "-0.01em",
+                width: "28px",
+                height: "24px",
+                borderRadius: "999px",
+                border: "none",
+                background: view === "table" ? "rgba(255,255,255,0.28)" : "transparent",
+                color: "white",
+                cursor: "pointer",
+                fontSize: "12px",
+                lineHeight: 1,
               }}
+              title="Table view"
             >
-              {superCategory.title}
-            </h2>
-            <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", margin: 0 }}>
-              {superCategory.tagline}
-            </p>
-          </div>
-          <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", textAlign: "right" }}>
-            <div>{totalInSuperCategory} modules · {liveCount} live</div>
-            <Link
-              href={`/${locale}/india/category/${superCategory.slug}`}
-              style={{ color: "var(--color-text-info)", marginTop: "4px", display: "inline-block" }}
-            >
-              View all {totalInSuperCategory} ›
-            </Link>
+              ☰
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Preview cards */}
-      <div
-        className="india-preview-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-          gap: "14px",
-        }}
-      >
-        {modules.map((m) => (
-          <ModulePreviewCard
-            key={m.slug}
-            module={m}
-            accentColor={superCategory.accentColor}
-            locale={locale}
-          />
-        ))}
+      {/* Modules zone */}
+      <div style={{ background: "var(--color-border-tertiary)" }}>
+        {view === "grid" ? (
+          featured ? (
+            <div
+              className="band-grid-zone"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.4fr 1fr",
+                gridTemplateRows: "1fr 1fr",
+                gap: "1px",
+                height: "100%",
+                minHeight: "320px",
+              }}
+            >
+              <FeaturedCard module={featured} accentColor={accentColorKey} locale={locale} />
+              {stacked[0] && (
+                <StackedCard
+                  module={stacked[0]}
+                  accentColor={accentColorKey}
+                  locale={locale}
+                />
+              )}
+              {stacked[1] && (
+                <StackedCard
+                  module={stacked[1]}
+                  accentColor={accentColorKey}
+                  locale={locale}
+                />
+              )}
+              {!stacked[0] && (
+                <div style={{ background: "var(--color-surface)" }} />
+              )}
+              {!stacked[1] && (
+                <div style={{ background: "var(--color-surface)" }} />
+              )}
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "var(--color-surface)",
+                padding: "24px",
+                color: "var(--color-text-tertiary)",
+                fontSize: "13px",
+              }}
+            >
+              No modules available yet.
+            </div>
+          )
+        ) : (
+          <ModuleTable modules={ordered} accentColor={accentColorKey} locale={locale} />
+        )}
       </div>
 
       <style>{`
-        @media (max-width: 1024px) {
-          .india-preview-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
+        @keyframes band-enter {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .band-root {
+            opacity: 1 !important;
+            transform: none !important;
+            animation: none !important;
           }
         }
-        @media (max-width: 640px) {
-          .india-preview-grid {
-            grid-template-columns: 1fr !important;
-          }
+        .band-featured-card .band-hover-reveal,
+        .band-stacked-card .band-hover-reveal {
+          max-height: 0;
+          opacity: 0;
+          overflow: hidden;
+          transition: max-height 280ms ease-out, opacity 280ms ease-out, margin-top 280ms ease-out, padding-top 280ms ease-out;
+          margin-top: 0;
+          padding-top: 0;
+          border-top-color: transparent;
+        }
+        .band-featured-card:hover .band-hover-reveal,
+        .band-featured-card:focus-visible .band-hover-reveal,
+        .band-stacked-card:hover .band-hover-reveal,
+        .band-stacked-card:focus-visible .band-hover-reveal {
+          max-height: 88px;
+          opacity: 1;
+          margin-top: 10px;
+          padding-top: 8px;
+          border-top-color: var(--color-border-tertiary);
+        }
+        .band-table-row:hover {
+          background: ${accent.hex}0A;
         }
       `}</style>
     </section>

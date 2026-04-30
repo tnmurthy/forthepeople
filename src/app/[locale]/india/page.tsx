@@ -15,7 +15,11 @@
 import type { Metadata } from "next";
 import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
-import { getOrderedSuperCategories } from "@/lib/india/india-super-categories";
+import {
+  getOrderedSuperCategories,
+  getModulesForSuperCategory,
+} from "@/lib/india/india-super-categories";
+import { INDIA_MODULES } from "@/lib/india/india-modules";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -63,8 +67,14 @@ export default async function IndiaRoute({
       <div style={{ width: "100%" }}>
         <IndiaHero locale={locale} />
         <div style={{ marginTop: "2.5rem" }}>
-          {superCategories.map((sc) => (
-            <SuperCategoryPreviewBand key={sc.slug} superCategory={sc} locale={locale} />
+          {superCategories.map((sc, i) => (
+            <SuperCategoryPreviewBand
+              key={sc.slug}
+              superCategory={sc}
+              modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
+              bandIndex={i}
+              locale={locale}
+            />
           ))}
         </div>
       </div>
