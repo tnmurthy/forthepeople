@@ -22,6 +22,37 @@ import {
 } from "@/lib/india/india-modules";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
 import ModulePage from "@/components/india/module-page/ModulePage";
+import { DataModulePage } from "@/components/india/sections/DataModulePage";
+
+// Phase 4.4: Wildlife/Tigers is the canonical validation case for the
+// new data-module deep-dive pattern. All 8 authenticity moves render here.
+// Phase 5 will mechanically migrate the other 52 data modules to the same
+// pattern; until then, those modules render via the legacy ModulePage shell.
+const PHASE_4_NEW_PATTERN_SLUGS = new Set<string>(["wildlife-tigers"]);
+
+const WILDLIFE_TIGERS_METHODOLOGY = [
+  {
+    title: "Camera-trap census methodology",
+    body:
+      "NTCA's All India Tiger Estimation uses camera traps deployed across tiger habitats nationwide. Individual tigers are identified by stripe patterns; population estimates combine direct camera-trap detections with sign-survey-based density extrapolation in unsampled areas. The 2022 cycle deployed cameras at 32,588 locations across 20 tiger-bearing states.",
+    pdfUrl: "https://ntca.gov.in/Status-of-Tigers-2022.pdf",
+  },
+  {
+    title: "What 'tiger population' means in this estimate",
+    body:
+      "The headline figure (3,682) is the upper bound of the All India Tiger Estimation 2022. NTCA also publishes a lower bound (3,167) and a midpoint. We surface the upper bound for clarity but link to the methodology PDF where the full confidence interval is documented.",
+  },
+  {
+    title: "Confidence intervals and known gaps",
+    body:
+      "Habitats with sparse camera coverage carry wider uncertainty. Northeast India and parts of central India have lower sampling density. The 4-year cadence means inter-census change reflects both real population change and methodological refinements.",
+  },
+  {
+    title: "Full methodology document",
+    body: "NTCA Status of Tigers in India 2022 — official report PDF.",
+    pdfUrl: "https://ntca.gov.in/Status-of-Tigers-2022.pdf",
+  },
+];
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -125,6 +156,28 @@ export default async function ModuleRoute({
         : null;
     }).filter(Boolean),
   };
+
+  // Phase 4.4 branch: Wildlife/Tigers renders the new design. Other modules
+  // keep their existing ModulePage rendering until Phase 5 migrates them.
+  if (PHASE_4_NEW_PATTERN_SLUGS.has(mod.slug) && mod.slug === "wildlife-tigers") {
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(dataset) }}
+        />
+        <DataModulePage
+          module={mod}
+          locale={locale}
+          headlineMetricKey="tiger_population_total"
+          expectedCadence="quadrennial"
+          scraperKey="ntca-tigers"
+          methodologyRows={WILDLIFE_TIGERS_METHODOLOGY}
+          supportingMetricKeys={["tiger_reserves_count", "reserve_area_protected_sqkm"]}
+        />
+      </>
+    );
+  }
 
   return (
     <>
