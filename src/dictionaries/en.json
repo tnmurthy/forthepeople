@@ -141,6 +141,48 @@
       "elections": "Electoral data is for citizen information. ForThePeople.in does not endorse, predict, or campaign for any party or candidate.",
       "justice": "Aggregated case statistics from NJDG. Individual case details are not published.",
       "mcc": "Model Code of Conduct in effect. ForThePeople.in is non-partisan and complies with ECI guidelines."
+    },
+    "superCategory": {
+      "macroSnapshot": {
+        "title": "India at a Glance",
+        "tagline": "How big India is, how fast it's growing, and how its 1.43 billion people earn and live."
+      },
+      "knowIndia": {
+        "title": "Know About India",
+        "tagline": "NCERT-aligned foundations: history, geography, polity, economy. How India works, explained."
+      },
+      "livingStandards": {
+        "title": "Living Standards",
+        "tagline": "Health, education, water, food, housing — what daily life looks like across states."
+      },
+      "wildlifeForests": {
+        "title": "Wildlife & Forests",
+        "tagline": "Tigers, forests, protected areas — what India safeguards in the wild."
+      },
+      "agricultureLivestock": {
+        "title": "Agriculture & Livestock",
+        "tagline": "What India grows and raises — crops, livestock, and the lives of farmers."
+      },
+      "naturalResourcesEnergy": {
+        "title": "Natural Resources & Energy",
+        "tagline": "Fuels, minerals, water — what powers India and what we draw from the earth."
+      },
+      "infrastructure": {
+        "title": "Infrastructure",
+        "tagline": "Roads, rail, aviation, ports, telecom, smart cities — the country's backbone."
+      },
+      "governance": {
+        "title": "Governance and Justice",
+        "tagline": "Defence, police, courts, prisons, elections — the institutions that hold India together."
+      },
+      "innovation": {
+        "title": "Innovation and Industry",
+        "tagline": "Space, science, startups, digital, foreign trade — where India is going next."
+      },
+      "culture": {
+        "title": "Culture and Heritage",
+        "tagline": "Tourism, monuments, sports, GI tags — what makes India distinctly Indian."
+      }
     }
   }
 }
