@@ -61,6 +61,116 @@
   --border-radius-lg:           12px;
   --font-jakarta:               var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
   --font-serif:                 ui-serif, Georgia, "Times New Roman", serif;
+
+  /* ── Super-category accent ramps (file 47 §4.6.7) ──
+     Each super-category has 700 / 800 / 900 stops used by the v3 split
+     hero pattern's identity-zone gradient. Light theme = canonical hex
+     from file 45 §1; dark variants live under [data-theme="dark"]. */
+  --accent-blue-700:           #185FA5;
+  --accent-blue-800:           #0C447C;
+  --accent-blue-900:           #062E55;
+
+  --accent-indigo-700:         #534AB7;
+  --accent-indigo-800:         #3C3489;
+  --accent-indigo-900:         #26215C;
+
+  --accent-teal-700:           #0F6E56;
+  --accent-teal-800:           #085041;
+  --accent-teal-900:           #043529;
+
+  --accent-forest-green-700:   #5A8F2E;
+  --accent-forest-green-800:   #27500A;
+  --accent-forest-green-900:   #19370A;
+
+  --accent-wheat-700:          #B58A1E;
+  --accent-wheat-800:          #633806;
+  --accent-wheat-900:          #3C2403;
+
+  --accent-slate-700:          #4A5358;
+  --accent-slate-800:          #2C3033;
+  --accent-slate-900:          #1A1D20;
+
+  --accent-amber-700:          #B5681E;
+  --accent-amber-800:          #854F0B;
+  --accent-amber-900:          #4F2D04;
+
+  --accent-purple-700:         #534AB7;
+  --accent-purple-800:         #3C3489;
+  --accent-purple-900:         #26215C;
+
+  --accent-coral-700:          #993C1D;
+  --accent-coral-800:          #712B13;
+  --accent-coral-900:          #4A1B0A;
+
+  --accent-pink-700:           #993556;
+  --accent-pink-800:           #72243E;
+  --accent-pink-900:           #4A1828;
+}
+
+/* ── Dark theme architecture (file 47 §4.6.7) ──
+   No UI toggle ships in Phase 4.6 — the architecture is in place so
+   future toggle work just flips `<html data-theme="dark">`. Components
+   added in Phase 4.6+ reference these CSS variables; pre-existing
+   components are migrated incrementally. */
+[data-theme="dark"] {
+  --color-background:           #0E0E0C;
+  --color-surface:              #1A1A18;
+  --color-background-secondary: #1A1A18;
+  --color-background-info:      rgba(83, 74, 183, 0.18);
+
+  --color-text-primary:         #F5F5F1;
+  --color-text-secondary:       #B8B8B4;
+  --color-text-tertiary:        #7C7C78;
+  --color-text-muted:           #7C7C78;
+  --color-text-info:            #8FA0FF;
+
+  --color-border:               rgba(255, 255, 255, 0.10);
+  --color-border-tertiary:      rgba(255, 255, 255, 0.08);
+  --color-border-secondary:     rgba(255, 255, 255, 0.14);
+  --color-border-info:          #8FA0FF;
+  --color-hover-bg:             rgba(255, 255, 255, 0.04);
+  --color-selected-bg:          rgba(83, 74, 183, 0.18);
+
+  /* Super-category accent ramps shifted lighter for dark backgrounds */
+  --accent-blue-700:            #4F92D9;
+  --accent-blue-800:            #185FA5;
+  --accent-blue-900:            #0C447C;
+
+  --accent-indigo-700:          #8C82E8;
+  --accent-indigo-800:          #534AB7;
+  --accent-indigo-900:          #3C3489;
+
+  --accent-teal-700:            #3EAA8B;
+  --accent-teal-800:            #0F6E56;
+  --accent-teal-900:            #085041;
+
+  --accent-forest-green-700:    #7BB04F;
+  --accent-forest-green-800:    #5A8F2E;
+  --accent-forest-green-900:    #27500A;
+
+  --accent-wheat-700:           #D9AA46;
+  --accent-wheat-800:           #B58A1E;
+  --accent-wheat-900:           #633806;
+
+  --accent-slate-700:           #8E969C;
+  --accent-slate-800:           #4A5358;
+  --accent-slate-900:           #2C3033;
+
+  --accent-amber-700:           #DA8B36;
+  --accent-amber-800:           #B5681E;
+  --accent-amber-900:           #854F0B;
+
+  --accent-purple-700:          #8C82E8;
+  --accent-purple-800:          #534AB7;
+  --accent-purple-900:          #3C3489;
+
+  --accent-coral-700:           #C76548;
+  --accent-coral-800:           #993C1D;
+  --accent-coral-900:           #712B13;
+
+  --accent-pink-700:            #C76886;
+  --accent-pink-800:            #993556;
+  --accent-pink-900:            #72243E;
 }
 
 /* Session 18.1 Phase D (Fix #3): mirror the FTP card tokens onto :root

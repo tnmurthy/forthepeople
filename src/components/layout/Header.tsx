@@ -398,6 +398,32 @@ export default function Header({ locale }: HeaderProps) {
           <Github size={16} />
         </a>
 
+        {/* Theme toggle (disabled — Phase 6+ ships the toggle wiring) */}
+        <button
+          type="button"
+          disabled
+          aria-label="Toggle dark mode (coming soon)"
+          title="Dark mode coming soon"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 34,
+            height: 34,
+            borderRadius: 8,
+            border: "1px solid #E8E8E4",
+            background: "#FAFAF8",
+            color: "#9B9B9B",
+            cursor: "not-allowed",
+            opacity: 0.6,
+            flexShrink: 0,
+            fontSize: 14,
+            lineHeight: 1,
+          }}
+        >
+          <span aria-hidden>🌙</span>
+        </button>
+
         {/* Support — heart CTA */}
         <Link
           href={`/${locale}/support`}
