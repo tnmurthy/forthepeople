@@ -53,7 +53,7 @@ export type IndiaModuleCategory =
   | "sports"
   | "custom";
 
-export type IndiaModuleStatus = "live" | "beta" | "coming_soon";
+export type IndiaModuleStatus = "live" | "beta" | "coming_soon" | "planned";
 
 export interface IndiaModuleSource {
   /** Lookup key into INDIA_SOURCES (src/lib/india/india-sources.ts). */
@@ -136,6 +136,14 @@ export interface IndiaModuleDef {
    * icon. Add by editing the registry — no code change needed.
    */
   heroImage?: { url: string; alt: string; credit: string; license: string };
+
+  // ── Phase 3A additions (file 44) ───────────────────────────
+  /** Slug of the IndiaSuperCategoryDef this module belongs to. */
+  superCategory: string;
+  /** 'data' = scraped/numeric module; 'editorial' = NCERT-aligned explainer. */
+  contentType: "data" | "editorial";
+  /** Optional sub-group label within a super-category (ALL CAPS), e.g. 'JUSTICE'. */
+  subGroup?: string;
 }
 
 export const INDIA_MODULES: IndiaModuleDef[] = [
@@ -143,13 +151,15 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "national-snapshot",
     category: "snapshot",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "National Snapshot",
     icon: "🇮🇳",
     tagline: "States, UTs, languages, geographic area at a glance.",
     description:
       "Constitutional and near-static reference values about the Republic of India.",
     status: "live",
-    displayOrder: 1,
+    displayOrder: 7,
     sources: [
       { sourceKey: "MHA", type: "Static", refresh: "Annual" },
       { sourceKey: "CONSTITUTION", type: "Static", refresh: "Annual" },
@@ -164,6 +174,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "demographics-population",
     category: "demographics",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "Population & Demographics",
     icon: "👥",
     tagline: "Population, fertility, life expectancy from SRS and Census.",
@@ -171,7 +183,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Annual SRS bulletin and decennial Census aggregates. SRS releases CBR, " +
       "CDR, IMR, life expectancy each year; Census provides full age-sex pyramid.",
     status: "live",
-    displayOrder: 2,
+    displayOrder: 4,
     sources: [
       { sourceKey: "CENSUS", type: "Collected", refresh: "Annual" },
       { sourceKey: "MoSPI", type: "Collected", refresh: "Annual" },
@@ -188,6 +200,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "economy-gdp",
     category: "economy",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "Economy & GDP",
     icon: "📈",
     tagline: "Quarterly GDP, GVA, sectoral growth from MoSPI.",
@@ -195,7 +209,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Real and nominal GDP, GVA by sector, Q-on-Q and Y-on-Y growth — released " +
       "end-Feb / end-May / end-Aug / end-Nov per MoSPI press notes.",
     status: "live",
-    displayOrder: 3,
+    displayOrder: 1,
     sources: [
       { sourceKey: "MoSPI", type: "Collected", refresh: "Quarterly" },
       { sourceKey: "RBI", type: "Collected", refresh: "Quarterly" },
@@ -209,6 +223,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "economy-inflation",
     category: "economy",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "Inflation & Prices",
     icon: "🛒",
     tagline: "CPI and WPI — monthly inflation from MoSPI and DPIIT.",
@@ -216,7 +232,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "CPI (combined / rural / urban) on the 12th and WPI on the 14th. " +
       "Year-on-year change is the headline metric; series goes back decades.",
     status: "live",
-    displayOrder: 4,
+    displayOrder: 2,
     sources: [
       { sourceKey: "MoSPI", type: "Collected", refresh: "Monthly" },
       { sourceKey: "EAINDUSTRY_WPI", type: "Collected", refresh: "Monthly" },
@@ -230,6 +246,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "economy-employment",
     category: "economy",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "Employment (PLFS)",
     icon: "💼",
     tagline: "Labour force participation, unemployment from MoSPI PLFS.",
@@ -237,7 +255,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Periodic Labour Force Survey monthly bulletin — LFPR, WPR, " +
       "unemployment rate by Current Weekly Status (CWS).",
     status: "live",
-    displayOrder: 5,
+    displayOrder: 3,
     sources: [{ sourceKey: "MoSPI", type: "Collected", refresh: "Monthly" }],
     componentName: "EconomyEmploymentModule",
     hasTimeSeries: true,
@@ -251,6 +269,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "budget-union",
     category: "budget",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "Union Budget",
     icon: "🏛️",
     tagline: "Annual Union Budget allocations, monthly CGA actuals.",
@@ -258,7 +278,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Total expenditure, revenue/capital split, top 10 ministries by " +
       "allocation. CGA Monthly Account tracks actual receipts vs estimates.",
     status: "live",
-    displayOrder: 6,
+    displayOrder: 5,
     sources: [
       { sourceKey: "MoF_BUDGET", type: "Collected", refresh: "Annual" },
       { sourceKey: "CGA", type: "Collected", refresh: "Monthly" },
@@ -271,6 +291,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "budget-gst",
     category: "budget",
+    superCategory: "macro-snapshot",
+    contentType: "data",
     title: "GST Collections",
     icon: "🧾",
     tagline: "Monthly Gross GST collection, CGST/SGST/IGST split.",
@@ -278,7 +300,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Gross GST mop-up (CGST + SGST + IGST + Cess) released by GST Council " +
       "/ Ministry of Finance on the 1st of each month.",
     status: "live",
-    displayOrder: 7,
+    displayOrder: 6,
     sources: [{ sourceKey: "GST_COUNCIL", type: "Collected", refresh: "Monthly" }],
     componentName: "BudgetGstModule",
     hasTimeSeries: true,
@@ -292,6 +314,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "agriculture-production",
     category: "agriculture",
+    superCategory: "agriculture-livestock",
+    contentType: "data",
+    subGroup: "AGRICULTURE",
     title: "Crop Production",
     icon: "🌾",
     tagline: "Crop estimates, mandi count, AGMARKNET coverage.",
@@ -299,7 +324,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "DA&FW Advance Estimates of crop production (1st/2nd/3rd/4th) " +
       "released quarterly. Mandi count tracked monthly via AGMARKNET.",
     status: "live",
-    displayOrder: 8,
+    displayOrder: 1,
     sources: [
       { sourceKey: "DAFW", type: "Collected", refresh: "Quarterly" },
       { sourceKey: "AGMARKNET", type: "Collected", refresh: "Monthly" },
@@ -313,6 +338,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "agriculture-plantation",
     category: "agriculture",
+    superCategory: "agriculture-livestock",
+    contentType: "data",
+    subGroup: "AGRICULTURE",
     title: "Plantation Crops",
     icon: "🍃",
     tagline: "Tea, coffee, rubber, spices — production and exports.",
@@ -320,7 +348,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Commodity board data for India's plantation sector. Each board (Tea/" +
       "Coffee/Rubber/Spices) publishes its own annual statistics report.",
     status: "coming_soon",
-    displayOrder: 9,
+    displayOrder: 3,
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "AgriculturePlantationModule",
     scraperKeys: [],
@@ -330,6 +358,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "agriculture-pmkisan",
     category: "agriculture",
+    superCategory: "agriculture-livestock",
+    contentType: "data",
+    subGroup: "AGRICULTURE",
     title: "PM-KISAN",
     icon: "💰",
     tagline: "Cumulative beneficiaries and disbursements.",
@@ -337,7 +368,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Direct income support to small and marginal farmers. PM-KISAN portal " +
       "publishes cumulative beneficiary and instalment counts.",
     status: "live",
-    displayOrder: 10,
+    displayOrder: 2,
     sources: [{ sourceKey: "PMKISAN", type: "Collected", refresh: "Monthly" }],
     componentName: "AgriculturePmKisanModule",
     hasTimeSeries: true,
@@ -350,6 +381,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "livestock-census",
     category: "livestock",
+    superCategory: "agriculture-livestock",
+    contentType: "data",
+    subGroup: "LIVESTOCK",
     title: "Livestock & Dairy",
     icon: "🐄",
     tagline: "Livestock Census + NDDB milk production.",
@@ -357,7 +391,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Quinquennial Livestock Census and annual NDDB dairy data — milk " +
       "production by state, breed registry, cooperative reach.",
     status: "coming_soon",
-    displayOrder: 11,
+    displayOrder: 4,
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "LivestockCensusModule",
     scraperKeys: [],
@@ -367,6 +401,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "livestock-fisheries",
     category: "livestock",
+    superCategory: "agriculture-livestock",
+    contentType: "data",
+    subGroup: "LIVESTOCK",
     title: "Fisheries",
     icon: "🐟",
     tagline: "Inland and marine fish production, exports.",
@@ -374,7 +411,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Department of Fisheries annual data — production by state, exports, " +
       "PMMSY beneficiaries.",
     status: "coming_soon",
-    displayOrder: 12,
+    displayOrder: 5,
     sources: [{ sourceKey: "DAFW", type: "Collected", refresh: "Annual" }],
     componentName: "LivestockFisheriesModule",
     scraperKeys: [],
@@ -386,6 +423,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "wildlife-forests",
     category: "wildlife",
+    superCategory: "wildlife-forests",
+    contentType: "data",
     title: "Forests & Wildlife",
     icon: "🌳",
     tagline: "Forest cover from FSI's biennial India State of Forest Report.",
@@ -393,7 +432,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Total forest cover, tree cover, very dense / moderately dense / open " +
       "forest split — sourced from FSI's ISFR.",
     status: "live",
-    displayOrder: 13,
+    displayOrder: 1,
     sources: [{ sourceKey: "FSI", type: "Collected", refresh: "Annual" }],
     componentName: "WildlifeForestsModule",
     hasStateBreakdown: true,
@@ -405,6 +444,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "wildlife-tigers",
     category: "wildlife",
+    superCategory: "wildlife-forests",
+    contentType: "data",
     title: "Tiger Conservation",
     icon: "🐅",
     tagline: "Tiger reserves, population estimates from NTCA.",
@@ -412,7 +453,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Tiger population estimates (Status of Tigers, every 4 years), " +
       "tiger reserves, conservation funding via NTCA.",
     status: "live",
-    displayOrder: 14,
+    displayOrder: 2,
     sources: [{ sourceKey: "NTCA", type: "Collected", refresh: "Annual" }],
     componentName: "WildlifeTigersModule",
     scraperKeys: ["ntca-tigers"],
@@ -423,6 +464,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "wildlife-protected-areas",
     category: "wildlife",
+    superCategory: "wildlife-forests",
+    contentType: "data",
     title: "National Parks & Sanctuaries",
     icon: "🦁",
     tagline: "Protected area network — NPs, sanctuaries, Ramsar sites.",
@@ -430,7 +473,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Wildlife Institute of India database of all protected areas, plus " +
       "Ramsar wetland designations and biosphere reserves.",
     status: "live",
-    displayOrder: 15,
+    displayOrder: 3,
     sources: [{ sourceKey: "WII", type: "Collected", refresh: "Quarterly" }],
     componentName: "WildlifeProtectedAreasModule",
     scraperKeys: ["wii-protected-areas"],
@@ -442,6 +485,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-roads",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "TRANSPORT",
     title: "Roads & Highways",
     icon: "🛣️",
     tagline: "National highway length, NHAI projects.",
@@ -449,7 +495,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "MoRTH quarterly status — total NH km, ongoing project count and " +
       "value, expressways under construction.",
     status: "live",
-    displayOrder: 16,
+    displayOrder: 1,
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Quarterly" }],
     componentName: "InfraRoadsModule",
     scraperKeys: ["morth-highways"],
@@ -460,6 +506,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-railways",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "TRANSPORT",
     title: "Railways",
     icon: "🚆",
     tagline: "Network length, passenger and freight from Indian Railways.",
@@ -467,7 +516,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Annual yearbook from Indian Railways — track km, electrification, " +
       "passenger originating, freight originating tonnes.",
     status: "live",
-    displayOrder: 17,
+    displayOrder: 2,
     sources: [{ sourceKey: "RAILWAYS", type: "Collected", refresh: "Annual" }],
     componentName: "InfraRailwaysModule",
     scraperKeys: ["railways-yearbook"],
@@ -477,6 +526,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-aviation",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "TRANSPORT",
     title: "Aviation",
     icon: "✈️",
     tagline: "DGCA monthly traffic, fleet, airports.",
@@ -484,7 +536,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "DGCA Monthly Performance Report — passenger traffic by airport, " +
       "domestic vs international, fleet size by carrier.",
     status: "live",
-    displayOrder: 18,
+    displayOrder: 3,
     sources: [{ sourceKey: "DGCA", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraAviationModule",
     hasStateBreakdown: true,
@@ -495,6 +547,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-ports",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "TRANSPORT",
     title: "Ports & Shipping",
     icon: "🚢",
     tagline: "Major and non-major port traffic.",
@@ -502,7 +557,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Indian Ports Association data on cargo throughput, container traffic, " +
       "vessel calls at the 12 major ports plus state-handled non-major ports.",
     status: "coming_soon",
-    displayOrder: 19,
+    displayOrder: 7,
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraPortsModule",
     scraperKeys: [],
@@ -512,6 +567,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-telecom",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "DIGITAL",
     title: "Telecom & Internet",
     icon: "📡",
     tagline: "TRAI subscribers, broadband penetration.",
@@ -519,7 +577,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "TRAI Performance Indicators Report — total wireless and wireline " +
       "subscribers, urban/rural split, broadband and FTTH penetration.",
     status: "live",
-    displayOrder: 20,
+    displayOrder: 4,
     sources: [{ sourceKey: "TRAI", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraTelecomModule",
     hasStateBreakdown: true,
@@ -530,6 +588,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "infra-smart-cities",
     category: "infrastructure",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "URBAN",
     title: "Smart Cities Mission",
     icon: "🏙️",
     tagline: "Project completion, fund utilisation across 100 cities.",
@@ -537,7 +598,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Smart Cities Mission dashboard — projects sanctioned, completed, " +
       "under implementation, funds released vs utilised.",
     status: "coming_soon",
-    displayOrder: 21,
+    displayOrder: 8,
     sources: [{ sourceKey: "MORTH", type: "Collected", refresh: "Monthly" }],
     componentName: "InfraSmartCitiesModule",
     scraperKeys: [],
@@ -549,6 +610,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-power",
     category: "energy",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "POWER",
     title: "Power Generation",
     icon: "⚡",
     tagline: "CEA installed capacity, generation by source.",
@@ -556,7 +620,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "CEA Monthly Executive Summary — total installed capacity, monthly " +
       "generation by thermal/hydro/nuclear/RE, peak demand.",
     status: "live",
-    displayOrder: 22,
+    displayOrder: 5,
     sources: [{ sourceKey: "CEA", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyPowerModule",
     hasStateBreakdown: true,
@@ -568,6 +632,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-renewables",
     category: "energy",
+    superCategory: "infrastructure",
+    contentType: "data",
+    subGroup: "POWER",
     title: "Renewable Energy",
     icon: "☀️",
     tagline: "Installed RE capacity by segment from MNRE.",
@@ -575,7 +642,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "MNRE monthly bulletin — solar (utility + rooftop), wind, biomass, " +
       "small hydro, total non-hydro RE installed capacity.",
     status: "live",
-    displayOrder: 23,
+    displayOrder: 6,
     sources: [{ sourceKey: "MNRE", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyRenewablesModule",
     hasStateBreakdown: true,
@@ -587,6 +654,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-fuels",
     category: "energy",
+    superCategory: "natural-resources-energy",
+    contentType: "data",
     title: "Petroleum & Fuels",
     icon: "🛢️",
     tagline: "Crude import, product consumption, retail prices.",
@@ -594,7 +663,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "PPAC monthly snapshot — crude imports, refinery throughput, " +
       "petrol/diesel/LPG consumption, retail price ranges.",
     status: "coming_soon",
-    displayOrder: 24,
+    displayOrder: 1,
     sources: [{ sourceKey: "MNRE", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyFuelsModule",
     scraperKeys: [],
@@ -604,6 +673,8 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-coal",
     category: "energy",
+    superCategory: "natural-resources-energy",
+    contentType: "data",
     title: "Coal",
     icon: "⚫",
     tagline: "Coal production, despatch, stock at thermal plants.",
@@ -611,7 +682,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Ministry of Coal monthly data — domestic production, imports, " +
       "despatch to power sector, stock at coal-based power plants.",
     status: "coming_soon",
-    displayOrder: 25,
+    displayOrder: 2,
     sources: [{ sourceKey: "CEA", type: "Collected", refresh: "Monthly" }],
     componentName: "EnergyCoalModule",
     scraperKeys: [],
@@ -623,6 +694,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "health-overview",
     category: "health",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "HEALTH",
     title: "Health Indicators",
     icon: "🏥",
     tagline: "Headline NFHS-5 indicators and NHM coverage.",
@@ -630,7 +704,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "NFHS-5 anthropometrics, child mortality, immunisation coverage. " +
       "Aggregate national values — state breakdowns inside.",
     status: "live",
-    displayOrder: 26,
+    displayOrder: 1,
     sources: [
       { sourceKey: "MOHFW", type: "Collected", refresh: "Annual" },
       { sourceKey: "RCHIIPS_NFHS", type: "Collected", refresh: "Annual" },
@@ -646,6 +720,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "health-pmjay",
     category: "health",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "HEALTH",
     title: "Ayushman Bharat (PM-JAY)",
     icon: "🩺",
     tagline: "Cards issued, hospitals empanelled, treatments authorised.",
@@ -653,7 +730,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "NHA monthly dashboard — total Ayushman cards issued, empanelled " +
       "hospitals, hospitalisation events authorised.",
     status: "coming_soon",
-    displayOrder: 27,
+    displayOrder: 2,
     sources: [{ sourceKey: "NHA_PMJAY", type: "Collected", refresh: "Monthly" }],
     componentName: "HealthPmJayModule",
     legalNote: "health",
@@ -664,6 +741,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "health-immunisation",
     category: "health",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "HEALTH",
     title: "Vaccination & U-WIN",
     icon: "💉",
     tagline: "Cumulative U-WIN beneficiary registrations.",
@@ -671,7 +751,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Universal immunisation registry numbers — cumulative beneficiaries, " +
       "doses administered, antigen-wise coverage.",
     status: "live",
-    displayOrder: 28,
+    displayOrder: 3,
     sources: [{ sourceKey: "UWIN", type: "Collected", refresh: "Monthly" }],
     componentName: "HealthImmunisationModule",
     legalNote: "health",
@@ -684,6 +764,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "education-schools",
     category: "education",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "EDUCATION",
     title: "Schools (UDISE+)",
     icon: "🏫",
     tagline: "School count, enrolment, infrastructure from UDISE+.",
@@ -691,7 +774,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Annual UDISE+ census — total schools, enrolment by stage, " +
       "infrastructure (toilets, electricity, computers), teacher count.",
     status: "coming_soon",
-    displayOrder: 29,
+    displayOrder: 4,
     sources: [{ sourceKey: "UDISE", type: "Collected", refresh: "Annual" }],
     componentName: "EducationSchoolsModule",
     hasStateBreakdown: true,
@@ -703,6 +786,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "education-higher",
     category: "education",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "EDUCATION",
     title: "Higher Education",
     icon: "🎓",
     tagline: "AISHE annual aggregates — students, institutions, GER.",
@@ -710,7 +796,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "All India Survey on Higher Education — enrolment, GER by gender " +
       "and category, recognised universities and colleges.",
     status: "live",
-    displayOrder: 30,
+    displayOrder: 5,
     sources: [
       { sourceKey: "AISHE", type: "Collected", refresh: "Annual" },
       { sourceKey: "UGC", type: "Collected", refresh: "Annual" },
@@ -724,6 +810,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "education-skills",
     category: "education",
+    superCategory: "living-standards",
+    contentType: "data",
+    subGroup: "EDUCATION",
     title: "Skill India",
     icon: "🛠️",
     tagline: "PMKVY beneficiaries, ITI seats, NCVET certifications.",
@@ -731,7 +820,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Ministry of Skill Development data — PMKVY trained and placed, " +
       "ITI seats and admissions, NSDC scheme coverage.",
     status: "coming_soon",
-    displayOrder: 31,
+    displayOrder: 6,
     sources: [{ sourceKey: "AICTE", type: "Collected", refresh: "Annual" }],
     componentName: "EducationSkillsModule",
     scraperKeys: [],
@@ -743,6 +832,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "defence-budget",
     category: "defence",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "DEFENCE",
     title: "Defence Budget (Public)",
     icon: "🛡️",
     tagline: "Demand 17/19/20 — capital and revenue allocations.",
@@ -750,7 +842,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Defence allocations from the Union Budget (Demands 17/19/20) — total, " +
       "capital outlay, modernisation. Public figures only.",
     status: "live",
-    displayOrder: 32,
+    displayOrder: 8,
     sources: [
       { sourceKey: "MOD", type: "Collected", refresh: "Annual" },
       { sourceKey: "MoF_BUDGET", type: "Collected", refresh: "Annual" },
@@ -765,6 +857,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "defence-exports",
     category: "defence",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "DEFENCE",
     title: "Defence Exports",
     icon: "📦",
     tagline: "Quarterly defence export figures via PIB.",
@@ -772,7 +867,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "MoD-released defence export totals via PIB releases tagged Defence " +
       "Production. Quarterly cadence; aggregate value only.",
     status: "live",
-    displayOrder: 33,
+    displayOrder: 9,
     sources: [
       { sourceKey: "MOD", type: "Collected", refresh: "Quarterly" },
       { sourceKey: "PIB", type: "Collected", refresh: "Quarterly" },
@@ -786,6 +881,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "defence-dpsu",
     category: "defence",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "DEFENCE",
     title: "DPSU Performance",
     icon: "🏭",
     tagline: "HAL, BEL, Mazagon — listed defence PSUs.",
@@ -793,7 +891,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Annual report data from listed Defence PSUs (HAL, BEL, Mazagon, " +
       "Cochin Shipyard, etc.) — revenue, profit, order book.",
     status: "coming_soon",
-    displayOrder: 34,
+    displayOrder: 10,
     sources: [{ sourceKey: "MOD", type: "Collected", refresh: "Annual" }],
     componentName: "DefenceDpsuModule",
     legalNote: "defence",
@@ -806,6 +904,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "justice-pendency",
     category: "justice",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "JUSTICE",
     title: "Court Pendency",
     icon: "⚖️",
     tagline: "Aggregate case pendency from NJDG.",
@@ -813,7 +914,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "National Judicial Data Grid weekly snapshot — total pending cases " +
       "across district, high, and supreme courts. Aggregate only.",
     status: "coming_soon",
-    displayOrder: 35,
+    displayOrder: 1,
     sources: [{ sourceKey: "NJDG", type: "Collected", refresh: "Weekly" }],
     componentName: "JusticePendencyModule",
     legalNote: "justice",
@@ -824,6 +925,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "justice-crime",
     category: "justice",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "JUSTICE",
     title: "NCRB Crime Statistics",
     icon: "🚔",
     tagline: "Annual Crime in India headline figures.",
@@ -831,7 +935,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "National Crime Records Bureau Crime in India report — total IPC " +
       "cases, rate per lakh population. Released annually as a scanned PDF.",
     status: "coming_soon",
-    displayOrder: 36,
+    displayOrder: 2,
     sources: [{ sourceKey: "NCRB", type: "Collected", refresh: "Annual" }],
     componentName: "JusticeCrimeModule",
     legalNote: "justice",
@@ -842,6 +946,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "justice-police",
     category: "justice",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "JUSTICE",
     title: "Police Strength (BPRD)",
     icon: "👮",
     tagline: "Sanctioned vs actual police strength from BPRD.",
@@ -849,7 +956,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Bureau of Police Research and Development annual data on " +
       "police organisations — strength, vacancies, ratio per lakh population.",
     status: "live",
-    displayOrder: 37,
+    displayOrder: 3,
     sources: [{ sourceKey: "BPRD", type: "Collected", refresh: "Annual" }],
     componentName: "JusticePoliceModule",
     legalNote: "justice",
@@ -861,6 +968,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "justice-prisons",
     category: "justice",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "JUSTICE",
     title: "Prison Statistics",
     icon: "🔒",
     tagline: "NCRB Prison Statistics India headline figures.",
@@ -868,7 +978,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Annual NCRB Prison Statistics — total prison population, undertrials, " +
       "convicts, capacity utilisation.",
     status: "coming_soon",
-    displayOrder: 38,
+    displayOrder: 4,
     sources: [{ sourceKey: "NCRB", type: "Collected", refresh: "Annual" }],
     componentName: "JusticePrisonsModule",
     legalNote: "justice",
@@ -881,6 +991,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "elections-loksabha",
     category: "elections",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "ELECTIONS",
     title: "Lok Sabha",
     icon: "🗳️",
     tagline: "Composition, party-wise seats, vacancies.",
@@ -888,7 +1001,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Election Commission of India data on the current Lok Sabha — " +
       "party-wise seat tally, vacancies, by-election results.",
     status: "coming_soon",
-    displayOrder: 39,
+    displayOrder: 5,
     sources: [{ sourceKey: "ECI", type: "Collected", refresh: "Event-driven" }],
     componentName: "ElectionsLokSabhaModule",
     legalNote: "elections",
@@ -900,6 +1013,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "elections-rajyasabha",
     category: "elections",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "ELECTIONS",
     title: "Rajya Sabha",
     icon: "🏛️",
     tagline: "Party composition of the Council of States.",
@@ -907,7 +1023,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Rajya Sabha membership and composition — party-wise strength, " +
       "elected vs nominated, vacancies.",
     status: "coming_soon",
-    displayOrder: 40,
+    displayOrder: 6,
     sources: [
       { sourceKey: "RAJYA_SABHA", type: "Collected", refresh: "Monthly" },
     ],
@@ -920,6 +1036,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "elections-turnout",
     category: "elections",
+    superCategory: "governance",
+    contentType: "data",
+    subGroup: "ELECTIONS",
     title: "Voter Turnout Trends",
     icon: "📊",
     tagline: "Historical Lok Sabha and state turnout from ECI.",
@@ -927,7 +1046,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Long-run voter turnout series for Lok Sabha and state assembly " +
       "elections, from ECI's statistical reports.",
     status: "coming_soon",
-    displayOrder: 41,
+    displayOrder: 7,
     sources: [{ sourceKey: "ECI", type: "Collected", refresh: "Annual" }],
     componentName: "ElectionsTurnoutModule",
     legalNote: "elections",
@@ -941,6 +1060,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "science-isro",
     category: "science",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "SCIENCE",
     title: "ISRO Missions",
     icon: "🚀",
     tagline: "Recent launches, satellite catalogue.",
@@ -948,7 +1070,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "ISRO mission count by year, recent launches, active satellite " +
       "catalogue. Event-driven — updates after each launch.",
     status: "coming_soon",
-    displayOrder: 42,
+    displayOrder: 2,
     sources: [{ sourceKey: "ISRO", type: "Collected", refresh: "Event-driven" }],
     componentName: "ScienceIsroModule",
     scraperKeys: [],
@@ -958,6 +1080,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "science-rd",
     category: "science",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "SCIENCE",
     title: "R&D & Patents",
     icon: "🔬",
     tagline: "Gross R&D expenditure, patents granted.",
@@ -965,7 +1090,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Department of Science & Technology R&D Statistics — GERD as % of " +
       "GDP, patents filed and granted via IP India.",
     status: "live",
-    displayOrder: 43,
+    displayOrder: 4,
     sources: [
       { sourceKey: "DST", type: "Collected", refresh: "Annual" },
       { sourceKey: "IPINDIA", type: "Collected", refresh: "Annual" },
@@ -978,6 +1103,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "science-startups",
     category: "science",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "INDUSTRY",
     title: "Startups & Unicorns",
     icon: "🦄",
     tagline: "DPIIT-recognised startups, unicorn count.",
@@ -985,7 +1113,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Startup India / DPIIT recognised entities — total recognised, " +
       "by sector, by state, year-on-year growth.",
     status: "live",
-    displayOrder: 44,
+    displayOrder: 1,
     sources: [
       { sourceKey: "STARTUP_INDIA", type: "Collected", refresh: "Monthly" },
       { sourceKey: "DPIIT", type: "Collected", refresh: "Monthly" },
@@ -1000,6 +1128,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "science-digital",
     category: "science",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "DIGITAL",
     title: "Digital India (UPI, Aadhaar)",
     icon: "📱",
     tagline: "Monthly UPI volume + Aadhaar enrolment.",
@@ -1007,7 +1138,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "UPI transaction volume and value (NPCI, monthly). Aadhaar enrolment " +
       "and authentication transactions (UIDAI).",
     status: "live",
-    displayOrder: 45,
+    displayOrder: 3,
     sources: [
       { sourceKey: "NPCI", type: "Collected", refresh: "Monthly" },
       { sourceKey: "UIDAI", type: "Collected", refresh: "Monthly" },
@@ -1023,6 +1154,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "trade-overview",
     category: "trade",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "TRADE",
     title: "Foreign Trade",
     icon: "🌐",
     tagline: "Monthly exports, imports, trade balance.",
@@ -1030,7 +1164,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Department of Commerce QuickEstimates — monthly merchandise exports, " +
       "imports, services trade, trade balance.",
     status: "live",
-    displayOrder: 46,
+    displayOrder: 5,
     sources: [
       { sourceKey: "COMMERCE", type: "Collected", refresh: "Monthly" },
       { sourceKey: "DGFT", type: "Collected", refresh: "Monthly" },
@@ -1044,6 +1178,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "trade-fdi",
     category: "trade",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "TRADE",
     title: "FDI & Investment",
     icon: "💼",
     tagline: "FDI inflows by sector, source country.",
@@ -1051,7 +1188,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "DPIIT FDI inflow data — quarterly equity inflows by sector and " +
       "source country, RBI capital account data.",
     status: "coming_soon",
-    displayOrder: 47,
+    displayOrder: 6,
     sources: [{ sourceKey: "DPIIT", type: "Collected", refresh: "Quarterly" }],
     componentName: "TradeFdiModule",
     scraperKeys: [],
@@ -1061,13 +1198,16 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "trade-diaspora",
     category: "trade",
+    superCategory: "innovation",
+    contentType: "data",
+    subGroup: "TRADE",
     title: "Diaspora & Remittances",
     icon: "✈️",
     tagline: "Remittance inflows, diaspora estimates.",
     description:
       "RBI annual remittance data, MEA diaspora estimates by country.",
     status: "coming_soon",
-    displayOrder: 48,
+    displayOrder: 7,
     sources: [{ sourceKey: "RBI", type: "Collected", refresh: "Annual" }],
     componentName: "TradeDiasporaModule",
     scraperKeys: [],
@@ -1079,6 +1219,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "tourism-overview",
     category: "tourism",
+    superCategory: "culture",
+    contentType: "data",
+    subGroup: "HERITAGE",
     title: "Tourism Statistics",
     icon: "🧳",
     tagline: "Monthly FTA and FEE from Ministry of Tourism.",
@@ -1086,7 +1229,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Foreign Tourist Arrivals and Foreign Exchange Earnings — monthly " +
       "bulletin from the Ministry of Tourism.",
     status: "live",
-    displayOrder: 49,
+    displayOrder: 2,
     sources: [{ sourceKey: "TOURISM", type: "Collected", refresh: "Monthly" }],
     componentName: "TourismOverviewModule",
     hasTimeSeries: true,
@@ -1097,6 +1240,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "tourism-heritage",
     category: "tourism",
+    superCategory: "culture",
+    contentType: "data",
+    subGroup: "HERITAGE",
     title: "UNESCO & ASI Heritage",
     icon: "🏛️",
     tagline: "Centrally protected monuments and World Heritage Sites.",
@@ -1104,7 +1250,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Archaeological Survey of India data on centrally protected monuments, " +
       "plus India's UNESCO World Heritage inscriptions.",
     status: "live",
-    displayOrder: 50,
+    displayOrder: 1,
     sources: [{ sourceKey: "ASI", type: "Collected", refresh: "Quarterly" }],
     componentName: "TourismHeritageModule",
     scraperKeys: ["asi-heritage"],
@@ -1114,6 +1260,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "tourism-gi-tags",
     category: "tourism",
+    superCategory: "culture",
+    contentType: "data",
+    subGroup: "HERITAGE",
     title: "GI Tags Registry",
     icon: "🏷️",
     tagline: "Geographical Indication registry.",
@@ -1121,7 +1270,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Office of the Controller General of Patents GI registry — total " +
       "tags, by category, by state.",
     status: "coming_soon",
-    displayOrder: 51,
+    displayOrder: 5,
     sources: [{ sourceKey: "IPINDIA", type: "Collected", refresh: "Annual" }],
     componentName: "TourismGiTagsModule",
     scraperKeys: [],
@@ -1133,6 +1282,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "sports-olympics",
     category: "sports",
+    superCategory: "culture",
+    contentType: "data",
+    subGroup: "SPORTS",
     title: "Olympic Performance",
     icon: "🏅",
     tagline: "Medals, athletes, contingent size.",
@@ -1140,7 +1292,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "India's Olympic and Paralympic performance — medal record by Games, " +
       "contingent size, sport-wise breakdown.",
     status: "live",
-    displayOrder: 52,
+    displayOrder: 3,
     sources: [
       { sourceKey: "IOA", type: "Institutional", refresh: "Event-driven" },
       { sourceKey: "SAI", type: "Collected", refresh: "Annual" },
@@ -1153,6 +1305,9 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "sports-khelo-india",
     category: "sports",
+    superCategory: "culture",
+    contentType: "data",
+    subGroup: "SPORTS",
     title: "Khelo India",
     icon: "🏃",
     tagline: "Khelo India Games, KISCE centres.",
@@ -1160,12 +1315,144 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "Khelo India programme data — Games editions, KISCE centres, " +
       "athletes supported by sport.",
     status: "coming_soon",
-    displayOrder: 53,
+    displayOrder: 4,
     sources: [{ sourceKey: "SAI", type: "Collected", refresh: "Annual" }],
     componentName: "SportsKheloIndiaModule",
     scraperKeys: [],
     // MOCK — Khelo India scholar athletes supported, order-of-magnitude.
     headlineMetric: { key: "khelo_india_athletes", label: "Khelo India Athletes", unit: "count", mockValue: 3000, mockUnit: "" },
+  },
+
+  // ── Editorial seeds (Know About India, Phase 3A) ───────────
+  {
+    slug: "know-india-constitution",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "How the Indian Constitution Works",
+    icon: "📜",
+    tagline: "Preamble, Fundamental Rights, DPSP, Schedule structure — explained from NCERT.",
+    description:
+      "Visual-first NCERT-aligned explainer covering the Preamble, Fundamental Rights, Directive Principles, and the structure of the Constitution.",
+    status: "planned",
+    displayOrder: 1,
+    sources: [
+      { sourceKey: "NCERT_POLITY_11", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "CONSTITUTION_OF_INDIA", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "MIN_LAW_JUSTICE", type: "Institutional", refresh: "Annual" },
+    ],
+    componentName: "KnowIndiaConstitutionModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: false,
+    scraperKeys: [],
+  },
+  {
+    slug: "know-india-history-timeline",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "History of India — A Timeline",
+    icon: "🏛️",
+    tagline: "From Indus Valley to today — the master timeline of Indian civilization.",
+    description:
+      "Visual-first NCERT-aligned overview from Indus Valley (3300 BCE) to post-Independence. Master timeline that links to deeper era-specific modules.",
+    status: "planned",
+    displayOrder: 2,
+    sources: [
+      { sourceKey: "NCERT_HISTORY_6_12", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "ASI", type: "Institutional", refresh: "Annual" },
+    ],
+    componentName: "KnowIndiaHistoryTimelineModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: true,
+    scraperKeys: [],
+  },
+  {
+    slug: "know-india-geography-physical",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "Geography of India — Physical Foundation",
+    icon: "🗺️",
+    tagline: "Rivers, mountains, climate zones, biomes — the physical India explained.",
+    description:
+      "Visual-first NCERT-aligned explainer of Indian physical geography. Covers river systems, mountain ranges, climate zones, biomes.",
+    status: "planned",
+    displayOrder: 3,
+    sources: [
+      { sourceKey: "NCERT_GEOGRAPHY_11", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "SOI", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "IMD", type: "Institutional", refresh: "Annual" },
+    ],
+    componentName: "KnowIndiaGeographyPhysicalModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: false,
+    scraperKeys: [],
+  },
+  {
+    slug: "know-india-parliament",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "How Parliament Functions",
+    icon: "🏛️",
+    tagline: "Sessions, types of bills, committees, question hour — Parliament explained.",
+    description:
+      "Visual-first NCERT-aligned explainer of how Parliament functions. Lok Sabha, Rajya Sabha, bills, committees, question hour.",
+    status: "planned",
+    displayOrder: 4,
+    sources: [
+      { sourceKey: "NCERT_POLITY_11", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "PARLIAMENT_OF_INDIA", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "PRS_LEGISLATIVE", type: "Institutional", refresh: "Annual" },
+    ],
+    componentName: "KnowIndiaParliamentModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: false,
+    scraperKeys: [],
+  },
+  {
+    slug: "know-india-elections",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "How Elections Work in India",
+    icon: "🗳️",
+    tagline: "Lok Sabha, State, Local — the election machinery from ECI to EVM.",
+    description:
+      "Visual-first NCERT-aligned explainer of the Indian election system. ECI, MCC, EVMs, VVPATs, voter registration.",
+    status: "planned",
+    displayOrder: 5,
+    sources: [
+      { sourceKey: "NCERT_POLITY_11", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "ECI", type: "Institutional", refresh: "Annual" },
+    ],
+    componentName: "KnowIndiaElectionsModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: false,
+    scraperKeys: [],
+  },
+  {
+    slug: "know-india-budget",
+    category: "custom",
+    superCategory: "know-india",
+    contentType: "editorial",
+    title: "How the Union Budget Is Made",
+    icon: "💰",
+    tagline: "Article 112, the Budget cycle, Demands for Grants — the budget process explained.",
+    description:
+      "Visual-first NCERT-aligned explainer of how the Union Budget is made. Article 112, budget cycle, key players, Finance Bill.",
+    status: "planned",
+    displayOrder: 6,
+    sources: [
+      { sourceKey: "NCERT_MACROECON_12", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "UNION_BUDGET", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "CGA", type: "Institutional", refresh: "Monthly" },
+    ],
+    componentName: "KnowIndiaBudgetModule",
+    hasStateBreakdown: false,
+    hasTimeSeries: false,
+    scraperKeys: [],
   },
 ];
 
@@ -1272,4 +1559,30 @@ export function getStateBreakdownMetricKeys(): string[] {
     }
   }
   return keys;
+}
+
+// ── Phase 3A helpers (file 44) ──────────────────────────────
+
+export function getDataModules(): IndiaModuleDef[] {
+  return INDIA_MODULES.filter((m) => m.contentType === "data");
+}
+
+export function getEditorialModules(): IndiaModuleDef[] {
+  return INDIA_MODULES.filter((m) => m.contentType === "editorial");
+}
+
+export function getPlannedModules(): IndiaModuleDef[] {
+  return INDIA_MODULES.filter((m) => m.status === "planned");
+}
+
+export function getLiveModuleCountInSuperCategory(superCategorySlug: string): number {
+  return INDIA_MODULES.filter(
+    (m) => m.superCategory === superCategorySlug && m.status === "live",
+  ).length;
+}
+
+export function getPlannedModuleCountInSuperCategory(superCategorySlug: string): number {
+  return INDIA_MODULES.filter(
+    (m) => m.superCategory === superCategorySlug && m.status === "planned",
+  ).length;
 }
