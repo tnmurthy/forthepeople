@@ -23,12 +23,15 @@ import {
   Crown,
   Film,
   Globe2,
+  IndianRupee,
   Languages as LanguagesIcon,
   Moon,
+  Square,
   TrendingUp,
   Users,
   Workflow,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { LanguageRotator } from "@/components/india/primitives/LanguageRotator";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
@@ -349,83 +352,19 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
         </div>
       </div>
 
-      {/* KPI strip */}
+      {/* KPI strip — v5 per-cell accent tints + Lucide icons (file 48 §4.7.4) */}
       <div
         className="india-hero-kpi-strip"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gap: "12px",
+          gap: "6px",
           marginTop: "1rem",
         }}
       >
-        <KpiCell
-          label="Population"
-          value={
-            <CountUpNumber
-              target={1.43}
-              decimals={2}
-              inlineStyle={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "24px",
-                fontWeight: 500,
-                lineHeight: 1.1,
-              }}
-            />
-          }
-          unit="billion · 2024 est."
-        />
-        <KpiCell
-          label="Area"
-          value={
-            <CountUpNumber
-              target={3.29}
-              decimals={2}
-              inlineStyle={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "24px",
-                fontWeight: 500,
-                lineHeight: 1.1,
-              }}
-            />
-          }
-          unit="million km²"
-        />
-        <KpiCell
-          label="Nominal GDP"
-          value={
-            <CountUpNumber
-              target={4.1}
-              decimals={1}
-              prefix="$"
-              suffix="T"
-              inlineStyle={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "24px",
-                fontWeight: 500,
-                lineHeight: 1.1,
-              }}
-            />
-          }
-          unit="FY26 · IMF"
-        />
-        <KpiCell label="States · UTs" value="28 · 8" unit="780 districts" />
-        <KpiCell
-          label="Languages"
-          value={
-            <CountUpNumber
-              target={22}
-              decimals={0}
-              inlineStyle={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "24px",
-                fontWeight: 500,
-                lineHeight: 1.1,
-              }}
-            />
-          }
-          unit="scheduled · Schedule 8"
-        />
+        {KPI_TILES.map((tile) => (
+          <KpiTileV5 key={tile.id} tile={tile} />
+        ))}
       </div>
 
       {/* Freshness strip */}
@@ -473,51 +412,193 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
   );
 }
 
-function KpiCell({
-  label,
-  value,
-  unit,
-}: {
+// ── KPI strip v5 (file 48 §4.7.4) ─────────────────────────────
+//
+// Five accent-tinted tiles. Each cell uses an accent ramp from
+// :root (Phase 4.6.9): blue / forest-green / amber / indigo / pink.
+// Lucide icon top-right at 70% opacity. Number is CountUpNumber with
+// the accent's "800" stop. Source pill at the bottom.
+
+interface KpiTileSpec {
+  id: string;
+  icon: LucideIcon;
   label: string;
-  value: React.ReactNode;
-  unit: string;
-}) {
+  // Either a numeric value (uses CountUpNumber) or a raw string composite.
+  value?: number;
+  valueRaw?: string;
+  decimals?: number;
+  unit?: string;
+  prefix?: string;
+  suffix?: string;
+  meta: string;
+  source: string;
+  accent: "blue" | "forest-green" | "amber" | "indigo" | "pink";
+  numColor: string;
+  iconColor: string;
+}
+
+const ACCENT_RGB: Record<KpiTileSpec["accent"], string> = {
+  blue: "24, 95, 165",
+  "forest-green": "90, 143, 46",
+  amber: "186, 117, 23",
+  indigo: "83, 74, 183",
+  pink: "153, 53, 86",
+};
+
+const KPI_TILES: KpiTileSpec[] = [
+  {
+    id: "population",
+    icon: Users,
+    label: "Population",
+    value: 1.43,
+    decimals: 2,
+    unit: "billion",
+    meta: "↑ 0.8% YoY",
+    source: "UN · 2024 est.",
+    accent: "blue",
+    numColor: "#082F58",
+    iconColor: "#185FA5",
+  },
+  {
+    id: "area",
+    icon: Square,
+    label: "Area",
+    value: 3.29,
+    decimals: 2,
+    unit: "M km²",
+    meta: "7th largest country",
+    source: "Survey of India",
+    accent: "forest-green",
+    numColor: "#27500A",
+    iconColor: "#5A8F2E",
+  },
+  {
+    id: "gdp",
+    icon: IndianRupee,
+    label: "Nominal GDP",
+    value: 4.1,
+    decimals: 1,
+    prefix: "$",
+    suffix: "T",
+    meta: "↑ 6.5% projected",
+    source: "IMF · FY26",
+    accent: "amber",
+    numColor: "#633806",
+    iconColor: "#BA7517",
+  },
+  {
+    id: "states",
+    icon: Building2,
+    label: "States · UTs",
+    valueRaw: "28 · 8",
+    meta: "780 districts",
+    source: "MHA · 2024",
+    accent: "indigo",
+    numColor: "#26215C",
+    iconColor: "#534AB7",
+  },
+  {
+    id: "languages",
+    icon: LanguagesIcon,
+    label: "Languages",
+    value: 22,
+    decimals: 0,
+    unit: "scheduled",
+    meta: "+ 100s of dialects",
+    source: "Schedule 8",
+    accent: "pink",
+    numColor: "#4D182A",
+    iconColor: "#993556",
+  },
+];
+
+function KpiTileV5({ tile }: { tile: KpiTileSpec }) {
+  const Icon = tile.icon;
+  const accentRgb = ACCENT_RGB[tile.accent];
+  const numStyle: React.CSSProperties = {
+    fontFamily: "var(--font-mono)",
+    fontSize: "22px",
+    fontWeight: 500,
+    letterSpacing: "-0.02em",
+    lineHeight: 1,
+    color: tile.numColor,
+  };
+
   return (
     <div
       style={{
-        background: "var(--color-background-secondary)",
+        border: `0.5px solid rgba(${accentRgb}, 0.20)`,
+        background: `linear-gradient(135deg, rgba(${accentRgb}, 0.06) 0%, rgba(${accentRgb}, 0.01) 100%)`,
         borderRadius: "var(--border-radius-md)",
-        padding: "14px 16px",
+        padding: "11px 13px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "3px",
+        position: "relative",
+        overflow: "hidden",
+        transition: "border-color 200ms",
       }}
     >
+      <Icon
+        size={14}
+        style={{
+          position: "absolute",
+          right: "8px",
+          top: "8px",
+          color: tile.iconColor,
+          opacity: 0.7,
+        }}
+      />
       <div
         style={{
-          fontSize: "11px",
+          fontFamily: "var(--font-mono)",
+          fontSize: "9.5px",
+          letterSpacing: "0.06em",
           textTransform: "uppercase",
-          letterSpacing: "0.04em",
           color: "var(--color-text-tertiary)",
-          marginBottom: "4px",
+          fontWeight: 500,
         }}
       >
-        {label}
+        {tile.label}
       </div>
-      {typeof value === "string" ? (
-        <div
-          style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "24px",
-            fontWeight: 500,
-            lineHeight: 1.1,
-          }}
-        >
-          {value}
-        </div>
-      ) : (
-        <div>{value}</div>
-      )}
-      <div style={{ fontSize: "11px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
-        {unit}
+      <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginTop: "1px" }}>
+        {tile.valueRaw ? (
+          <span style={numStyle}>{tile.valueRaw}</span>
+        ) : (
+          <>
+            {tile.prefix && <span style={numStyle}>{tile.prefix}</span>}
+            <CountUpNumber
+              target={tile.value ?? 0}
+              decimals={tile.decimals}
+              inlineStyle={numStyle}
+            />
+            {tile.suffix && <span style={numStyle}>{tile.suffix}</span>}
+            {tile.unit && (
+              <span style={{ fontSize: "11px", color: "var(--color-text-secondary)" }}>
+                {tile.unit}
+              </span>
+            )}
+          </>
+        )}
       </div>
+      <div style={{ fontSize: "10px", color: "var(--color-text-tertiary)", marginTop: "1px" }}>
+        {tile.meta}
+      </div>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "9px",
+          padding: "1px 6px",
+          background: "rgba(0,0,0,0.04)",
+          color: "var(--color-text-secondary)",
+          borderRadius: "3px",
+          display: "inline-block",
+          marginTop: "5px",
+          width: "fit-content",
+        }}
+      >
+        {tile.source}
+      </span>
     </div>
   );
 }
