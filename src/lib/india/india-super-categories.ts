@@ -2,6 +2,24 @@ import type { IndiaModuleDef } from "./india-modules";
 import type { IndiaAccentColorKey } from "./design-tokens";
 
 /**
+ * Watermark-icon key — resolved to a `LucideIcon` component on the client side
+ * via the WATERMARK_ICONS map in SuperCategoryPreviewBand. We keep the registry
+ * a pure-data module so it can be imported safely from server components and
+ * passed across the server→client boundary without serialization errors.
+ */
+export type WatermarkIconKey =
+  | "trending-up"
+  | "book-open-text"
+  | "globe-2"
+  | "paw-print"
+  | "wheat"
+  | "pickaxe"
+  | "building"
+  | "scale"
+  | "rocket"
+  | "theater";
+
+/**
  * India Super-Category Registry
  *
  * The 10 super-categories that organize the India Dashboard.
@@ -15,6 +33,8 @@ export interface IndiaSuperCategoryDef {
   title: string;                         // English fallback
   titleKey: string;                      // i18n key
   icon: string;                          // emoji (Phase 1) or lucide name (Phase 4+)
+  /** Watermark icon key — resolved to a Lucide component on the client. */
+  watermarkIcon: WatermarkIconKey;
   accentColor: IndiaAccentColorKey;      // key from IndiaSuperCategoryAccents
   tagline: string;                       // English fallback
   taglineKey: string;
@@ -30,6 +50,7 @@ export interface IndiaSuperCategoryDef {
 export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   {
     slug: "macro-snapshot",
+    watermarkIcon: "trending-up",
     title: "India at a Glance",
     titleKey: "india.superCategory.macroSnapshot.title",
     icon: "📊",
@@ -42,6 +63,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "know-india",
+    watermarkIcon: "book-open-text",
     title: "Know About India",
     titleKey: "india.superCategory.knowIndia.title",
     icon: "📖",
@@ -54,6 +76,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "living-standards",
+    watermarkIcon: "globe-2",
     title: "Living Standards",
     titleKey: "india.superCategory.livingStandards.title",
     icon: "🌐",
@@ -66,6 +89,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "wildlife-forests",
+    watermarkIcon: "paw-print",
     title: "Wildlife & Forests",
     titleKey: "india.superCategory.wildlifeForests.title",
     icon: "🐯",
@@ -78,6 +102,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "agriculture-livestock",
+    watermarkIcon: "wheat",
     title: "Agriculture & Livestock",
     titleKey: "india.superCategory.agricultureLivestock.title",
     icon: "🌾",
@@ -90,6 +115,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "natural-resources-energy",
+    watermarkIcon: "pickaxe",
     title: "Natural Resources & Energy",
     titleKey: "india.superCategory.naturalResourcesEnergy.title",
     icon: "⛏",
@@ -102,6 +128,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "infrastructure",
+    watermarkIcon: "building",
     title: "Infrastructure",
     titleKey: "india.superCategory.infrastructure.title",
     icon: "🏗",
@@ -114,6 +141,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "governance",
+    watermarkIcon: "scale",
     title: "Governance & Justice",
     titleKey: "india.superCategory.governance.title",
     icon: "⚖️",
@@ -126,6 +154,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "innovation",
+    watermarkIcon: "rocket",
     title: "Innovation & Industry",
     titleKey: "india.superCategory.innovation.title",
     icon: "🚀",
@@ -138,6 +167,7 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
   },
   {
     slug: "culture",
+    watermarkIcon: "theater",
     title: "Culture & Heritage",
     titleKey: "india.superCategory.culture.title",
     icon: "🎭",

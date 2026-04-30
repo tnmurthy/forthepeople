@@ -24,10 +24,44 @@
 import * as React from "react";
 import Link from "next/link";
 import {
+  Building,
+  BookOpenText,
+  Globe2,
+  PawPrint,
+  Pickaxe,
+  Rocket,
+  Scale,
+  Theater,
+  TrendingUp,
+  Wheat,
+  type LucideIcon,
+} from "lucide-react";
+import {
   IndiaSuperCategoryAccents,
   type IndiaAccentColorKey,
 } from "@/lib/india/design-tokens";
-import type { IndiaSuperCategoryDef } from "@/lib/india/india-super-categories";
+import type {
+  IndiaSuperCategoryDef,
+  WatermarkIconKey,
+} from "@/lib/india/india-super-categories";
+
+/**
+ * Client-side resolver: maps the registry's serializable string key to the
+ * actual Lucide component. Server-rendered registry data crosses the client
+ * boundary as plain strings; the function reference stays on this side.
+ */
+const WATERMARK_ICONS: Record<WatermarkIconKey, LucideIcon> = {
+  "trending-up": TrendingUp,
+  "book-open-text": BookOpenText,
+  "globe-2": Globe2,
+  "paw-print": PawPrint,
+  wheat: Wheat,
+  pickaxe: Pickaxe,
+  building: Building,
+  scale: Scale,
+  rocket: Rocket,
+  theater: Theater,
+};
 import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
 import { SourceDot } from "@/components/india/primitives/SourceDot";
@@ -43,19 +77,6 @@ export interface SuperCategoryPreviewBandProps {
 }
 
 type ViewMode = "grid" | "table";
-
-const WATERMARK_GLYPH: Record<string, string> = {
-  "macro-snapshot": "📊",
-  "know-india": "📖",
-  "living-standards": "🌐",
-  "wildlife-forests": "🐾",
-  "agriculture-livestock": "🌾",
-  "natural-resources-energy": "⛏",
-  infrastructure: "🏗",
-  governance: "⚖",
-  innovation: "🚀",
-  culture: "🎭",
-};
 
 const accentVarName = (key: IndiaAccentColorKey, stop: 700 | 800 | 900): string =>
   `var(--accent-${key}-${stop})`;
@@ -516,7 +537,7 @@ export function SuperCategoryPreviewBand({
   const stacked = ordered.slice(1, 3);
   const totalLive = modules.filter((m) => m.status === "live").length;
   const headlineKpi = featured?.headlineMetric;
-  const watermark = WATERMARK_GLYPH[superCategory.slug] ?? superCategory.icon;
+  const WatermarkIcon = WATERMARK_ICONS[superCategory.watermarkIcon];
 
   const eyebrow = `SECTION ${String(bandIndex + 1).padStart(2, "0")} · OF 10`;
 
@@ -557,59 +578,27 @@ export function SuperCategoryPreviewBand({
           overflow: "hidden",
         }}
       >
-        {/* Watermarks */}
-        <span
+        {/* Watermark — single Lucide SVG at 10% opacity, file 48 §4.7.7 */}
+        <WatermarkIcon
           aria-hidden
           style={{
             position: "absolute",
-            right: "-28px",
-            bottom: "-36px",
-            fontSize: "220px",
+            right: "-14px",
+            bottom: "-20px",
+            width: "180px",
+            height: "180px",
+            color: "white",
             opacity: 0.1,
-            transform: "rotate(-12deg)",
             pointerEvents: "none",
-            userSelect: "none",
-            lineHeight: 1,
           }}
-        >
-          {watermark}
-        </span>
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            right: "32px",
-            top: "56%",
-            fontSize: "88px",
-            opacity: 0.06,
-            transform: "rotate(20deg)",
-            pointerEvents: "none",
-            userSelect: "none",
-            lineHeight: 1,
-          }}
-        >
-          {watermark}
-        </span>
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: "60%",
-            top: "22%",
-            fontSize: "56px",
-            opacity: 0.05,
-            transform: "rotate(-8deg)",
-            pointerEvents: "none",
-            userSelect: "none",
-            lineHeight: 1,
-          }}
-        >
-          {watermark}
-        </span>
+        />
 
         <div
           style={{
             position: "relative",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
             fontFamily: "var(--font-mono)",
             fontSize: "10px",
             letterSpacing: "0.12em",
@@ -617,6 +606,7 @@ export function SuperCategoryPreviewBand({
             marginBottom: "14px",
           }}
         >
+          <WatermarkIcon size={12} aria-hidden />
           {eyebrow}
         </div>
 
