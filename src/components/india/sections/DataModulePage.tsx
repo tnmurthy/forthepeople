@@ -63,7 +63,7 @@ export async function DataModulePage({
         padding: "1.25rem 1rem 3rem",
       }}
     >
-      <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+      <div style={{ width: "100%" }}>
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"

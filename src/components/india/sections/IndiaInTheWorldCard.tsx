@@ -93,42 +93,57 @@ export function IndiaInTheWorldCard() {
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-          gap: "14px 32px",
+          gap: "0 24px",
         }}
         className="india-rankings-grid"
       >
-        {rankings.map((r, i) => (
-          <div key={i} style={{ display: "flex", gap: "14px", alignItems: "baseline" }}>
+        {rankings.map((r, i) => {
+          const improved = r.movement.kind === "up";
+          return (
             <div
+              key={i}
+              className="india-ranking-row"
               style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "22px",
-                fontWeight: 500,
-                color: tierColor(r.rank),
-                lineHeight: 1,
-                minWidth: "32px",
+                display: "flex",
+                gap: "14px",
+                alignItems: "baseline",
+                padding: "14px 12px 14px 10px",
+                borderBottom: "0.5px solid var(--color-border-tertiary)",
+                borderLeft: improved ? "2px solid #534AB7" : "2px solid transparent",
+                transition: "background 150ms",
               }}
             >
-              #{r.rank}
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "22px",
+                  fontWeight: 500,
+                  color: tierColor(r.rank),
+                  lineHeight: 1,
+                  minWidth: "32px",
+                }}
+              >
+                #{r.rank}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>
+                  {r.title}
+                  {r.annotation && (
+                    <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginLeft: "6px" }}>
+                      · {r.annotation}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "2px" }}>
+                  {r.source} · {r.year}
+                </div>
+                <div style={{ marginTop: "3px" }}>
+                  <MovementChip movement={r.movement} />
+                </div>
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>
-                {r.title}
-                {r.annotation && (
-                  <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)", marginLeft: "6px" }}>
-                    · {r.annotation}
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: "12px", color: "var(--color-text-secondary)", marginTop: "1px" }}>
-                {r.source} · {r.year}
-              </div>
-              <div style={{ marginTop: "2px" }}>
-                <MovementChip movement={r.movement} />
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div
@@ -145,6 +160,9 @@ export function IndiaInTheWorldCard() {
       </div>
 
       <style>{`
+        .india-ranking-row:hover {
+          background: rgba(83, 74, 183, 0.04);
+        }
         @media (max-width: 768px) {
           .india-rankings-grid {
             grid-template-columns: 1fr !important;

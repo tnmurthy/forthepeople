@@ -60,7 +60,7 @@ export default async function IndiaRoute({
         padding: "1.25rem 1rem 3rem",
       }}
     >
-      <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+      <div style={{ width: "100%" }}>
         <IndiaHero locale={locale} />
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc) => (
