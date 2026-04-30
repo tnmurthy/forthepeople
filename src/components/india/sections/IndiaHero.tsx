@@ -23,6 +23,12 @@ import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { ModuleDropdown } from "@/components/india/primitives/ModuleDropdown";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
 import { IndiaTricolor } from "@/lib/india/design-tokens";
+import {
+  INDIA_OUTLINE_PATH_D,
+  INDIA_OUTLINE_VIEWBOX,
+  INDIA_TROPIC_OF_CANCER_Y,
+  INDIA_CITY_MARKERS,
+} from "@/data/india-outline";
 
 interface IdentityChip {
   emoji: string;
@@ -89,14 +95,14 @@ function ChipRow({ chips }: { chips: IdentityChip[] }) {
 }
 
 function IndiaOutlineSVG() {
-  // Simplified India outline. Captures characteristic features: pointed
-  // Kashmir north, Gujarat / Kutch west bulge, Kanyakumari southern point,
-  // Bengal eastern coast, and the northeastern panhandle (Assam/Arunachal).
-  // Disputed-territory dashes at the top mark Aksai Chin / PoK per Survey
-  // of India. Five city dots at approximate geographic positions.
+  // India outline sourced from Wikimedia Commons "India outline" (public
+  // domain). Path data + viewBox + Tropic of Cancer + city markers come
+  // from src/data/india-outline.ts so future tweaks (border refresh, marker
+  // re-position) are a registry edit, not a component edit.
+  const cityFontSize = 14;
   return (
     <svg
-      viewBox="0 0 240 280"
+      viewBox={INDIA_OUTLINE_VIEWBOX}
       width="100%"
       style={{ maxWidth: "240px" }}
       aria-label="Outline map of India"
@@ -104,51 +110,46 @@ function IndiaOutlineSVG() {
     >
       {/* Main outline */}
       <path
-        d="M 80,15 L 105,8 L 130,18 L 145,35 L 175,55 L 195,70 L 220,75 L 215,90 L 200,100 L 175,95 L 175,115 L 165,135 L 158,165 L 148,200 L 138,235 L 125,260 L 115,275 L 100,260 L 92,235 L 85,200 L 75,170 L 60,140 L 38,118 L 25,105 L 32,85 L 45,65 L 55,40 L 65,20 Z"
+        d={INDIA_OUTLINE_PATH_D}
         fill="var(--color-surface)"
         stroke="var(--color-text-primary)"
         strokeOpacity="0.55"
-        strokeWidth="1.5"
+        strokeWidth="2.5"
         strokeLinejoin="round"
+        fillRule="evenodd"
       />
 
-      {/* Disputed-territory dashes (Aksai Chin / PoK) — northern border */}
-      <path
-        d="M 65,20 L 80,15 M 105,8 L 130,18 M 145,35 L 165,40"
-        fill="none"
-        stroke="var(--color-text-tertiary)"
-        strokeOpacity="0.5"
-        strokeWidth="0.6"
-        strokeDasharray="2 2"
-      />
-
-      {/* Tropic of Cancer ~y=128 (slightly south of mid for accuracy) */}
+      {/* Tropic of Cancer ~23.5°N, dashed line across India's width */}
       <line
-        x1="32"
-        y1="128"
-        x2="200"
-        y2="128"
+        x1={20}
+        y1={INDIA_TROPIC_OF_CANCER_Y}
+        x2={620}
+        y2={INDIA_TROPIC_OF_CANCER_Y}
         stroke="var(--color-text-tertiary)"
         strokeOpacity="0.5"
-        strokeWidth="0.6"
-        strokeDasharray="3 3"
+        strokeWidth="2"
+        strokeDasharray="8 6"
       />
 
-      {/* 5 city dots */}
-      <circle cx="98" cy="68" r="4" fill="var(--color-text-primary)" />
-      <text x="105" y="72" fontSize="9" fill="var(--color-text-secondary)">Delhi</text>
-
-      <circle cx="78" cy="178" r="3" fill="var(--color-text-primary)" />
-      <text x="84" y="181" fontSize="9" fill="var(--color-text-secondary)">Mumbai</text>
-
-      <circle cx="105" cy="232" r="3" fill="var(--color-text-primary)" />
-      <text x="111" y="235" fontSize="9" fill="var(--color-text-secondary)">Bengaluru</text>
-
-      <circle cx="135" cy="232" r="3" fill="var(--color-text-primary)" />
-      <text x="141" y="235" fontSize="9" fill="var(--color-text-secondary)">Chennai</text>
-
-      <circle cx="168" cy="148" r="3" fill="var(--color-text-primary)" />
-      <text x="174" y="151" fontSize="9" fill="var(--color-text-secondary)">Kolkata</text>
+      {/* 5 city dots (positions from src/data/india-outline.ts) */}
+      {INDIA_CITY_MARKERS.map((city) => (
+        <g key={city.name}>
+          <circle
+            cx={city.x}
+            cy={city.y}
+            r={city.name === "Delhi" ? 9 : 7}
+            fill="var(--color-text-primary)"
+          />
+          <text
+            x={city.x + 14}
+            y={city.y + 5}
+            fontSize={cityFontSize}
+            fill="var(--color-text-secondary)"
+          >
+            {city.name}
+          </text>
+        </g>
+      ))}
     </svg>
   );
 }
