@@ -2343,9 +2343,97 @@ model IndiaIndicator {
   fetchedAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Phase 3A authenticity fields (file 45 Section 6 moves #4, #5, #6, #8)
+  previousValue      Decimal?  @db.Decimal(20, 4)
+  previousAsOfDate   DateTime?
+  dataQuality        String    @default("published") // 'published' | 'derived' | 'estimated'
+  derivationNotes    String?   @db.Text
+  methodologyUrl     String?
+  conflictingSources Json? // [{ source, url, value, asOfDate }] when sources disagree
+
   @@unique([moduleSlug, metricKey])
   @@index([moduleSlug])
   @@index([metricKey])
+}
+
+/// Public scraper run log (file 45 authenticity move #7).
+/// Powers /en/india/data-sources transparency page.
+model IndiaScraperRun {
+  id             String    @id @default(cuid())
+  scraperKey     String // matches a key in scraper-registry.ts
+  startedAt      DateTime
+  completedAt    DateTime?
+  status         String // 'success' | 'failure' | 'partial'
+  recordsAdded   Int       @default(0)
+  recordsUpdated Int       @default(0)
+  errorMessage   String?   @db.Text
+  rawResponseUrl String? // optional S3/blob URL for transparency
+
+  @@index([scraperKey])
+  @@index([startedAt])
+  @@index([status])
+}
+
+/// Editorial article content for `know-india` modules (Constitution,
+/// Parliament, Elections, Budget, History Timeline, Geography Physical)
+/// and any future editorial modules. Visual-block-based per file 45 §7.
+model IndiaArticle {
+  id         String @id @default(cuid())
+  moduleSlug String @unique // matches IndiaModuleDef.slug
+
+  // Visual block content (file 45 Section 7)
+  blocks Json // ordered array of EditorialBlock
+
+  // Optional supporting prose (max 600 words across the page)
+  intro String? @db.Text // displayed before first visual block
+  outro String? @db.Text // displayed after last visual block
+
+  // Sources cited across the article
+  sources Json // [{ name, url, type, publishedDate, ncertReference? }]
+
+  // Authorship transparency (file 40 Decision 11 — never an individual byline)
+  compiledBy   String  @default("ForThePeople") // never an individual name on editorial modules
+  reviewedBy   String? // optional - filled when expert review completes
+  reviewStatus String? // 'pending' | 'reviewed' | 'expert_verified'
+
+  // Versioning
+  version     Int       @default(1)
+  lastEdited  DateTime  @updatedAt
+  publishedAt DateTime?
+
+  status String @default("draft") // 'draft' | 'published' | 'archived'
+
+  @@index([moduleSlug])
+  @@index([status])
+  @@index([reviewStatus])
+}
+
+/// Per-module Relevant News section (file 45 Section 5).
+/// AI-summarised entries with source link as the most prominent CTA.
+model IndiaModuleNews {
+  id         String @id @default(cuid())
+  moduleSlug String // matches IndiaModuleDef.slug
+
+  headline     String
+  summary      String    @db.Text // AI-generated, max 60 words
+  summaryByAI  Boolean   @default(true) // transparency flag (always true initially)
+  summaryModel String? // e.g., 'gemini-2.0-flash', 'gpt-4o-mini'
+  summarizedAt DateTime?
+
+  source     String // 'PIB', 'The Hindu', 'Mongabay India'
+  sourceUrl  String // full URL to original article
+  sourceType String // 'gov_press_release' | 'major_outlet' | 'specialist' | 'wire_service'
+  sourceTier String // 'tier_1_government' | 'tier_2_major' | 'tier_3_specialist'
+
+  publishedAt DateTime // article original publish date
+  fetchedAt   DateTime @default(now()) // when ForThePeople ingested
+
+  isSensitiveModule Boolean @default(false) // gates source legitimacy per file 45 Section 5
+  status            String  @default("active") // active | archived | flagged
+
+  @@index([moduleSlug, publishedAt(sort: Desc)])
+  @@index([fetchedAt])
+  @@index([status])
 }
 
 /// Historical / trend values for charts.
