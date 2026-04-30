@@ -188,6 +188,61 @@
   --ftp-shadow-hover:   0 6px 16px rgba(37, 99, 235, 0.10);
 }
 
+/* NOTE: Tailwind v4 @theme block does NOT surface --accent-* tokens to :root
+   (only --color-* and other known categories). Declare them on a real :root
+   selector. See Session 18.1 Phase D note above. Last updated Phase 4.6.9. */
+:root {
+  /* Blue (macro-snapshot) */
+  --accent-blue-700: #185FA5;
+  --accent-blue-800: #0C447C;
+  --accent-blue-900: #082F58;
+
+  /* Indigo (know-india) */
+  --accent-indigo-700: #534AB7;
+  --accent-indigo-800: #3C3489;
+  --accent-indigo-900: #26215C;
+
+  /* Teal (living-standards) */
+  --accent-teal-700: #0F6E56;
+  --accent-teal-800: #085041;
+  --accent-teal-900: #043A2E;
+
+  /* Forest-green (wildlife-forests) */
+  --accent-forest-green-700: #5A8F2E;
+  --accent-forest-green-800: #3F6720;
+  --accent-forest-green-900: #27500A;
+
+  /* Wheat (agriculture-livestock) */
+  --accent-wheat-700: #B58A1E;
+  --accent-wheat-800: #856611;
+  --accent-wheat-900: #553F08;
+
+  /* Slate (natural-resources-energy) */
+  --accent-slate-700: #4A5358;
+  --accent-slate-800: #2C3033;
+  --accent-slate-900: #1A1D20;
+
+  /* Amber (infrastructure) */
+  --accent-amber-700: #BA7517;
+  --accent-amber-800: #854F0B;
+  --accent-amber-900: #553105;
+
+  /* Purple (governance) */
+  --accent-purple-700: #3C3489;
+  --accent-purple-800: #26215C;
+  --accent-purple-900: #1A1641;
+
+  /* Coral (innovation) */
+  --accent-coral-700: #993C1D;
+  --accent-coral-800: #712B13;
+  --accent-coral-900: #4D1C0C;
+
+  /* Pink (culture) */
+  --accent-pink-700: #993556;
+  --accent-pink-800: #72243E;
+  --accent-pink-900: #4D182A;
+}
+
 /* Convenience utilities that consume the FTP card tokens. Their primary
    purpose is to KEEP the tokens in the production bundle (Tailwind v4
    strips :root custom properties that have no consumer). They also
