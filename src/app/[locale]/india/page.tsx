@@ -2,10 +2,10 @@
  * ForThePeople.in — Your District. Your Data. Your Right.
  * © 2026 Jayanth M B. MIT License with Attribution.
  *
- * /[locale]/india — National Dashboard.
+ * /[locale]/india — National Dashboard (Phase 4 redesign).
  *
- * Server-rendered shell. Picks dictionary by locale (en | kn) and
- * delegates layout to IndiaPage. Layout chrome (HeaderBar, Footer,
+ * Server-rendered. The hero + 10 super-category preview bands replace
+ * the prior IndiaPage rendering. Layout chrome (HeaderBar, Footer,
  * site-wide DisclaimerBanner) is provided by [locale]/layout.tsx.
  *
  * Page-level ISR window: 15 min — re-evaluated whenever the snapshot
@@ -13,9 +13,9 @@
  */
 
 import type { Metadata } from "next";
-import enDict from "@/dictionaries/en.json";
-import knDict from "@/dictionaries/kn.json";
-import IndiaPage from "@/components/india/IndiaPage";
+import { IndiaHero } from "@/components/india/sections/IndiaHero";
+import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
+import { getOrderedSuperCategories } from "@/lib/india/india-super-categories";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://forthepeople.in";
 
@@ -46,15 +46,28 @@ export async function generateMetadata({
 
 export default async function IndiaRoute({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ view?: string }>;
 }) {
   const { locale } = await params;
-  const sp = await searchParams;
-  const view = sp.view === "grid" ? "grid" : "list";
-  const dict = (locale === "kn" ? knDict : enDict).india;
+  const superCategories = getOrderedSuperCategories();
 
-  return <IndiaPage locale={locale} dict={dict} view={view} />;
+  return (
+    <main
+      style={{
+        background: "var(--color-background)",
+        minHeight: "100vh",
+        padding: "1.25rem 1rem 3rem",
+      }}
+    >
+      <div style={{ maxWidth: "1180px", margin: "0 auto" }}>
+        <IndiaHero locale={locale} />
+        <div style={{ marginTop: "2.5rem" }}>
+          {superCategories.map((sc) => (
+            <SuperCategoryPreviewBand key={sc.slug} superCategory={sc} locale={locale} />
+          ))}
+        </div>
+      </div>
+    </main>
+  );
 }

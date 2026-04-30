@@ -1,0 +1,62 @@
+{
+  "rankings": [
+    {
+      "rank": 1,
+      "title": "Most populous nation",
+      "source": "UN Population Prospects",
+      "year": "2024",
+      "movement": { "kind": "up", "from": 2 }
+    },
+    {
+      "rank": 1,
+      "title": "Films produced annually",
+      "source": "UNESCO",
+      "year": "2023",
+      "movement": { "kind": "stable" }
+    },
+    {
+      "rank": 2,
+      "title": "Internet users",
+      "source": "TRAI",
+      "year": "2024",
+      "annotation": "900M",
+      "movement": { "kind": "up", "from": 3 }
+    },
+    {
+      "rank": 3,
+      "title": "Pharmaceutical exports",
+      "source": "WTO",
+      "year": "2024",
+      "movement": { "kind": "stable" }
+    },
+    {
+      "rank": 4,
+      "title": "Most powerful military",
+      "source": "Global Firepower",
+      "year": "2025",
+      "movement": { "kind": "stable" }
+    },
+    {
+      "rank": 4,
+      "title": "Renewable energy capacity",
+      "source": "IRENA",
+      "year": "2024",
+      "annotation": "191 GW",
+      "movement": { "kind": "up", "from": 5 }
+    },
+    {
+      "rank": 4,
+      "title": "Country to soft-land on Moon",
+      "source": "ISRO Chandrayaan-3",
+      "year": "2023",
+      "movement": { "kind": "new" }
+    },
+    {
+      "rank": 5,
+      "title": "Largest economy (nominal)",
+      "source": "IMF",
+      "year": "2025",
+      "movement": { "kind": "up", "from": 6 }
+    }
+  ]
+}
