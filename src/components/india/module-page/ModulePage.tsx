@@ -30,6 +30,7 @@ import {
   getModuleNewsKeywords,
   getModulePrimaryMetric,
 } from "@/lib/india/india-modules";
+import { getSuperCategoryBySlug } from "@/lib/india/india-super-categories";
 import {
   CATEGORY_ACCENT,
   INDIA_DESIGN,
@@ -66,6 +67,7 @@ interface Props {
 export default async function ModulePage({ locale, module, disclaimers }: Props) {
   const accent = CATEGORY_ACCENT[module.category];
   const tint = categoryTint(module.category);
+  const superCategory = getSuperCategoryBySlug(module.superCategory);
   const primaryMetric = getModulePrimaryMetric(module);
   // Map any non-mock metric to a sensible fallback so the choropleth
   // still has something to colour with even when the registry's
@@ -126,7 +128,16 @@ export default async function ModulePage({ locale, module, disclaimers }: Props)
           India
         </Link>
         <ChevronRight size={12} aria-hidden="true" style={{ color: INDIA_DESIGN.textFaint }} />
-        <span style={{ textTransform: "capitalize" }}>{module.category}</span>
+        {superCategory ? (
+          <Link
+            href={`/${locale}/india/category/${superCategory.slug}`}
+            style={{ color: INDIA_DESIGN.textMuted, textDecoration: "none" }}
+          >
+            {superCategory.title}
+          </Link>
+        ) : (
+          <span style={{ textTransform: "capitalize" }}>{module.category}</span>
+        )}
         <ChevronRight size={12} aria-hidden="true" style={{ color: INDIA_DESIGN.textFaint }} />
         <span style={{ color: INDIA_DESIGN.textPrimary, fontWeight: 600 }}>
           {module.title}
