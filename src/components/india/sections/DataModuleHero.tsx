@@ -119,6 +119,37 @@ export async function DataModuleHero({
         }}
       />
 
+      {/* Watermarks — super-category accent glyph at three layered scales */}
+      {(() => {
+        const WATERMARK: Record<string, string> = {
+          "macro-snapshot": "📊",
+          "know-india": "📖",
+          "living-standards": "🌐",
+          "wildlife-forests": "🐾",
+          "agriculture-livestock": "🌾",
+          "natural-resources-energy": "⛏",
+          infrastructure: "🏗",
+          governance: "⚖",
+          innovation: "🚀",
+          culture: "🎭",
+        };
+        const glyph = WATERMARK[module.superCategory] ?? sc?.icon ?? "·";
+        const sharedStyle: React.CSSProperties = {
+          position: "absolute",
+          pointerEvents: "none",
+          userSelect: "none",
+          color: accent.hex,
+          lineHeight: 1,
+        };
+        return (
+          <>
+            <span aria-hidden style={{ ...sharedStyle, right: "-28px", bottom: "-36px", fontSize: "200px", opacity: 0.06, transform: "rotate(-12deg)" }}>{glyph}</span>
+            <span aria-hidden style={{ ...sharedStyle, right: "60px", top: "30%", fontSize: "80px", opacity: 0.04, transform: "rotate(15deg)" }}>{glyph}</span>
+            <span aria-hidden style={{ ...sharedStyle, left: "70%", bottom: "20%", fontSize: "50px", opacity: 0.03, transform: "rotate(-8deg)" }}>{glyph}</span>
+          </>
+        );
+      })()}
+
       <div
         className="data-hero-grid"
         style={{

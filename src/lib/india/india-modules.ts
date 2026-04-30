@@ -454,7 +454,12 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
       "tiger reserves, conservation funding via NTCA.",
     status: "live",
     displayOrder: 2,
-    sources: [{ sourceKey: "NTCA", type: "Collected", refresh: "Annual" }],
+    sources: [
+      { sourceKey: "NTCA", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "PROJECT_TIGER", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "WII", type: "Institutional", refresh: "Annual" },
+      { sourceKey: "FSI", type: "Institutional", refresh: "Annual" },
+    ],
     componentName: "WildlifeTigersModule",
     scraperKeys: ["ntca-tigers"],
     // MOCK — NTCA Status of Tigers 2022 published 3,682; rounded as a placeholder.

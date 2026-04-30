@@ -224,28 +224,45 @@ async function main() {
     });
   }
 
-  // ── Placeholder scraper-run row marked 'no run yet' ───────
-  // Spec acceptance: "1 IndiaScraperRun row marked 'no run yet'"
-  // This is honest disclosure — scraper builds in Phase 5; until then
-  // the data in IndiaIndicator is hand-seeded.
-  await prisma.indiaScraperRun.create({
-    data: {
-      scraperKey: "ntca-tigers",
-      startedAt: NOW,
-      completedAt: NOW,
+  // ── Placeholder source-sync rows for all 4 sources ────────
+  // Tiger module cites NTCA, Project Tiger, WII, and Forest Survey of
+  // India. Each has a placeholder IndiaScraperRun row so the freshness
+  // dot on each source has a row to look up. Honest disclosure — automated
+  // sync builds in a future phase; until then the dataset is hand-seeded.
+  const sourcePlaceholders: Array<[string, string]> = [
+    ["ntca-tigers", "Initial dataset · Automated sync planned (NTCA)"],
+    ["project-tiger-reserves", "Initial dataset · Automated sync planned (Project Tiger)"],
+    ["wii-tigers-methodology", "Initial dataset · Automated sync planned (Wildlife Institute of India)"],
+    ["fsi-tiger-buffers", "Initial dataset · Automated sync planned (Forest Survey of India)"],
+  ];
+  // Wipe any prior placeholder rows from earlier seed runs so the table
+  // doesn't accumulate duplicates on re-run.
+  await prisma.indiaScraperRun.deleteMany({
+    where: {
+      scraperKey: { in: sourcePlaceholders.map(([k]) => k) },
       status: "partial",
-      recordsAdded: 0,
-      recordsUpdated: 0,
-      errorMessage: "No scraper run yet — Phase 4 static seed; scraper builds in Phase 5",
-      rawResponseUrl: null,
     },
   });
+  for (const [scraperKey, errorMessage] of sourcePlaceholders) {
+    await prisma.indiaScraperRun.create({
+      data: {
+        scraperKey,
+        startedAt: NOW,
+        completedAt: NOW,
+        status: "partial",
+        recordsAdded: 0,
+        recordsUpdated: 0,
+        errorMessage,
+        rawResponseUrl: null,
+      },
+    });
+  }
 
   console.log("✅ Wildlife/Tigers seed complete");
   console.log("   3 IndiaIndicator rows (tiger_population_total, tiger_reserves_count, reserve_area_protected_sqkm)");
   console.log(`   ${series.length} IndiaTimeSeries rows (5 census years)`);
   console.log(`   ${leaderboard.length} IndiaStateBreakdown rows (top 5 states)`);
-  console.log("   1 IndiaScraperRun placeholder row");
+  console.log(`   ${sourcePlaceholders.length} IndiaScraperRun placeholder rows (one per source)`);
 
   await prisma.$disconnect();
 }

@@ -127,6 +127,13 @@ export const INDIA_SOURCES: Record<string, IndiaSource> = {
     domain: "ministry",
     blurb: "Tiger reserves, conservation status, Status of Tigers report.",
   },
+  PROJECT_TIGER: {
+    key: "PROJECT_TIGER",
+    name: "Project Tiger",
+    url: "https://projecttiger.nic.in/",
+    domain: "ministry",
+    blurb: "Tiger-reserve management plans, protected-area extent in km².",
+  },
   WII: {
     key: "WII",
     name: "Wildlife Institute of India",
