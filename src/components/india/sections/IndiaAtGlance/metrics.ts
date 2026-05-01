@@ -114,33 +114,6 @@ export const MACRO_IDENTITY_STATS: IdentityStat[] = [
   },
 ];
 
-// ── Editorial copy (structural strings, not data) ──
-// @deprecated v3-only — used by the v3 Headline/index pre-rewrite. Drop in commit 7.
-export const MACRO_MASTHEAD_LABEL =
-  "at a glance · india's macroeconomic snapshot";
-export const MACRO_HEADLINE_TAGLINE = "the world's most populous nation";
-
-// ── v3 back-compat exports ──
-// Kept transitionally so the old Sidebar/Headline/Context/StatGrid/ModuleNav
-// files still compile until commit 7 deletes them. The v4 layout uses
-// MACRO_FEATURED_GRID / MACRO_RIGHT_STACK / MACRO_IDENTITY_STATS instead.
-export type MetricDisplay = MetricRef & {
-  label: string;
-  format: MetricFormat;
-  green?: boolean;
-};
-export const MACRO_PRIMARY: MetricDisplay[] = [
-  { moduleSlug: "economy-gdp", metricKey: "gdp_nominal_usd_trillion", label: "nominal GDP", format: "trillion_usd" },
-  { moduleSlug: "economy-gdp", metricKey: "gdp_growth_yoy", label: "growth", format: "percent", green: true },
-  { moduleSlug: "economy-gdp", metricKey: "gdp_per_capita_inr", label: "per capita", format: "lakh_inr" },
-  { moduleSlug: "economy-inflation", metricKey: "cpi_inflation", label: "inflation", format: "percent" },
-];
-export const MACRO_SECONDARY: MetricDisplay[] = [
-  { moduleSlug: "national-snapshot", metricKey: "states_count", label: "states", format: "states_uts", companion: { moduleSlug: "national-snapshot", metricKey: "uts_count" } },
-  { moduleSlug: "national-snapshot", metricKey: "scheduled_languages", label: "languages", format: "scheduled" },
-  { moduleSlug: "economy-employment", metricKey: "workforce_size", label: "workforce", format: "millions_workforce" },
-];
-
 // ── Helpers ──
 export function indicatorKey(ref: MetricRef): string {
   return `${ref.moduleSlug}::${ref.metricKey}`;
