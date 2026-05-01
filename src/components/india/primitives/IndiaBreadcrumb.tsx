@@ -1,22 +1,20 @@
 "use client";
 
 /**
- * IndiaBreadcrumb — slim breadcrumb row above the hero.
+ * IndiaBreadcrumb — sticky breadcrumb row above the hero.
  *
- * File 48 §4.7.1 + Section 1 functional dropdown patch. Renders
- * "🏠 Home › India" with a functional "Select module ▾" dropdown on the
- * right (ModuleSelectorDropdown). Pass `superCategorySlug` to scope the
- * picker to a single super-category (used on /en/india/category/<slug>
- * if that page swaps in this breadcrumb).
+ * File 48 §4.7.1 + Section 1 (functional dropdown) + Section 2 (sticky + inline pill).
  *
- * Strings come from `dict.breadcrumb`; the project's i18n stack uses direct
- * JSON imports rather than next-intl's `useTranslations`, so the dictionary
- * is passed in as a prop from the server route.
+ * Layout: [🏠 Home] › [📍 India] › [Select module ▾]   (all inline, no auto margin)
+ *
+ * Position: sticky at top:56px (right under the global header which is sticky at
+ * top:0 with height 56). The page-level scroll-progress bar lives directly below
+ * this breadcrumb (sticky at top:100px, z-index one less than the breadcrumb).
  */
 
 import * as React from "react";
 import Link from "next/link";
-import { Home, ChevronRight } from "lucide-react";
+import { Home, ChevronRight, MapPin } from "lucide-react";
 import { ModuleSelectorDropdown } from "./ModuleSelectorDropdown";
 
 export interface IndiaBreadcrumbDict {
@@ -49,13 +47,17 @@ export function IndiaBreadcrumb({
     <nav
       aria-label="Breadcrumb"
       style={{
+        position: "sticky",
+        top: "56px",
+        zIndex: 40,
+        background: "var(--color-background)",
+        borderBottom: "0.5px solid var(--color-border-tertiary)",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
-        fontSize: "12px",
+        gap: "10px",
+        fontSize: "14px",
         color: "var(--color-text-tertiary)",
-        marginBottom: "10px",
-        padding: "0 4px",
+        padding: "12px 16px",
       }}
     >
       <Link
@@ -65,16 +67,30 @@ export function IndiaBreadcrumb({
           textDecoration: "none",
           display: "flex",
           alignItems: "center",
-          gap: "4px",
+          gap: "5px",
         }}
       >
-        <Home size={11} />
+        <Home size={13} />
         {t.home}
       </Link>
-      <ChevronRight size={11} style={{ opacity: 0.4 }} />
-      <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>
+
+      <ChevronRight size={13} style={{ opacity: 0.4 }} />
+
+      <span
+        style={{
+          color: "var(--color-text-primary)",
+          fontWeight: 500,
+          fontSize: "15px",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "5px",
+        }}
+      >
+        <MapPin size={13} style={{ opacity: 0.7 }} />
         {t.india}
       </span>
+
+      <ChevronRight size={13} style={{ opacity: 0.4 }} />
 
       <ModuleSelectorDropdown
         locale={locale}

@@ -31,13 +31,14 @@ export function ScrollProgressBar() {
     <div
       style={{
         position: "sticky",
-        top: 0,
+        // Stacks below the global sticky header (56px) and the sticky breadcrumb
+        // (~44px). z-index sits one below the breadcrumb's so the bar tucks under it.
+        top: "100px",
         width: "100%",
         height: "3px",
         background: "rgba(0,0,0,0.04)",
-        zIndex: 50,
+        zIndex: 39,
         overflow: "hidden",
-        marginBottom: "10px",
       }}
       role="progressbar"
       aria-label="Page scroll progress"

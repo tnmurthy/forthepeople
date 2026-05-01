@@ -77,12 +77,15 @@ export default async function IndiaRoute({
       style={{
         background: "var(--color-background)",
         minHeight: "100vh",
-        padding: "0 1rem 3rem",
+        paddingBottom: "3rem",
       }}
     >
+      {/* Sticky breadcrumb (top:56) + sticky scroll-progress bar (top:100). Both
+          live above the inner padded container so they span the full viewport. */}
+      <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
       <ScrollProgressBar />
-      <div style={{ width: "100%", paddingTop: "0.5rem" }}>
-        <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
+
+      <div style={{ width: "100%", padding: "1rem 1rem 0" }}>
         <LiveStrip />
         <IndiaHero locale={locale} dict={heroDict} />
         <div style={{ marginTop: "2.5rem" }}>

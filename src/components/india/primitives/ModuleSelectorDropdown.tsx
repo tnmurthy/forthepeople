@@ -209,7 +209,7 @@ export function ModuleSelectorDropdown({
   return (
     <div
       ref={containerRef}
-      style={{ position: "relative", display: "inline-block", marginLeft: "auto" }}
+      style={{ position: "relative", display: "inline-block" }}
     >
       {/* Trigger pill */}
       <button
