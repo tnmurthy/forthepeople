@@ -19,7 +19,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { HospitalCrossWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   LS_DIRECTORY,
@@ -412,7 +412,10 @@ export function LivingStandardsClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <HospitalCrossWatermark />
+            <SectionWatermark
+              slug="living-standards"
+              className={styles.crossWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured (Health Indicators) */}

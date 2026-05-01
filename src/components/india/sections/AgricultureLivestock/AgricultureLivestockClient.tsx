@@ -11,7 +11,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { WheatStalkWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   AL_DIRECTORY,
@@ -398,7 +398,10 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <WheatStalkWatermark />
+            <SectionWatermark
+              slug="agriculture-livestock"
+              className={styles.wheatWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured */}

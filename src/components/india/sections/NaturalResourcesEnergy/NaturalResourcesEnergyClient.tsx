@@ -11,7 +11,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { SunWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   NRE_DIRECTORY,
@@ -402,7 +402,10 @@ export function NaturalResourcesEnergyClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <SunWatermark />
+            <SectionWatermark
+              slug="natural-resources-energy"
+              className={styles.sunWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured (Power Generation) */}

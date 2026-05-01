@@ -23,7 +23,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { BookWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   KNOW_DIRECTORY,
@@ -379,7 +379,10 @@ export function KnowAboutIndiaClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <BookWatermark />
+            <SectionWatermark
+              slug="know-india"
+              className={styles.bookWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured (Constitution) */}

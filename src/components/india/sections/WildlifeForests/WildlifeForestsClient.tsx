@@ -14,7 +14,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { LeafyBranchWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   WF_DIRECTORY,
@@ -412,7 +412,10 @@ export function WildlifeForestsClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <LeafyBranchWatermark />
+            <SectionWatermark
+              slug="wildlife-forests"
+              className={styles.branchWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured */}

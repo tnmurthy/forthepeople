@@ -17,7 +17,7 @@
 import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
-import { CompassWatermark } from "./Backdrop";
+import { SectionWatermark } from "../SectionWatermark";
 import { CountUpNumber } from "./CountUpNumber";
 import {
   MACRO_DIRECTORY,
@@ -490,7 +490,10 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
               </span>
             </Link>
 
-            <CompassWatermark />
+            <SectionWatermark
+              slug="macro-snapshot"
+              className={styles.compassWatermark}
+            />
           </div>
 
           {/* MIDDLE — Featured */}
