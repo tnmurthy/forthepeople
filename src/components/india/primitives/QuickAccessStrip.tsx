@@ -50,7 +50,13 @@ export function QuickAccessStrip({ locale }: QuickAccessStripProps) {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(6, 1fr)",
-        gap: "6px",
+        gap: "1px",
+        // Teal-tinted gap + border for the heritage palette
+        background: "rgba(15, 110, 86, 0.30)",
+        border: "0.5px solid rgba(15, 110, 86, 0.45)",
+        borderRadius: "8px",
+        padding: "1px",
+        overflow: "hidden",
       }}
     >
       {cards.map((card) => {
@@ -64,17 +70,16 @@ export function QuickAccessStrip({ locale }: QuickAccessStripProps) {
               display: "flex",
               flexDirection: "column",
               gap: "3px",
-              background: "rgba(255,255,255,0.95)",
-              border: "0.5px solid rgba(0,0,0,0.10)",
+              background: "rgba(247, 253, 251, 0.96)",
               borderRadius: "6px",
               padding: "7px 9px",
               color: "var(--color-text-primary)",
               textDecoration: "none",
-              transition: "transform 150ms, border-color 150ms",
+              transition: "transform 150ms, background 150ms",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <Icon size={12} style={{ opacity: 0.7, flexShrink: 0 }} />
+              <Icon size={12} style={{ color: "#0F6E56", flexShrink: 0 }} />
               <span style={{ fontSize: "11.5px", fontWeight: 500 }}>{card.label}</span>
             </div>
             <span
@@ -96,7 +101,7 @@ export function QuickAccessStrip({ locale }: QuickAccessStripProps) {
       <style>{`
         .ftp-quick-access-card:hover {
           transform: translateY(-1px);
-          border-color: rgba(0,0,0,0.20) !important;
+          background: rgba(15, 110, 86, 0.08) !important;
         }
       `}</style>
     </div>

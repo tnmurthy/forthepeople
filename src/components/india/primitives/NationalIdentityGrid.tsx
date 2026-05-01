@@ -42,8 +42,9 @@ export function NationalIdentityGrid() {
         display: "grid",
         gridTemplateColumns: "repeat(6, 1fr)",
         gap: "1px",
-        background: "rgba(0,0,0,0.08)",
-        border: "0.5px solid rgba(0,0,0,0.10)",
+        // Saffron-tinted gap + border for the heritage palette
+        background: "rgba(186, 117, 23, 0.30)",
+        border: "0.5px solid rgba(186, 117, 23, 0.45)",
         borderRadius: "8px",
         overflow: "hidden",
       }}
@@ -54,7 +55,7 @@ export function NationalIdentityGrid() {
           <div
             key={cell.label}
             style={{
-              background: "rgba(255,255,255,0.92)",
+              background: "rgba(255, 253, 247, 0.96)",
               padding: "7px 8px",
             }}
           >
@@ -64,7 +65,7 @@ export function NationalIdentityGrid() {
                 fontSize: "9px",
                 letterSpacing: "0.06em",
                 textTransform: "uppercase",
-                color: "var(--color-text-tertiary)",
+                color: "#885410",
                 marginBottom: "2px",
               }}
             >
@@ -80,7 +81,7 @@ export function NationalIdentityGrid() {
                 color: "var(--color-text-primary)",
               }}
             >
-              <Icon size={11} style={{ color: "#185FA5", flexShrink: 0 }} />
+              <Icon size={11} style={{ color: "#BA7517", flexShrink: 0 }} />
               <span aria-hidden style={{ fontSize: "11px" }}>
                 {cell.glyph}
               </span>
