@@ -59,10 +59,10 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
           overflow: "hidden",
           border: "0.5px solid rgba(0, 0, 0, 0.08)",
           background: `
-            radial-gradient(ellipse 480px 220px at 0% 0%, rgba(255, 153, 51, 0.16), transparent 65%),
-            radial-gradient(ellipse 480px 220px at 100% 100%, rgba(19, 136, 8, 0.18), transparent 65%),
-            radial-gradient(ellipse 360px 180px at 50% 0%, rgba(83, 74, 183, 0.06), transparent 70%),
-            linear-gradient(180deg, #FEFEFC 0%, #FAFAF8 100%)
+            radial-gradient(ellipse 320px 180px at 12% 0%, rgba(255, 153, 51, 0.14), transparent 70%),
+            radial-gradient(ellipse 380px 200px at 88% 50%, rgba(19, 136, 8, 0.20), transparent 70%),
+            radial-gradient(ellipse 280px 140px at 50% 100%, rgba(83, 74, 183, 0.10), transparent 75%),
+            linear-gradient(180deg, #FFFBF4 0%, #FAFAF8 100%)
           `,
         }}
       >

@@ -20,7 +20,7 @@ interface Tint {
 // File 48 §Section 2.3 GAP 3 — saturated tints (~30-50 RGB units of difference
 // between adjacent bands so the shift is visibly perceptible while scrolling).
 const TINTS: Tint[] = [
-  { id: "hero",        color: "#FFF0D9" }, // saffron warmth
+  { id: "hero",        color: "#FCFAF4" }, // neutral cream — less saffron-dominant body bg
   { id: "macro",       color: "#E8F1FA" }, // blue dawn
   { id: "know",        color: "#ECEAF6" }, // indigo manuscript
   { id: "living",      color: "#DEF0EA" }, // teal lotus
