@@ -39,7 +39,7 @@ import {
   type IndiaSuperCategoryDef,
   type WatermarkIconKey,
 } from "@/lib/india/india-super-categories";
-import { IndiaSuperCategoryAccents } from "@/lib/india/design-tokens";
+import { SECTION_ACCENT_COLORS } from "@/lib/india/section-accents";
 
 const SC_ICONS: Record<WatermarkIconKey, LucideIcon> = {
   "trending-up": TrendingUp,
@@ -309,11 +309,12 @@ export function ModuleSelectorDropdown({
           ) : (
             // Grouped: 10 super-categories with expand/collapse
             <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-              {groupedSCs.map((sc) => {
+              {groupedSCs.map((sc, idx) => {
                 const SCIcon = SC_ICONS[sc.watermarkIcon];
-                const accent = IndiaSuperCategoryAccents[sc.accentColor];
+                const accentHex = SECTION_ACCENT_COLORS[sc.slug] ?? "#1A1A1A";
                 const scModules = getModulesForSuperCategory(sc.slug, INDIA_MODULES);
                 const isExpanded = expandedSCs.has(sc.slug);
+                const sectionNumber = idx + 1;
                 return (
                   <li key={sc.slug}>
                     <button
@@ -337,17 +338,43 @@ export function ModuleSelectorDropdown({
                       }}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.background =
-                          "var(--color-hover-bg)";
+                          `color-mix(in srgb, ${accentHex} 8%, transparent)`;
                       }}
                       onMouseLeave={(e) => {
                         (e.currentTarget as HTMLButtonElement).style.background =
                           "transparent";
                       }}
                     >
-                      <SCIcon size={14} style={{ color: accent.hex, flexShrink: 0 }} />
+                      {/* Color dot — section accent at full opacity */}
+                      <span
+                        aria-hidden
+                        style={{
+                          display: "inline-block",
+                          width: "7px",
+                          height: "7px",
+                          borderRadius: "50%",
+                          background: accentHex,
+                          flexShrink: 0,
+                        }}
+                      />
+                      {/* Plain section number — mono, accent-colored, bold */}
+                      <span
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          color: accentHex,
+                          minWidth: "16px",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {sectionNumber}
+                      </span>
+                      <SCIcon size={14} style={{ color: accentHex, flexShrink: 0 }} />
                       <span style={{ flex: 1 }}>{sc.title}</span>
                       <span
                         style={{
+                          fontFamily: "var(--font-mono)",
                           fontSize: "10px",
                           color: "var(--color-text-tertiary)",
                           background: "var(--color-background-secondary)",
