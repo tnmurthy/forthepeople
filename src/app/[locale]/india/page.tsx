@@ -18,6 +18,7 @@ import { IndiaKpiStrip } from "@/components/india/sections/IndiaKpiStrip";
 import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorldCard";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
 import { IndiaAtGlanceSection } from "@/components/india/sections/IndiaAtGlance";
+import { KnowAboutIndiaSection } from "@/components/india/sections/KnowAboutIndia";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
@@ -142,6 +143,11 @@ export default async function IndiaRoute({
               // Its outer <section> already declares data-tint-id="macro",
               // so no wrapper div is needed (would double-tint the section).
               return <IndiaAtGlanceSection key={sc.slug} locale={locale} />;
+            }
+            if (sc.slug === "know-india") {
+              // Step 7: know-india uses its own indigo magazine-spread band.
+              // Outer <section> declares data-tint-id="know" itself.
+              return <KnowAboutIndiaSection key={sc.slug} locale={locale} />;
             }
             return (
               <div
