@@ -1,5 +1,8 @@
+"use client";
+
 /**
- * IndiaInTheWorldCard — homepage rankings card v5 (file 48 §4.7.5).
+ * IndiaInTheWorldCard — homepage rankings card v5 (file 48 §4.7.5)
+ * + Section 1 Bug 2: "View all rankings ›" expand-in-place toggle.
  *
  * Tiered medal SVGs (gold star / silver disc / bronze disc / plain circle),
  * gold/silver/bronze gradient row tints fading horizontally to the page bg,
@@ -8,6 +11,10 @@
  * Static seed of 8 verified rankings sourced from external authorities (IMF,
  * UN, UNESCO, IRENA, ISRO, WTO, TRAI, Global Firepower). Data lives in
  * src/data/india-world-rankings.json so future updates are a registry edit.
+ *
+ * TODO Phase 5+: populate the missing 16 rankings to reach the full 24
+ * tracked rankings. Until then the toggle button + footer text honestly
+ * declare "8 of 24" / "All 24 (8 active)" so the affordance is in place.
  */
 
 import * as React from "react";
@@ -263,7 +270,19 @@ function RankRow({ ranking }: { ranking: Ranking }) {
   );
 }
 
+const DEFAULT_VISIBLE_COUNT = 8;
+const TOTAL_TRACKED = 24;
+
 export function IndiaInTheWorldCard() {
+  const [expanded, setExpanded] = React.useState(false);
+  const visibleRankings = expanded
+    ? rankings
+    : rankings.slice(0, DEFAULT_VISIBLE_COUNT);
+  const footerCount = expanded
+    ? `All ${TOTAL_TRACKED} tracked rankings shown`
+    : `${Math.min(DEFAULT_VISIBLE_COUNT, rankings.length)} of ${TOTAL_TRACKED} tracked rankings shown`;
+  const toggleLabel = expanded ? "Show fewer ›" : "View all rankings ›";
+
   return (
     <section
       style={{
@@ -312,10 +331,11 @@ export function IndiaInTheWorldCard() {
           border: "0.5px solid rgba(0, 0, 0, 0.06)",
           borderRadius: "6px",
           overflow: "hidden",
+          transition: "max-height 240ms ease",
         }}
         className="india-rankings-grid"
       >
-        {rankings.map((r, i) => (
+        {visibleRankings.map((r, i) => (
           <RankRow key={i} ranking={r} />
         ))}
       </div>
@@ -327,10 +347,32 @@ export function IndiaInTheWorldCard() {
           color: "var(--color-text-tertiary)",
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <span>{rankings.length} of 24 tracked rankings shown</span>
-        <span style={{ color: "var(--color-text-info)" }}>View all rankings ›</span>
+        <span>{footerCount}</span>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          style={{
+            background: "transparent",
+            border: "none",
+            padding: "2px 4px",
+            color: "var(--color-text-info)",
+            fontSize: "11px",
+            cursor: "pointer",
+            transition: "color 150ms",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--color-text-primary)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--color-text-info)";
+          }}
+        >
+          {toggleLabel}
+        </button>
       </div>
 
       <style>{`
