@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * ScrollProgressBar — sticky 3px top bar that fills with a 5-stop accent
- * gradient as the user scrolls the page.
+ * ScrollProgressBar — sticky 5px top bar whose fill expands with scroll
+ * progress and whose color tracks the currently-visible super-category.
  *
- * File 48 §4.7.1. Stops cycle through accent ramps already declared on
- * :root in globals.css (Phase 4.6.9): blue → indigo → forest-green → amber → pink.
+ * File 48 §Section 4 Step 1. Background reads from the
+ * --ftp-current-section-color CSS variable maintained by ScrollColorShift.
+ * Width still tracks scroll progress with a fast 80ms linear transition;
+ * the color crossfades over 350ms to match the body bg transition.
  *
  * Listens to scroll with `passive: true` and clamps progress to [0,1].
  */
@@ -50,21 +52,9 @@ export function ScrollProgressBar() {
         style={{
           height: "100%",
           width: `${progress * 100}%`,
-          // 10-stop super-category accent ramp — colorful "scroll journey"
-          // through every super-category (file 48 §Section 2.2 heritage palette).
-          background:
-            "linear-gradient(90deg, " +
-            "#185FA5 0%, " +     // macro-snapshot · blue
-            "#534AB7 11%, " +    // know-india · indigo
-            "#0F6E56 22%, " +    // living-standards · teal
-            "#5A8F2E 33%, " +    // wildlife-forests · forest-green
-            "#B58A1E 44%, " +    // agriculture-livestock · wheat
-            "#4A5358 56%, " +    // natural-resources-energy · slate
-            "#BA7517 67%, " +    // infrastructure · amber
-            "#3C3489 78%, " +    // governance · purple
-            "#993C1D 89%, " +    // innovation · coral
-            "#993556 100%)",     // culture · pink
-          transition: "width 80ms linear",
+          background: "var(--ftp-current-section-color, #185FA5)",
+          transition:
+            "background-color 350ms cubic-bezier(0.4, 0, 0.2, 1), width 80ms linear",
         }}
       />
     </div>
