@@ -239,8 +239,10 @@ export function ModuleSelectorDropdown({
           role="listbox"
           style={{
             position: "absolute",
-            top: "calc(100% + 6px)",
-            right: 0,
+            top: "calc(100% + 4px)",
+            // Anchor to the trigger pill's left edge so the panel expands
+            // rightward into the viewport rather than off-screen left.
+            left: 0,
             width: "480px",
             maxWidth: "calc(100vw - 32px)",
             maxHeight: "520px",
