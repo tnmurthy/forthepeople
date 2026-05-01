@@ -12,6 +12,7 @@
  * cache (Redis, file 31 §17) misses.
  */
 
+import * as React from "react";
 import type { Metadata } from "next";
 import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { IndiaKpiStrip } from "@/components/india/sections/IndiaKpiStrip";
@@ -28,6 +29,7 @@ import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import { MughalArchDivider } from "@/components/india/primitives/MughalArchDivider";
+import { SectionDivider } from "@/components/india/primitives/SectionDivider";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
   getOrderedSuperCategories,
@@ -142,50 +144,49 @@ export default async function IndiaRoute({
 
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => {
+            const next = superCategories[i + 1];
+            const divider = next ? (
+              <SectionDivider nextSlug={next.slug} />
+            ) : null;
+            let band: React.ReactNode;
             if (sc.slug === "macro-snapshot") {
               // Step 4: macro-snapshot uses the magazine-spread band.
               // Its outer <section> already declares data-tint-id="macro",
               // so no wrapper div is needed (would double-tint the section).
-              return <IndiaAtGlanceSection key={sc.slug} locale={locale} />;
-            }
-            if (sc.slug === "know-india") {
+              band = <IndiaAtGlanceSection locale={locale} />;
+            } else if (sc.slug === "know-india") {
               // Step 7: know-india uses its own indigo magazine-spread band.
-              // Outer <section> declares data-tint-id="know" itself.
-              return <KnowAboutIndiaSection key={sc.slug} locale={locale} />;
-            }
-            if (sc.slug === "living-standards") {
+              band = <KnowAboutIndiaSection locale={locale} />;
+            } else if (sc.slug === "living-standards") {
               // Step 8: living-standards uses its own teal band.
-              // Outer <section> declares data-tint-id="living" itself.
-              return <LivingStandardsSection key={sc.slug} locale={locale} />;
-            }
-            if (sc.slug === "wildlife-forests") {
+              band = <LivingStandardsSection locale={locale} />;
+            } else if (sc.slug === "wildlife-forests") {
               // Step 8: wildlife-forests uses its own forest-green band
               // with a STATIC directory (3 modules, no marquee).
-              // Outer <section> declares data-tint-id="wildlife" itself.
-              return <WildlifeForestsSection key={sc.slug} locale={locale} />;
-            }
-            if (sc.slug === "agriculture-livestock") {
+              band = <WildlifeForestsSection locale={locale} />;
+            } else if (sc.slug === "agriculture-livestock") {
               // Step 9: agriculture-livestock — amber palette, 5-row marquee.
-              return <AgricultureLivestockSection key={sc.slug} locale={locale} />;
-            }
-            if (sc.slug === "natural-resources-energy") {
+              band = <AgricultureLivestockSection locale={locale} />;
+            } else if (sc.slug === "natural-resources-energy") {
               // Step 9: natural-resources-energy — oil-teal palette, 4-row marquee.
-              // (After Step 9 commit 0 the energy-power + energy-renewables
-              // modules moved here from infrastructure.)
-              return <NaturalResourcesEnergySection key={sc.slug} locale={locale} />;
+              band = <NaturalResourcesEnergySection locale={locale} />;
+            } else {
+              band = (
+                <div data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}>
+                  <SuperCategoryPreviewBand
+                    superCategory={sc}
+                    modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
+                    bandIndex={i}
+                    locale={locale}
+                  />
+                </div>
+              );
             }
             return (
-              <div
-                key={sc.slug}
-                data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}
-              >
-                <SuperCategoryPreviewBand
-                  superCategory={sc}
-                  modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
-                  bandIndex={i}
-                  locale={locale}
-                />
-              </div>
+              <React.Fragment key={sc.slug}>
+                {band}
+                {divider}
+              </React.Fragment>
             );
           })}
         </div>
