@@ -45,6 +45,13 @@ export interface IndiaSuperCategoryDef {
   } | null;                              // null = editorial super-category
   description?: string;
   descriptionKey?: string;
+  /**
+   * Long-form editorial paragraph rendered in the magazine-spread
+   * "India at a Glance" band (Step 4). Optional — only super-categories
+   * with a hand-written context essay populate this; others fall back
+   * to the existing `tagline`.
+   */
+  editorialContext?: string;
 }
 
 export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
@@ -60,6 +67,11 @@ export const INDIA_SUPER_CATEGORIES: IndiaSuperCategoryDef[] = [
     taglineKey: "india.superCategory.macroSnapshot.tagline",
     displayOrder: 1,
     headlineMetric: { moduleSlug: "economy-gdp", metricKey: "gdp_growth_yoy" },
+    editorialContext:
+      "India stands as the world's fifth-largest economy by nominal GDP, " +
+      "a federation of 28 states & 8 Union Territories, with 22 scheduled " +
+      "languages and a workforce of 600M+ — the macroeconomic backbone of " +
+      "South Asia.",
   },
   {
     slug: "know-india",
