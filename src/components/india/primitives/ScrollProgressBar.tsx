@@ -50,10 +50,20 @@ export function ScrollProgressBar() {
         style={{
           height: "100%",
           width: `${progress * 100}%`,
-          // 800-stop saturated colors land harder against the off-white background
-          // than the 700-stop tints did at 3px height.
+          // 10-stop super-category accent ramp — colorful "scroll journey"
+          // through every super-category (file 48 §Section 2.2 heritage palette).
           background:
-            "linear-gradient(90deg, #082F58 0%, #26215C 25%, #27500A 50%, #633806 75%, #4D182A 100%)",
+            "linear-gradient(90deg, " +
+            "#185FA5 0%, " +     // macro-snapshot · blue
+            "#534AB7 11%, " +    // know-india · indigo
+            "#0F6E56 22%, " +    // living-standards · teal
+            "#5A8F2E 33%, " +    // wildlife-forests · forest-green
+            "#B58A1E 44%, " +    // agriculture-livestock · wheat
+            "#4A5358 56%, " +    // natural-resources-energy · slate
+            "#BA7517 67%, " +    // infrastructure · amber
+            "#3C3489 78%, " +    // governance · purple
+            "#993C1D 89%, " +    // innovation · coral
+            "#993556 100%)",     // culture · pink
           transition: "width 80ms linear",
         }}
       />
