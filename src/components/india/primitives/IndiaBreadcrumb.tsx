@@ -3,8 +3,11 @@
 /**
  * IndiaBreadcrumb — slim breadcrumb row above the hero.
  *
- * File 48 §4.7.1. Renders "🏠 Home › India" with a disabled "Select module ▾"
- * placeholder pill on the right. The functional module dropdown is Phase 5+.
+ * File 48 §4.7.1 + Section 1 functional dropdown patch. Renders
+ * "🏠 Home › India" with a functional "Select module ▾" dropdown on the
+ * right (ModuleSelectorDropdown). Pass `superCategorySlug` to scope the
+ * picker to a single super-category (used on /en/india/category/<slug>
+ * if that page swaps in this breadcrumb).
  *
  * Strings come from `dict.breadcrumb`; the project's i18n stack uses direct
  * JSON imports rather than next-intl's `useTranslations`, so the dictionary
@@ -13,7 +16,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Home, ChevronDown, ChevronRight } from "lucide-react";
+import { Home, ChevronRight } from "lucide-react";
+import { ModuleSelectorDropdown } from "./ModuleSelectorDropdown";
 
 export interface IndiaBreadcrumbDict {
   home: string;
@@ -24,6 +28,8 @@ export interface IndiaBreadcrumbDict {
 export interface IndiaBreadcrumbProps {
   locale: string;
   dict?: IndiaBreadcrumbDict;
+  /** When set, the picker scopes to that super-category's modules (flat list). */
+  superCategorySlug?: string;
 }
 
 const FALLBACK: IndiaBreadcrumbDict = {
@@ -32,7 +38,11 @@ const FALLBACK: IndiaBreadcrumbDict = {
   selectModule: "Select module",
 };
 
-export function IndiaBreadcrumb({ locale, dict }: IndiaBreadcrumbProps) {
+export function IndiaBreadcrumb({
+  locale,
+  dict,
+  superCategorySlug,
+}: IndiaBreadcrumbProps) {
   const t = dict ?? FALLBACK;
 
   return (
@@ -66,30 +76,11 @@ export function IndiaBreadcrumb({ locale, dict }: IndiaBreadcrumbProps) {
         {t.india}
       </span>
 
-      {/* Disabled placeholder pill — functional dropdown ships in a future phase. */}
-      <button
-        type="button"
-        disabled
-        aria-label={t.selectModule}
-        title={`${t.selectModule} — coming soon`}
-        style={{
-          background: "var(--color-background-secondary)",
-          border: "0.5px solid var(--color-border-tertiary)",
-          borderRadius: "999px",
-          padding: "3px 10px 3px 12px",
-          fontSize: "11px",
-          cursor: "not-allowed",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          marginLeft: "auto",
-          color: "var(--color-text-secondary)",
-          opacity: 0.7,
-        }}
-      >
-        {t.selectModule}
-        <ChevronDown size={11} />
-      </button>
+      <ModuleSelectorDropdown
+        locale={locale}
+        superCategorySlug={superCategorySlug}
+        triggerLabel={t.selectModule}
+      />
     </nav>
   );
 }
