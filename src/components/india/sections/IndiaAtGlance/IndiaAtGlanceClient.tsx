@@ -402,6 +402,12 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
 
   useEffect(() => {
     if (!ref.current) return;
+    // Threshold 0.15 = ~57px of the 380px section must be in view before
+    // the entry cascade fires. rootMargin shrinks the bottom edge by
+    // 10% of viewport height so the trigger sits comfortably above the
+    // fold rather than the moment a single pixel touches it. Verified
+    // for the v7 layout — initial load with the band near top of page
+    // intersects on mount and animations cascade as designed.
     const obs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setVisible(true);
