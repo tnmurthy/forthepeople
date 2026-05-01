@@ -24,7 +24,7 @@ import { LivingStandardsSection } from "@/components/india/sections/LivingStanda
 import { WildlifeForestsSection } from "@/components/india/sections/WildlifeForests";
 import { AgricultureLivestockSection } from "@/components/india/sections/AgricultureLivestock";
 import { NaturalResourcesEnergySection } from "@/components/india/sections/NaturalResourcesEnergy";
-import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
+import { SectionProgressBar } from "@/components/india/primitives/SectionProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
@@ -118,7 +118,7 @@ export default async function IndiaRoute({
       {/* Sticky breadcrumb (top:56) + sticky scroll-progress bar (top:100). Both
           live above the inner padded container so they span the full viewport. */}
       <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
-      <ScrollProgressBar />
+      <SectionProgressBar />
 
       <div style={{ width: "100%", padding: "1rem 1rem 0" }}>
         <LiveStrip />

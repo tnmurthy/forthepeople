@@ -678,4 +678,8 @@ body.ftp-india-tinted {
     animation: none;
     display: none;
   }
+  /* SectionProgressBar — disable the segment color crossfade. */
+  [data-section-progress-segment] {
+    transition: none !important;
+  }
 }
