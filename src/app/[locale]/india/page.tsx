@@ -26,6 +26,8 @@ import { AgricultureLivestockSection } from "@/components/india/sections/Agricul
 import { NaturalResourcesEnergySection } from "@/components/india/sections/NaturalResourcesEnergy";
 import { InfrastructureSection } from "@/components/india/sections/Infrastructure";
 import { GovernanceSection } from "@/components/india/sections/Governance";
+import { InnovationSection } from "@/components/india/sections/Innovation";
+import { CultureSection } from "@/components/india/sections/Culture";
 import { SectionProgressBar } from "@/components/india/primitives/SectionProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
@@ -183,6 +185,12 @@ export default async function IndiaRoute({
             } else if (sc.slug === "governance") {
               // Step 10: governance — deep navy palette, 10-row marquee.
               band = <GovernanceSection locale={locale} />;
+            } else if (sc.slug === "innovation") {
+              // Step 13: innovation — copper palette, 7-row marquee.
+              band = <InnovationSection locale={locale} />;
+            } else if (sc.slug === "culture") {
+              // Step 13: culture — rose palette, STATIC 5-row directory.
+              band = <CultureSection locale={locale} />;
             } else {
               band = (
                 <div data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}>
