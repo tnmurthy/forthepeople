@@ -19,6 +19,8 @@ import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorld
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
+import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
+import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import {
   TricolorBadgesPanel,
   TricolorBadgesFooter,
@@ -66,6 +68,20 @@ export default async function IndiaRoute({
 }) {
   const { locale } = await params;
   const superCategories = getOrderedSuperCategories();
+
+  // Map super-category slug → ScrollColorShift tint id (file 48 §Section 2.2).
+  const TINT_BY_SC: Record<string, string> = {
+    "macro-snapshot": "macro",
+    "know-india": "know",
+    "living-standards": "living",
+    "wildlife-forests": "wildlife",
+    "agriculture-livestock": "agriculture",
+    "natural-resources-energy": "natural",
+    infrastructure: "infra",
+    governance: "governance",
+    innovation: "innovation",
+    culture: "culture",
+  };
   const dict = locale === "kn" ? knDict : enDict;
   const indiaDict = (
     dict as {
@@ -81,11 +97,19 @@ export default async function IndiaRoute({
   return (
     <main
       style={{
-        background: "var(--color-background)",
+        // Background lives on <body> via var(--ftp-page-tint) so the
+        // ScrollColorShift can transition it as the user scrolls.
         minHeight: "100vh",
         paddingBottom: "3rem",
       }}
     >
+      {/* First-visit-per-session entrance curtain (saffron + green panels). */}
+      <PageEntryCurtain />
+
+      {/* Invisible client component — listens to which [data-tint-id] section
+          is closest to viewport center and swaps --ftp-page-tint accordingly. */}
+      <ScrollColorShift />
+
       {/* Sticky breadcrumb (top:56) + sticky scroll-progress bar (top:100). Both
           live above the inner padded container so they span the full viewport. */}
       <IndiaBreadcrumb locale={locale} dict={breadcrumbDict} />
@@ -93,7 +117,9 @@ export default async function IndiaRoute({
 
       <div style={{ width: "100%", padding: "1rem 1rem 0" }}>
         <LiveStrip />
-        <IndiaHero locale={locale} dict={heroDict} />
+        <div data-tint-id="hero">
+          <IndiaHero locale={locale} dict={heroDict} />
+        </div>
 
         {/* Order per file 48 §Section 2.1: hero → tricolor badges (full-width
             horizontal strip) → KPI strip → "India in the world" rankings →
@@ -113,13 +139,17 @@ export default async function IndiaRoute({
 
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (
-            <SuperCategoryPreviewBand
+            <div
               key={sc.slug}
-              superCategory={sc}
-              modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
-              bandIndex={i}
-              locale={locale}
-            />
+              data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}
+            >
+              <SuperCategoryPreviewBand
+                superCategory={sc}
+                modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
+                bandIndex={i}
+                locale={locale}
+              />
+            </div>
           ))}
         </div>
       </div>
