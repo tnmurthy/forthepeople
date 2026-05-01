@@ -552,8 +552,6 @@
   height: 150px;
   opacity: 0.07;
   pointer-events: none;
-  animation: ftp-spin-slow 90s linear infinite;
-  transform-origin: 50% 50%;
 }
 
 /* ─── ENTRY ANIMATION CASCADE ─── */
@@ -601,11 +599,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-@keyframes ftp-spin-slow {
-  to {
-    transform: rotate(360deg);
   }
 }
 @keyframes ftp-pulse {
