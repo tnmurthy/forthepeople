@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * Hero stat for the IndiaAtGlance band — population, formatted as
- * "1.43 billion", with the YoY growth + source attribution as a foot
- * line. All values come from the indicatorByKey lookup map; the
+ * Hero stat for the IndiaAtGlance band — population, formatted via
+ * formatHeadline() into a major + minor pair (e.g. major="X.XX",
+ * minor="billion"), with the YoY growth + source attribution as a
+ * foot line. All values come from the indicatorByKey lookup map; the
  * tagline string lives in metrics.ts (editorial copy, not data).
  *
  * Returns a graceful "headline data unavailable" microtext when the
