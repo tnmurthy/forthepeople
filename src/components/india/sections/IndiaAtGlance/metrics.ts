@@ -220,40 +220,6 @@ export const RIGHT_STACK: RightCard[] = [
   },
 ];
 
-// ── v5 back-compat exports ──
-// Kept transitionally so the v5 IndiaAtGlanceClient.tsx still compiles
-// until commit 5 of Step 6 fully rewrites it. Removed in that commit.
-export const MACRO_HEADLINE = FEATURED_HEADLINE;
-export const MACRO_GROWTH = FEATURED_GROWTH;
-export type MetricFormat =
-  | "billion_people"
-  | "trillion_usd"
-  | "percent"
-  | "lakh_inr"
-  | "count"
-  | "scheduled"
-  | "millions_workforce"
-  | "states_uts";
-export type MetricSlot = {
-  ref: MetricRef & { companion?: MetricRef };
-  label: string;
-  format: MetricFormat;
-};
-export const MACRO_FEATURED_GRID: MetricSlot[] = [];
-export const MACRO_RIGHT_STACK: Array<{
-  moduleSlug: string;
-  ref: MetricRef;
-  label: string;
-  emoji: string;
-  format: MetricFormat;
-}> = [];
-export const MACRO_IDENTITY_STATS: Array<{
-  ref: MetricRef;
-  label: string;
-  format: MetricFormat;
-  greenIfPositive?: boolean;
-}> = [];
-
 // ── Editorial copy (structural strings, never numeric data) ──
 export const SECTION_LABEL = "section";
 export const FEATURED_RANK_LABEL = "global rank";
