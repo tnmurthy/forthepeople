@@ -141,6 +141,23 @@ function moduleCadenceLine(m: IndiaModuleDef): string {
   return `${refresh} cadence · Initial dataset`;
 }
 
+/**
+ * Per-super-category themed band background + accent border.
+ * Section 2.5+3 — keyed on the full super-category slug so each band gets
+ * its color identity even before its decoration component is registered.
+ * Slugs without an entry fall back to neutral surface + default border.
+ */
+const BAND_STYLES: Record<string, { bg: string; border: string }> = {
+  "macro-snapshot": {
+    bg: "linear-gradient(180deg, #EAF1FA 0%, #DEEAF6 100%)",
+    border: "1px solid rgba(24, 95, 165, 0.30)",
+  },
+  "wildlife-forests": {
+    bg: "linear-gradient(180deg, #F4F8EA 0%, #ECF2DD 100%)",
+    border: "1px solid rgba(90, 143, 46, 0.30)",
+  },
+};
+
 const ACCENT_RGB_TUPLE: Record<IndiaAccentColorKey, string> = {
   blue: "24, 95, 165",
   indigo: "83, 74, 183",
@@ -548,6 +565,7 @@ export function SuperCategoryPreviewBand({
 
   // Per-super-category thematic decoration (file 48 §Section 2.3 GAP 4).
   const Decoration = getBandDecoration(superCategory.slug);
+  const bandStyle = BAND_STYLES[superCategory.slug];
   const isWildlife = superCategory.slug === "wildlife-forests";
 
   return (
@@ -559,20 +577,13 @@ export function SuperCategoryPreviewBand({
         gridTemplateColumns: "320px 1fr",
         borderRadius: "var(--border-radius-lg)",
         overflow: "hidden",
-        border: isWildlife
-          ? "1px solid rgba(90, 143, 46, 0.30)"
-          : "0.5px solid var(--color-border-tertiary)",
+        border: bandStyle?.border ?? "0.5px solid var(--color-border-tertiary)",
         minHeight: "320px",
         marginBottom: "1.5rem",
-        // Wildlife band: forest-green linear-gradient backdrop (the modules
-        // zone shows through this; identity zone overlays its own gradient).
-        // Other bands keep the neutral surface color.
-        background: isWildlife
-          ? "linear-gradient(180deg, #F4F8EA 0%, #ECF2DD 100%)"
-          : "var(--color-surface)",
-        // Branch borders need 24px of breathing room top + bottom on wildlife.
-        paddingTop: isWildlife ? "24px" : undefined,
-        paddingBottom: isWildlife ? "24px" : undefined,
+        background: bandStyle?.bg ?? "var(--color-surface)",
+        // Decoration borders (e.g. wildlife branches) need vertical breathing room.
+        paddingTop: bandStyle ? "24px" : undefined,
+        paddingBottom: bandStyle ? "24px" : undefined,
         opacity: 0,
         transform: "translateY(8px)",
         animation: "band-enter 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards",

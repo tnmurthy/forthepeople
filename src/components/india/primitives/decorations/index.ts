@@ -11,19 +11,11 @@
 
 import * as React from "react";
 import { WildlifeForestsDecoration } from "./WildlifeForestsDecoration";
+import { MacroSnapshotDecoration } from "./MacroSnapshotDecoration";
 
 export const BAND_DECORATIONS: Record<string, React.FC | undefined> = {
   "wildlife-forests": WildlifeForestsDecoration,
-  // others added in Section 3:
-  // "macro-snapshot":          MacroSnapshotDecoration,
-  // "know-india":              KnowIndiaDecoration,
-  // "living-standards":        LivingStandardsDecoration,
-  // "agriculture-livestock":   AgricultureLivestockDecoration,
-  // "natural-resources-energy": NaturalResourcesDecoration,
-  // "infrastructure":          InfrastructureDecoration,
-  // "governance":              GovernanceDecoration,
-  // "innovation":              InnovationDecoration,
-  // "culture":                 CultureDecoration,
+  "macro-snapshot": MacroSnapshotDecoration,
 };
 
 export function getBandDecoration(slug: string): React.FC | undefined {
