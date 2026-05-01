@@ -490,8 +490,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
     ],
     componentName: "WildlifeTigersModule",
     scraperKeys: ["ntca-tigers"],
-    // MOCK — NTCA Status of Tigers 2022 published 3,682; rounded as a placeholder.
-    headlineMetric: { key: "tiger_population", label: "Tiger Population", unit: "individuals", mockValue: 3500, mockUnit: "individuals" },
+    headlineMetric: { key: "tiger_population", label: "Tiger Population", unit: "individuals", mockValue: 3682, mockUnit: "individuals" },
     hasStateBreakdownData: true,
   },
   {
