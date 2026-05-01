@@ -1,18 +1,17 @@
 /**
- * IndiaHero — homepage hero per file 38 (LOCKED) + file 45 §4 Level 1.
+ * IndiaHero — homepage hero v8 (file 48 §Section 2).
  *
  * Renders:
- *  - Breadcrumb with module-picker dropdown
- *  - Tricolor radial-wash hero stage
- *  - Title block: pre-headline / headline / bilingual rotator / motto / Preamble pill
- *  - 9 identity chips (3×3) with gold-medal dots on world #1 rankings
- *  - India outline (right column) with 3 ceremonial tricolor dots + Tropic of Cancer
- *  - 5-tile KPI strip
- *  - Live freshness strip
+ *  - Hero stage with 4px tricolor stripe on left edge + 24% tricolor radials
+ *  - Left column: eyebrow / "India" + LanguageRotator / motto / Preamble CTA
+ *                 / NationalIdentityGrid / QuickAccessStrip
+ *  - Right column (320px): TricolorBadgesPanel
+ *  - 5-tile KPI strip below the stage
+ *  - Freshness strip
  *  - "India in the world" rankings card
- *  - Search anchor
  *
- * Server Component. The bilingual rotator is the only client-side bit.
+ * v8 dropped the India SVG outline column (it now lives only on the
+ * super-category landing where breadcrumb context is more useful).
  */
 
 import * as React from "react";
@@ -20,141 +19,18 @@ import {
   BookOpenText,
   Building2,
   ChevronRight,
-  Crown,
-  Film,
-  Globe2,
   IndianRupee,
   Languages as LanguagesIcon,
-  Moon,
   Square,
-  TrendingUp,
   Users,
-  Workflow,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { LanguageRotator } from "@/components/india/primitives/LanguageRotator";
+import { NationalIdentityGrid } from "@/components/india/primitives/NationalIdentityGrid";
+import { QuickAccessStrip } from "@/components/india/primitives/QuickAccessStrip";
+import { TricolorBadgesPanel } from "@/components/india/primitives/TricolorBadgesPanel";
 import { IndiaInTheWorldCard } from "./IndiaInTheWorldCard";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
-import { IndiaTricolor } from "@/lib/india/design-tokens";
-import {
-  INDIA_OUTLINE_PATH_D,
-  INDIA_OUTLINE_VIEWBOX,
-  INDIA_TROPIC_OF_CANCER_Y,
-  INDIA_CITY_MARKERS,
-} from "@/data/india-outline";
-
-interface IdentityChip {
-  id: string;
-  icon: React.ComponentType<{ size?: number; style?: React.CSSProperties }>;
-  label: string;
-  isGold?: boolean;
-}
-
-const HERO_CHIPS: IdentityChip[] = [
-  { id: "democracy", icon: Crown, label: "World's largest democracy", isGold: true },
-  { id: "population", icon: Users, label: "Most populous nation", isGold: true },
-  { id: "films", icon: Film, label: "Largest film industry", isGold: true },
-  { id: "gdp", icon: TrendingUp, label: "3rd largest economy (PPP)" },
-  { id: "moon", icon: Moon, label: "4th nation on the Moon" },
-  { id: "languages", icon: LanguagesIcon, label: "22 official languages" },
-  { id: "g20", icon: Globe2, label: "G20 founding member" },
-  { id: "origin", icon: Workflow, label: "Birthplace of yoga & chess" },
-  { id: "civilization", icon: Building2, label: "5,000-year civilization" },
-];
-
-function ChipsList() {
-  return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-      {HERO_CHIPS.map((chip) => {
-        const Icon = chip.icon;
-        return (
-          <span
-            key={chip.id}
-            style={{
-              border: chip.isGold
-                ? "0.5px solid rgba(239, 159, 39, 0.40)"
-                : "0.5px solid rgba(0,0,0,0.08)",
-              background: chip.isGold
-                ? "linear-gradient(90deg, rgba(239, 159, 39, 0.10) 0%, rgba(239, 159, 39, 0.04) 100%)"
-                : "var(--color-background)",
-              color: chip.isGold ? "#633806" : "var(--color-text-secondary)",
-              borderRadius: "999px",
-              padding: "3px 9px",
-              fontSize: "10.5px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "5px",
-              transition: "border-color 150ms",
-            }}
-          >
-            <Icon size={11} />
-            {chip.label}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-function IndiaOutlineSVG() {
-  // India outline sourced from Wikimedia Commons "India outline" (public
-  // domain). Path data + viewBox + Tropic of Cancer + city markers come
-  // from src/data/india-outline.ts so future tweaks (border refresh, marker
-  // re-position) are a registry edit, not a component edit.
-  const cityFontSize = 14;
-  return (
-    <svg
-      viewBox={INDIA_OUTLINE_VIEWBOX}
-      width="100%"
-      style={{ maxWidth: "240px" }}
-      aria-label="Outline map of India"
-      role="img"
-    >
-      {/* Main outline */}
-      <path
-        d={INDIA_OUTLINE_PATH_D}
-        fill="var(--color-surface)"
-        stroke="var(--color-text-primary)"
-        strokeOpacity="0.55"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        fillRule="evenodd"
-      />
-
-      {/* Tropic of Cancer ~23.5°N, dashed line across India's width */}
-      <line
-        x1={20}
-        y1={INDIA_TROPIC_OF_CANCER_Y}
-        x2={620}
-        y2={INDIA_TROPIC_OF_CANCER_Y}
-        stroke="var(--color-text-tertiary)"
-        strokeOpacity="0.5"
-        strokeWidth="2"
-        strokeDasharray="8 6"
-      />
-
-      {/* 5 city dots (positions from src/data/india-outline.ts) */}
-      {INDIA_CITY_MARKERS.map((city) => (
-        <g key={city.name}>
-          <circle
-            cx={city.x}
-            cy={city.y}
-            r={city.name === "Delhi" ? 9 : 7}
-            fill="var(--color-text-primary)"
-          />
-          <text
-            x={city.x + 14}
-            y={city.y + 5}
-            fontSize={cityFontSize}
-            fill="var(--color-text-secondary)"
-          >
-            {city.name}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
 
 export interface IndiaHeroDict {
   eyebrow: string;
@@ -174,46 +50,57 @@ const HERO_FALLBACK: IndiaHeroDict = {
   readPreamble: "Read the Preamble — every Indian should",
 };
 
-export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
+export function IndiaHero({ locale, freshnessLine, dict }: IndiaHeroProps) {
   const t = dict ?? HERO_FALLBACK;
-  const ceremonialDots = [
-    { color: IndiaTricolor.saffron, border: false },
-    { color: IndiaTricolor.white, border: true },
-    { color: IndiaTricolor.green, border: false },
-  ];
 
   return (
     <section style={{ padding: "0 0 1rem 0" }}>
-      {/* Hero stage */}
+      {/* Hero stage — v8: 4px tricolor stripe on left, 24% radial washes,
+          right-column TricolorBadgesPanel replaces the India outline. */}
       <div
         style={{
           position: "relative",
-          padding: "22px 26px",
+          padding: "20px 20px 20px 26px",
           borderRadius: "var(--border-radius-lg)",
           overflow: "hidden",
           border: "0.5px solid rgba(0, 0, 0, 0.08)",
           background: `
-            radial-gradient(ellipse 400px 240px at 0% 0%, rgba(255, 153, 51, 0.08), transparent 60%),
-            radial-gradient(ellipse 400px 240px at 100% 100%, rgba(19, 136, 8, 0.08), transparent 60%),
+            radial-gradient(ellipse 540px 320px at 0% 0%, rgba(255, 153, 51, 0.24), transparent 60%),
+            radial-gradient(ellipse 540px 320px at 100% 100%, rgba(19, 136, 8, 0.24), transparent 60%),
             linear-gradient(180deg, #FEFEFB 0%, #FAFAF8 100%)
           `,
         }}
       >
+        {/* 4px vertical tricolor stripe on left edge */}
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: "4px",
+            background:
+              "linear-gradient(180deg, #FF9933 0%, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%, #138808 100%)",
+          }}
+        />
+
         <div
           className="india-hero-grid"
           style={{
             position: "relative",
             display: "grid",
-            gridTemplateColumns: "1fr 220px",
+            gridTemplateColumns: "1fr 320px",
             gap: "22px",
             alignItems: "start",
           }}
         >
-          {/* LEFT — title block */}
+          {/* LEFT — title block + identity grid + quick access */}
           <div>
             <div
               style={{
-                fontSize: "11px",
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
                 color: "var(--color-text-tertiary)",
@@ -235,7 +122,7 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
               <h1
                 style={{
                   fontFamily: "var(--font-jakarta)",
-                  fontSize: "42px",
+                  fontSize: "40px",
                   fontWeight: 500,
                   lineHeight: 1,
                   letterSpacing: "-0.025em",
@@ -250,7 +137,7 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
 
             <div
               style={{
-                fontSize: "14px",
+                fontSize: "13.5px",
                 fontStyle: "italic",
                 color: "var(--color-text-secondary)",
                 margin: "0 0 12px",
@@ -285,70 +172,12 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
               <ChevronRight size={11} style={{ opacity: 0.7 }} />
             </a>
 
-            {/* Identity chips */}
-            <ChipsList />
-            <div
-              style={{ fontSize: "10px", color: "var(--color-text-tertiary)", marginTop: "8px" }}
-            >
-              <span
-                aria-hidden
-                style={{
-                  display: "inline-block",
-                  width: "6px",
-                  height: "6px",
-                  marginRight: "4px",
-                  background: "rgba(239, 159, 39, 0.30)",
-                  border: "0.5px solid rgba(239, 159, 39, 0.55)",
-                  borderRadius: "999px",
-                  verticalAlign: "middle",
-                }}
-              />
-              gold-tinted chips denote a current world #1 ranking
-            </div>
+            <NationalIdentityGrid />
+            <QuickAccessStrip locale={locale} />
           </div>
 
-          {/* RIGHT — India outline (file 48 §4.7.3 map zone polish) */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              borderLeft: "0.5px solid rgba(0, 0, 0, 0.08)",
-              paddingLeft: "18px",
-            }}
-            className="india-hero-outline"
-          >
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              {ceremonialDots.map((d, i) => (
-                <span
-                  key={i}
-                  aria-hidden
-                  style={{
-                    width: "7px",
-                    height: "7px",
-                    borderRadius: "50%",
-                    background: d.color,
-                    border: d.border ? "0.5px solid var(--color-text-tertiary)" : "none",
-                  }}
-                />
-              ))}
-            </div>
-            <IndiaOutlineSVG />
-            <div
-              style={{
-                fontFamily: "var(--font-mono)",
-                fontSize: "9px",
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "var(--color-text-tertiary)",
-                marginTop: "8px",
-              }}
-            >
-              Tropic of Cancer · 23.5°N
-            </div>
-          </div>
+          {/* RIGHT — Tricolor achievement badges panel */}
+          <TricolorBadgesPanel locale={locale} />
         </div>
       </div>
 
@@ -390,15 +219,14 @@ export function IndiaHero({ freshnessLine, dict }: IndiaHeroProps) {
       <IndiaInTheWorldCard />
 
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .india-hero-grid {
             grid-template-columns: 1fr !important;
           }
+        }
+        @media (max-width: 768px) {
           .india-hero-headline {
-            font-size: 40px !important;
-          }
-          .india-hero-outline svg {
-            max-width: 140px !important;
+            font-size: 32px !important;
           }
           .india-hero-kpi-strip {
             grid-template-columns: repeat(2, 1fr) !important;

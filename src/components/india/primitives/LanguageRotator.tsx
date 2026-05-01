@@ -4,15 +4,14 @@
  * LanguageRotator — cycles a bilingual subtitle through all 22 scheduled
  * languages of India (Schedule 8 of the Constitution).
  *
- * File 48 §4.7.3. 3000ms per language. Respects prefers-reduced-motion
- * (halts on the first language — Hindi). Locks min-width to prevent
- * layout shift when scripts of different visual widths cycle through.
- * Announces changes via aria-live="polite".
+ * File 48 §4.7.3 + Section 2 polish: smooth keyframe-based fade/slide instead
+ * of the abrupt setState swap. The fixed-height wrapper prevents layout shift,
+ * and the keyframe runs every 3s — synchronized with a setInterval that
+ * advances the language index at the same cadence so the rendered language
+ * always matches the animation cycle.
  *
- * Some scripts use Devanagari ("भारत") as a placeholder for languages
- * (Bodo, Dogri, Konkani, Maithili, Sindhi) that are commonly written
- * in Devanagari but have native variants. Phase 5 may refine with
- * native-speaker input.
+ * `prefers-reduced-motion: reduce` halts on the first language (Hindi) and
+ * disables the keyframe entirely.
  */
 
 import * as React from "react";
@@ -70,29 +69,60 @@ export function LanguageRotator() {
   return (
     <span
       style={{
-        fontFamily: "var(--font-serif), Georgia, serif",
-        fontStyle: "italic",
-        fontSize: "18px",
-        color: "var(--color-text-secondary)",
         display: "inline-flex",
-        alignItems: "baseline",
-        gap: "8px",
+        alignItems: "center",
+        height: "24px",
         minWidth: "180px",
-        transition: "opacity 200ms ease",
+        overflow: "hidden",
       }}
       aria-live="polite"
       aria-atomic="true"
     >
       <span
+        // The `key` resets the animation each time the index changes, so each
+        // new language plays the keyframe from the start.
+        key={index}
+        className={reduceMotion ? "ftp-rotator ftp-rotator--reduced" : "ftp-rotator"}
         style={{
-          fontStyle: "normal",
-          fontFamily: "var(--font-jakarta), system-ui, sans-serif",
+          fontFamily: "var(--font-serif), Georgia, serif",
+          fontStyle: "italic",
+          fontSize: "19px",
+          lineHeight: 1,
+          color: "var(--color-text-primary)",
+          display: "inline-flex",
+          alignItems: "baseline",
+          gap: "8px",
+          willChange: reduceMotion ? "auto" : "opacity, transform",
         }}
       >
-        {current.script}
+        <span
+          style={{
+            fontStyle: "normal",
+            fontFamily: "var(--font-jakarta), system-ui, sans-serif",
+          }}
+        >
+          {current.script}
+        </span>
+        <span style={{ opacity: 0.5 }}>·</span>
+        <span style={{ fontSize: "15px" }}>{current.name}</span>
       </span>
-      <span style={{ opacity: 0.5 }}>·</span>
-      <span style={{ fontSize: "15px" }}>{current.name}</span>
+
+      <style>{`
+        @keyframes ftp-rotator-cycle {
+          0%   { opacity: 0; transform: translateY(8px); }
+          12%  { opacity: 1; transform: translateY(0); }
+          88%  { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-8px); }
+        }
+        .ftp-rotator {
+          animation: ftp-rotator-cycle ${ROTATION_INTERVAL_MS}ms ease-in-out forwards;
+        }
+        .ftp-rotator--reduced {
+          animation: none !important;
+          opacity: 1;
+          transform: none;
+        }
+      `}</style>
     </span>
   );
 }
