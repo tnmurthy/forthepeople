@@ -24,6 +24,28 @@ export const SECTION_ACCENT_COLORS: Record<string, string> = {
   culture: "#993556",
 };
 
+/**
+ * Lighter parallel palette for the SectionProgressBar.
+ *
+ * Each value is a mid-tone between the deep accent (above) and white,
+ * giving the 4-pixel scroll bar a sky/honey/sage feel rather than the
+ * heavier deep-color treatment used inside section bands. Used ONLY by
+ * SectionProgressBar — section bands and dividers continue to use the
+ * deep accents from SECTION_ACCENT_COLORS.
+ */
+export const SECTION_ACCENT_LIGHT_COLORS: Record<string, string> = {
+  "macro-snapshot": "#5278A8",
+  "know-india": "#7570B0",
+  "living-standards": "#5BAC95",
+  "wildlife-forests": "#86A85B",
+  "agriculture-livestock": "#D9B25A",
+  "natural-resources-energy": "#5C9696",
+  infrastructure: "#9E9C95",
+  governance: "#7670B5",
+  innovation: "#C77858",
+  culture: "#C97089",
+};
+
 /** Convenience: ordered slug list mirroring INDIA_SUPER_CATEGORIES displayOrder. */
 export const SECTION_SLUGS_IN_ORDER: ReadonlyArray<string> = [
   "macro-snapshot",
