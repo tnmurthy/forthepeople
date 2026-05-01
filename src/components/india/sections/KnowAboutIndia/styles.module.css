@@ -375,14 +375,17 @@
   border-left: 0.5px solid rgba(83, 74, 183, 0.12);
 }
 .rightCard {
-  background: #FFFFFF;
+  background: transparent;
   padding: 11px 13px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(46, 42, 109, 0.30);
+  border-radius: 5px;
+  margin: 6px;
 }
 .rightCard:not(:last-child) {
-  border-bottom: 0.5px solid rgba(83, 74, 183, 0.12);
+  margin-bottom: 0;
 }
 
 .rightCardHeader {

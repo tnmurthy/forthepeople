@@ -293,8 +293,12 @@ export function IndiaInTheWorldCard() {
   return (
     <section
       style={{
-        border: "0.5px solid rgba(0, 0, 0, 0.08)",
-        background: "var(--color-background)",
+        // Step 11: 1px peacock-blue border at 30% opacity, transparent fill.
+        // Background fill is intentionally NOT applied — the inner ranking
+        // grid carries its own subtle dividers that read better against
+        // the page bg than against a card-fill bg.
+        border: "1px solid rgba(12, 68, 124, 0.30)",
+        background: "transparent",
         borderRadius: "var(--border-radius-lg)",
         padding: "14px 18px 16px",
         marginBottom: "12px",
