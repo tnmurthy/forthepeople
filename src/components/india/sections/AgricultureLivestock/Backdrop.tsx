@@ -7,6 +7,7 @@
 
 import styles from "./styles.module.css";
 import {
+  SVG_VIEWBOX,
   WHEAT_STALK_STEM,
   WHEAT_STALK_BRACTS,
   WHEAT_STALK_GRAINS,
@@ -16,7 +17,7 @@ export function WheatStalkWatermark() {
   return (
     <svg
       className={styles.wheatWatermark}
-      viewBox="0 0 100 100"
+      viewBox={SVG_VIEWBOX}
       aria-hidden
     >
       <g stroke="#FFFFFF" strokeWidth="1" fill="none">

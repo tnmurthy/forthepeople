@@ -7,6 +7,9 @@
  * (renewable energy) and the broader "energy as a category" idea.
  */
 
+/** SVG viewBox for the watermark — kept here so the .tsx Backdrop is value-free. */
+export const SVG_VIEWBOX = "0 0 100 100";
+
 export const SUN_CENTER_RADIUS = 12;
 export const SUN_VIEWBOX_CENTER = 50;
 

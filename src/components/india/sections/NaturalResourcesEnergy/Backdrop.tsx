@@ -7,6 +7,7 @@
 
 import styles from "./styles.module.css";
 import {
+  SVG_VIEWBOX,
   SUN_CENTER_RADIUS,
   SUN_VIEWBOX_CENTER,
   SUN_RAYS,
@@ -16,7 +17,7 @@ export function SunWatermark() {
   return (
     <svg
       className={styles.sunWatermark}
-      viewBox="0 0 100 100"
+      viewBox={SVG_VIEWBOX}
       aria-hidden
     >
       <g stroke="#FFFFFF" strokeWidth="1" fill="none">

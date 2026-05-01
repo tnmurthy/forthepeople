@@ -60,6 +60,11 @@ export const NRE_DIRECTORY: DirectoryRow[] = [
 // ── FEATURED zone (Power Generation) ──
 
 export const FEATURED_HEADLINE_LABEL = "GW installed";
+/** CountUpNumber duration for the featured hero. */
+export const HERO_ANIMATION_DURATION_MS = 1500;
+/** IntersectionObserver options reused across the band. */
+export const INTERSECTION_THRESHOLD = 0.15;
+export const INTERSECTION_ROOT_MARGIN = "0px 0px -10% 0px";
 export const FEATURED_DESCRIPTION =
   "Total installed power generation capacity, by source.";
 export const FEATURED_RIGHT_CALLOUT_LABEL = "TARGET";
@@ -76,7 +81,7 @@ export const FEATURED_GROWTH_PILL_REF: MetricRef = {
   moduleSlug: "energy-power",
   metricKey: "capacity_change_yoy_gw",
 };
-export const FEATURED_GROWTH_PILL_TEMPLATE = "+{value} GW YoY";
+export const FEATURED_GROWTH_PILL_FORMAT = "+{value} GW YoY";
 
 // ── FEATURED CELLS (Coal / RE / Hydro / Nuclear with mix-% sub-stat) ──
 

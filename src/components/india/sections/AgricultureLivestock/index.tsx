@@ -1,5 +1,6 @@
 /**
- * AgricultureLivestockSection — server entry for Section 05.
+ * AgricultureLivestockSection — server entry for the
+ * agriculture-livestock band.
  */
 
 import { getAgricultureLivestockData } from "@/lib/india/getAgricultureLivestockData";

@@ -67,6 +67,11 @@ export const AL_DIRECTORY: DirectoryRow[] = [
 // ── FEATURED zone (Crop Production) ──
 
 export const FEATURED_HEADLINE_LABEL = "million tonnes";
+/** CountUpNumber duration for the featured hero (kept here so the .tsx doesn't carry numeric literals). */
+export const HERO_ANIMATION_DURATION_MS = 1500;
+/** IntersectionObserver options reused across the band. */
+export const INTERSECTION_THRESHOLD = 0.15;
+export const INTERSECTION_ROOT_MARGIN = "0px 0px -10% 0px";
 export const FEATURED_DESCRIPTION =
   "Foodgrain output, rice and wheat estimates from DA&FW.";
 export const FEATURED_RIGHT_CALLOUT_LABEL = "TOP STATE";
@@ -83,7 +88,7 @@ export const FEATURED_GROWTH_PILL_REF: MetricRef = {
   moduleSlug: "agriculture-production",
   metricKey: "foodgrain_change_yoy_mt",
 };
-export const FEATURED_GROWTH_PILL_TEMPLATE = "+{value} MT YoY";
+export const FEATURED_GROWTH_PILL_FORMAT = "+{value} MT YoY";
 
 // ── FEATURED CELLS ──
 

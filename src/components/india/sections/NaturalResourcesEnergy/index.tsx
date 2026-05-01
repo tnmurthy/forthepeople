@@ -1,5 +1,6 @@
 /**
- * NaturalResourcesEnergySection — server entry for Section 06.
+ * NaturalResourcesEnergySection — server entry for the
+ * natural-resources-energy band.
  */
 
 import { getNaturalResourcesEnergyData } from "@/lib/india/getNaturalResourcesEnergyData";

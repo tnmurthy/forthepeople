@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * v1 AgricultureLivestockClient — Section 05.
+ * v1 AgricultureLivestockClient.
  *
  * Mirrors LivingStandardsClient: 5-row marquee directory, featured zone
  * showcasing Crop Production, right column with TOP CROP STATES +
@@ -17,7 +17,7 @@ import {
   AL_DIRECTORY,
   FEATURED_HEADLINE_REF,
   FEATURED_GROWTH_PILL_REF,
-  FEATURED_GROWTH_PILL_TEMPLATE,
+  FEATURED_GROWTH_PILL_FORMAT,
   FEATURED_RIGHT_CALLOUT_REF,
   FEATURED_RIGHT_CALLOUT_LABEL,
   FEATURED_RIGHT_CALLOUT_SUBLABEL,
@@ -28,6 +28,9 @@ import {
   TOP_CROP_STATES_FOOTER_LABEL,
   FARMER_SCHEMES,
   FARMER_SCHEMES_FOOTER_LABEL,
+  HERO_ANIMATION_DURATION_MS,
+  INTERSECTION_THRESHOLD,
+  INTERSECTION_ROOT_MARGIN,
   indicatorKey,
   type DirectoryRow,
   type DirectoryFormat,
@@ -35,7 +38,6 @@ import {
   type TopCropStateEntry,
   type FarmerSchemeEntry,
 } from "./metrics";
-import { INDIA_SUPER_CATEGORIES } from "@/lib/india/india-super-categories";
 import type {
   AgricultureLivestockData,
   AgricultureLivestockIndicator,
@@ -308,7 +310,7 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setVisible(true);
       },
-      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" },
+      { threshold: INTERSECTION_THRESHOLD, rootMargin: INTERSECTION_ROOT_MARGIN },
     );
     obs.observe(ref.current);
     return () => obs.disconnect();
@@ -323,7 +325,7 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
   const growthInd = getInd(data.indicatorByKey, FEATURED_GROWTH_PILL_REF);
   const calloutInd = getInd(data.indicatorByKey, FEATURED_RIGHT_CALLOUT_REF);
   const growthFragments = growthInd
-    ? FEATURED_GROWTH_PILL_TEMPLATE.split("{value}")
+    ? FEATURED_GROWTH_PILL_FORMAT.split("{value}")
     : null;
 
   return (
@@ -341,7 +343,7 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
               <span className={styles.sectionLabelDot} aria-hidden />
               SECTION{" "}
               {String(data.superCategory.displayOrder).padStart(2, "0")} · OF{" "}
-              {INDIA_SUPER_CATEGORIES.length}
+              {data.totalSuperCategories}
             </div>
             <h2
               id="agriculture-livestock-title"
@@ -427,7 +429,7 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
                     <CountUpValue
                       value={headlineInd.value}
                       decimals={1}
-                      duration={1500}
+                      duration={HERO_ANIMATION_DURATION_MS}
                     />
                   </span>
                   <div className={styles.headlineMinorBlock}>

@@ -7,6 +7,9 @@
  * alternating sides at four levels.
  */
 
+/** SVG viewBox for the watermark — kept here so the .tsx Backdrop is value-free. */
+export const SVG_VIEWBOX = "0 0 100 100";
+
 export const WHEAT_STALK_STEM = "M 50 88 L 50 22";
 
 export const WHEAT_STALK_BRACTS: ReadonlyArray<string> = [
