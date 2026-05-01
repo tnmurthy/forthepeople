@@ -17,6 +17,7 @@ import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { IndiaKpiStrip } from "@/components/india/sections/IndiaKpiStrip";
 import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorldCard";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
+import { IndiaAtGlanceSection } from "@/components/india/sections/IndiaAtGlance";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
@@ -135,19 +136,27 @@ export default async function IndiaRoute({
         <MughalArchDivider />
 
         <div style={{ marginTop: "2.5rem" }}>
-          {superCategories.map((sc, i) => (
-            <div
-              key={sc.slug}
-              data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}
-            >
-              <SuperCategoryPreviewBand
-                superCategory={sc}
-                modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
-                bandIndex={i}
-                locale={locale}
-              />
-            </div>
-          ))}
+          {superCategories.map((sc, i) => {
+            if (sc.slug === "macro-snapshot") {
+              // Step 4: macro-snapshot uses the magazine-spread band.
+              // Its outer <section> already declares data-tint-id="macro",
+              // so no wrapper div is needed (would double-tint the section).
+              return <IndiaAtGlanceSection key={sc.slug} locale={locale} />;
+            }
+            return (
+              <div
+                key={sc.slug}
+                data-tint-id={TINT_BY_SC[sc.slug] ?? sc.slug}
+              >
+                <SuperCategoryPreviewBand
+                  superCategory={sc}
+                  modules={getModulesForSuperCategory(sc.slug, INDIA_MODULES)}
+                  bandIndex={i}
+                  locale={locale}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </main>
