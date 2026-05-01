@@ -25,6 +25,7 @@ import {
   HeroJaaliTopRight,
   HeroJaaliBottomLeft,
 } from "@/components/india/primitives/decorations/HeroJaali";
+import { HeroMandala } from "@/components/india/primitives/decorations/HeroMandala";
 
 export interface IndiaHeroDict {
   eyebrow: string;
@@ -67,6 +68,7 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
       >
         <HeroJaaliTopRight />
         <HeroJaaliBottomLeft />
+        <HeroMandala />
 
         {/* 4px vertical tricolor stripe on left edge — fades in over 400ms */}
         <span
