@@ -33,30 +33,12 @@ const TINTS: Tint[] = [
   { id: "culture",     color: "#F4DCE6" }, // rose kalamkari
 ];
 
-// Section 4 Step 1 — saturated accent per super-category. Drives
-// var(--ftp-current-section-color), which the scroll progress bar reads
-// for its solid fill color (so the bar reflects the section in view).
-const ACCENTS: Record<string, string> = {
-  hero:        "#185FA5", // peacock blue (default at top of page)
-  macro:       "#185FA5", // blue
-  know:        "#534AB7", // indigo
-  living:      "#0F6E56", // teal
-  wildlife:    "#5A8F2E", // forest green
-  agriculture: "#B58A1E", // wheat amber
-  natural:     "#4A5358", // slate
-  infra:       "#BA7517", // amber
-  governance:  "#3C3489", // royal purple
-  innovation:  "#993C1D", // coral
-  culture:     "#993556", // rose
-};
-
 export function ScrollColorShift() {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const root = document.documentElement;
     document.body.classList.add("ftp-india-tinted");
     root.style.setProperty("--ftp-page-tint", TINTS[0].color);
-    root.style.setProperty("--ftp-current-section-color", ACCENTS.hero);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -76,9 +58,6 @@ export function ScrollColorShift() {
         const id = best.target.getAttribute("data-tint-id");
         const tint = TINTS.find((t) => t.id === id);
         if (tint) root.style.setProperty("--ftp-page-tint", tint.color);
-        if (id && ACCENTS[id]) {
-          root.style.setProperty("--ftp-current-section-color", ACCENTS[id]);
-        }
       },
       { threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
@@ -90,7 +69,6 @@ export function ScrollColorShift() {
       observer.disconnect();
       document.body.classList.remove("ftp-india-tinted");
       root.style.removeProperty("--ftp-page-tint");
-      root.style.removeProperty("--ftp-current-section-color");
     };
   }, []);
 
