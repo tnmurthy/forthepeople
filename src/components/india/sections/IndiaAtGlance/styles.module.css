@@ -1,14 +1,14 @@
 /* ─────────────────────────────────────────────────────────────────
-   IndiaAtGlance v7 — dense magazine band: 270 / 1fr / 300 grid,
-   380px tall. Identity-zone shows the 7-module directory; featured
-   zone shows compound stat cells + global rank callout; right stack
-   has 3 module cards. Entry-animation cascade gates on .visible
-   (set by the parent's IntersectionObserver).
+   IndiaAtGlance v12 — denser magazine band: 320 / 1fr / 240 grid,
+   320px tall. Identity-zone shows a marquee-scrolling 7-module
+   directory. Right column is the new "World Rank" + "Latest updates"
+   stack (replaces the v7 3-card module list). Entry-animation cascade
+   gates on .visible (set by the parent's IntersectionObserver).
    ───────────────────────────────────────────────────────────────── */
 
 .section {
   position: relative;
-  height: 380px;
+  height: 320px;
   border: 1.5px solid #0C447C;
   border-radius: 6px;
   overflow: hidden;
@@ -17,14 +17,14 @@
 }
 .layout {
   display: grid;
-  grid-template-columns: 270px 1fr 300px;
+  grid-template-columns: 320px 1fr 240px;
   height: 100%;
 }
 
-/* ─── IDENTITY ZONE (left, 270px) ─── */
+/* ─── IDENTITY ZONE (left, 320px) ─── */
 .identityZone {
   background: linear-gradient(180deg, #0C447C 0%, #042C53 100%);
-  padding: 16px 18px;
+  padding: 11px 16px;
   color: #FFFFFF;
   display: flex;
   flex-direction: column;
@@ -52,24 +52,24 @@
 }
 .identityTitle {
   font-family: var(--font-serif);
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.01em;
-  margin: 8px 0 4px;
+  margin: 5px 0 2px;
 }
 .identityDesc {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.35;
   opacity: 0.78;
-  margin: 0 0 10px;
+  margin: 0 0 6px;
 }
 
 /* ─── Modules count strip ─── */
 .modulesCount {
   border-top: 0.5px solid rgba(255, 255, 255, 0.2);
-  padding-top: 8px;
-  margin-bottom: 8px;
+  padding-top: 4px;
+  margin-bottom: 2px;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -94,20 +94,36 @@
   font-size: 7px;
 }
 
-/* ─── DIRECTORY (vertical list of 7 modules) ─── */
-.directory {
+/* ─── DIRECTORY MARQUEE ─── */
+.directoryWindow {
+  position: relative;
+  overflow: hidden;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.10);
+  /* 5 rows × ~26px = 130px visible window. */
+  height: 132px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
+}
+
+.directoryTrack {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  flex: 1;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+  /* Marquee math: 7 rows × 26px + 1 divider × 22px = 204px per cycle. */
+  animation: ftp-directory-scroll var(--directory-scroll-duration, 24s) linear infinite;
 }
+
+.directoryWindow:hover .directoryTrack {
+  animation-play-state: paused;
+}
+
 .directoryRow {
+  height: 26px;
+  box-sizing: border-box;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 6px 0;
+  align-items: center;
+  padding: 0;
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
   font-family: var(--font-mono);
   transition: background 200ms;
@@ -120,23 +136,18 @@
 }
 .directoryRow:hover {
   background: rgba(255, 255, 255, 0.06);
-  margin: 0 -18px;
-  padding-left: 18px;
-  padding-right: 18px;
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
 }
-.directoryRow.featured {
-  background: rgba(255, 255, 255, 0.06);
-  margin: 0 -18px;
-  padding-left: 18px;
-  padding-right: 18px;
-}
+/* v12: .featured no longer applies a background highlight — the
+   "▸ featured" tag inside the row is the only differentiation. */
 .directoryRowLabel {
   font-size: 10px;
   opacity: 0.78;
-}
-.directoryRow.featured .directoryRowLabel {
-  opacity: 1;
-  color: #B5D4F4;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 .directoryRowFeaturedTag {
   font-size: 8px;
@@ -149,9 +160,31 @@
   font-weight: 500;
 }
 
+.repeatsDivider {
+  height: 22px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+  font-family: var(--font-mono);
+  opacity: 0.4;
+  border-top: 0.5px dashed rgba(255, 255, 255, 0.25);
+  border-bottom: 0.5px dashed rgba(255, 255, 255, 0.25);
+}
+.repeatsDividerIcon {
+  font-size: 11px;
+}
+.repeatsDividerLabel {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 /* ─── Browse button ─── */
 .browseBtn {
-  margin-top: 10px;
+  margin-top: 8px;
   background: rgba(255, 255, 255, 0.16);
   border: 0.5px solid rgba(255, 255, 255, 0.32);
   color: #FFFFFF;
@@ -183,7 +216,7 @@
 /* ─── FEATURED ZONE (middle) ─── */
 .featured {
   background: #FFFFFF;
-  padding: 16px 22px 14px;
+  padding: 12px 18px 10px;
   border-left: 0.5px solid rgba(12, 68, 124, 0.12);
   display: flex;
   flex-direction: column;
@@ -234,16 +267,16 @@
   animation: ftp-fade-up 0.4s 0.5s both;
 }
 
-/* Headline row: 1.43 + billion + growth + global rank callout */
+/* Headline row */
 .headlineRow {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 .headlineMajor {
   font-family: var(--font-serif);
-  font-size: 80px;
+  font-size: 64px;
   font-weight: 500;
   line-height: 0.95;
   color: #0C447C;
@@ -257,7 +290,7 @@
 }
 .headlineMinor {
   font-family: var(--font-serif);
-  font-size: 28px;
+  font-size: 22px;
   font-style: italic;
   color: rgba(12, 68, 124, 0.65);
   line-height: 1;
@@ -299,7 +332,7 @@
 }
 .rankValue {
   font-family: var(--font-serif);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 500;
   color: #0C447C;
   line-height: 1;
@@ -312,17 +345,15 @@
   margin-top: 1px;
 }
 
-/* Description with dashed bottom border */
 .featuredDesc {
   font-size: 11px;
   color: rgba(12, 68, 124, 0.65);
-  margin: 8px 0 10px;
+  margin: 4px 0 4px;
   line-height: 1.4;
-  padding-bottom: 8px;
+  padding-bottom: 5px;
   border-bottom: 0.5px dashed rgba(12, 68, 124, 0.18);
 }
 
-/* 4-cell grid */
 .featuredGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -363,13 +394,12 @@
   margin-top: 2px;
 }
 
-/* Bottom strip: sources + open module link */
 .featuredBottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 5px;
+  padding-top: 5px;
   border-top: 0.5px dashed rgba(12, 68, 124, 0.18);
   font-size: 10px;
 }
@@ -391,129 +421,123 @@
   transform: translateX(2px);
 }
 
-/* ─── RIGHT STACK (300px, 3 cards) ─── */
-.rightStack {
+/* ─── RIGHT COLUMN — World Rank + Latest Updates ─── */
+.rightColumn {
   display: flex;
   flex-direction: column;
   border-left: 0.5px solid rgba(12, 68, 124, 0.12);
 }
 .rightCard {
   background: #FFFFFF;
-  padding: 12px 16px;
+  padding: 11px 13px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition: background 200ms;
 }
 .rightCard:not(:last-child) {
   border-bottom: 0.5px solid rgba(12, 68, 124, 0.12);
 }
-.rightCard:hover {
-  background: rgba(30, 95, 139, 0.03);
-}
+
 .rightCardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-}
-.rightCardHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.rightCardIcon {
-  width: 22px;
-  height: 22px;
-  border: 1px solid rgba(12, 68, 124, 0.3);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
 }
 .rightCardTitle {
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   font-weight: 500;
   color: #042C53;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
 }
-.rightCardLivePill {
-  background: #EAF3DE;
-  color: #27500A;
-  padding: 2px 7px;
-  border-radius: 3px;
+.rightCardIcon {
+  font-size: 11px;
+  opacity: 0.4;
+  color: rgba(12, 68, 124, 0.4);
+}
+.rightCardLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-mono);
   font-size: 9px;
-  letter-spacing: 0.12em;
+  color: #3B6D11;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+.rightCardLiveBadge::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: #3B6D11;
+  border-radius: 50%;
+  animation: ftp-pulse 2s ease-in-out infinite;
+}
+
+.rightCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 7px;
+}
+.rightCardListItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.rightCardListItemLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.rightCardListItemRank {
+  color: #0C447C;
+  font-weight: 500;
+  min-width: 22px;
+}
+.rightCardListItemLabel {
+  color: rgba(12, 68, 124, 0.75);
+}
+.rightCardListItemValue {
+  color: #042C53;
   font-weight: 500;
 }
-.rightCardValueRow {
+
+.rightCardListUpdate {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-top: 6px;
-}
-.rightCardValue {
-  font-family: var(--font-serif);
-  font-size: 36px;
-  font-weight: 500;
-  color: #0C447C;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.rightCardValueUnit {
-  font-size: 22px;
-  color: rgba(12, 68, 124, 0.6);
-}
-.rightCardSecondaryPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 7px;
-  background: rgba(59, 109, 17, 0.1);
-  border: 0.5px solid rgba(59, 109, 17, 0.4);
-  border-radius: 4px;
-}
-.rightCardSecondaryPillArrow {
-  color: #3B6D11;
-  font-size: 9px;
-  animation: ftp-pulse-up 2s ease-in-out infinite;
-}
-.rightCardSecondaryPillValue {
   font-family: var(--font-mono);
-  font-size: 9px;
-  color: #173404;
-  font-weight: 500;
+  font-size: 10px;
 }
-.rightCardSecondaryLabel {
-  font-family: var(--font-mono);
-  font-size: 9px;
+.rightCardListUpdateTime {
   color: rgba(12, 68, 124, 0.55);
-  align-self: flex-end;
-  padding-bottom: 4px;
+  min-width: 48px;
 }
-.rightCardSubGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 9px;
-}
-.rightCardSubItem {
-  font-family: var(--font-mono);
-  color: rgba(12, 68, 124, 0.65);
-}
-.rightCardSubItem .label {
-  opacity: 0.7;
-}
-.rightCardSubItem .value {
+.rightCardListUpdateLabel {
   color: #042C53;
   font-weight: 500;
-  margin-left: 4px;
+}
+
+.rightCardLink {
+  font-family: var(--font-mono);
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 10px;
+  color: #1E5F8B;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform 200ms, color 200ms;
+}
+.rightCardLink:hover {
+  color: #0C447C;
+  transform: translateX(2px);
 }
 
 /* ─── Compass watermark in identity zone ─── */
@@ -544,28 +568,6 @@
   animation: ftp-fade-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 }
 
-.visible .directoryRow:nth-child(1) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
-}
-.visible .directoryRow:nth-child(2) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.36s both;
-}
-.visible .directoryRow:nth-child(3) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.42s both;
-}
-.visible .directoryRow:nth-child(4) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.48s both;
-}
-.visible .directoryRow:nth-child(5) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.54s both;
-}
-.visible .directoryRow:nth-child(6) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
-}
-.visible .directoryRow:nth-child(7) {
-  animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.66s both;
-}
-
 .visible .featuredCell:nth-child(1) {
   animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.45s both;
 }
@@ -579,17 +581,15 @@
   animation: ftp-fade-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both;
 }
 
-.visible .rightCard:nth-child(1) {
-  animation: ftp-fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
-}
-.visible .rightCard:nth-child(2) {
-  animation: ftp-fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
-}
-.visible .rightCard:nth-child(3) {
-  animation: ftp-fade-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
-}
-
 /* ─── KEYFRAMES ─── */
+@keyframes ftp-directory-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-204px);
+  }
+}
 @keyframes ftp-fade-up {
   from {
     opacity: 0;
@@ -642,11 +642,10 @@
   .sectionLabelDot,
   .growthArrow,
   .directoryRowFeaturedTag,
-  .rightCardSecondaryPillArrow,
+  .directoryTrack,
+  .rightCardLiveBadge::before,
   .visible .layout > *,
-  .visible .directoryRow,
   .visible .featuredCell,
-  .visible .rightCard,
   .livePill {
     animation: none !important;
   }
@@ -656,11 +655,11 @@
   }
 }
 
-/* ─── Mobile collapse below 768px (preserve readability) ─── */
+/* ─── Mobile collapse below 768px ─── */
 @media (max-width: 768px) {
   .section {
     height: auto;
-    min-height: 380px;
+    min-height: 320px;
   }
   .layout {
     grid-template-columns: 1fr;
@@ -670,7 +669,7 @@
     border-left: none;
     border-top: 0.5px solid rgba(12, 68, 124, 0.12);
   }
-  .rightStack {
+  .rightColumn {
     border-left: none;
     border-top: 0.5px solid rgba(12, 68, 124, 0.12);
   }
@@ -678,6 +677,6 @@
     grid-template-columns: repeat(2, 1fr);
   }
   .headlineMajor {
-    font-size: 56px;
+    font-size: 48px;
   }
 }
