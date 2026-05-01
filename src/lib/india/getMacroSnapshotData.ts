@@ -35,11 +35,14 @@ export type MacroModuleRef = {
   slug: string;
   title: string;
   status: IndiaModuleDef["status"];
+  displayOrder: number;
 };
 
 export type MacroSnapshotData = {
   superCategory: (typeof INDIA_SUPER_CATEGORIES)[number];
   modules: MacroModuleRef[];
+  /** Module metadata indexed by slug, for O(1) directory-row title lookup. */
+  moduleBySlug: Record<string, MacroModuleRef>;
   liveCount: number;
   totalCount: number;
   indicatorByKey: Record<string, MacroIndicator>;
@@ -118,9 +121,21 @@ export async function getMacroSnapshotData(): Promise<MacroSnapshotData> {
           select: { startedAt: true },
         });
 
+  const modules: MacroModuleRef[] = macroModules.map((m) => ({
+    slug: m.slug,
+    title: m.title,
+    status: m.status,
+    displayOrder: m.displayOrder,
+  }));
+
+  const moduleBySlug: Record<string, MacroModuleRef> = Object.fromEntries(
+    modules.map((m) => [m.slug, m]),
+  );
+
   return {
     superCategory,
-    modules: macroModules.map((m) => ({ slug: m.slug, title: m.title, status: m.status })),
+    modules,
+    moduleBySlug,
     liveCount: macroModules.filter((m) => m.status === "live").length,
     totalCount: macroModules.length,
     indicatorByKey,
