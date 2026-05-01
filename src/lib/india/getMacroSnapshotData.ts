@@ -15,12 +15,8 @@ import { prisma } from "@/lib/db";
 import { INDIA_SUPER_CATEGORIES } from "./india-super-categories";
 import { INDIA_MODULES, type IndiaModuleDef } from "./india-modules";
 import {
-  MACRO_HEADLINE,
-  MACRO_GROWTH,
-  MACRO_PRIMARY,
-  MACRO_SECONDARY,
+  allMacroRefs,
   indicatorKey,
-  type MetricRef,
 } from "@/components/india/sections/IndiaAtGlance/metrics";
 
 const MACRO_SLUG = "macro-snapshot";
@@ -68,12 +64,9 @@ export async function getMacroSnapshotData(): Promise<MacroSnapshotData> {
   );
 
   // Build the canonical list of (moduleSlug, metricKey) pairs to load.
-  const wantedRefs: MetricRef[] = [
-    MACRO_HEADLINE,
-    MACRO_GROWTH,
-    ...MACRO_PRIMARY,
-    ...MACRO_SECONDARY.flatMap((s) => (s.companion ? [s, s.companion] : [s])),
-  ];
+  // The walk is owned by metrics.ts so the fetcher stays oblivious to
+  // which slots the v4 layout exposes.
+  const wantedRefs = allMacroRefs();
 
   const rows = await prisma.indiaIndicator.findMany({
     where: {
