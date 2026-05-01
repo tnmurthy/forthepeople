@@ -42,9 +42,10 @@ export function NationalIdentityGrid() {
         display: "grid",
         gridTemplateColumns: "repeat(6, 1fr)",
         gap: "1px",
-        // Saffron-tinted gap + border for the heritage palette
-        background: "rgba(186, 117, 23, 0.30)",
-        border: "0.5px solid rgba(186, 117, 23, 0.45)",
+        // Peacock-blue gap + border (Step 2: saffron retired from hero card,
+        // tricolor stripe is the only saffron source now).
+        background: "rgba(30, 95, 139, 0.30)",
+        border: "0.5px solid rgba(30, 95, 139, 0.45)",
         borderRadius: "8px",
         overflow: "hidden",
       }}
