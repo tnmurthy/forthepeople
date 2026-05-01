@@ -30,8 +30,8 @@ function BranchBorder({ flip = false }: { flip?: boolean }) {
       viewBox="0 0 700 28"
       preserveAspectRatio="none"
     >
-      <path d={BRANCH_PATH} fill="none" stroke="#3B6D11" strokeWidth="0.8" opacity="0.55" />
-      <g fill="#5A8F2E" opacity="0.55">
+      <path d={BRANCH_PATH} fill="none" stroke="#3B6D11" strokeWidth="0.8" opacity="0.72" />
+      <g fill="#5A8F2E" opacity="0.72">
         <ellipse cx="80" cy="18" rx="6" ry="3" transform="rotate(28 80 18)" />
         <ellipse cx="180" cy="10" rx="5" ry="2.5" transform="rotate(-22 180 10)" />
         <ellipse cx="280" cy="18" rx="6" ry="3" transform="rotate(28 280 18)" />
@@ -40,7 +40,7 @@ function BranchBorder({ flip = false }: { flip?: boolean }) {
         <ellipse cx="580" cy="10" rx="5" ry="2.5" transform="rotate(-22 580 10)" />
         <ellipse cx="660" cy="18" rx="6" ry="3" transform="rotate(28 660 18)" />
       </g>
-      <g fill="#173404" opacity="0.65">
+      <g fill="#173404" opacity="0.80">
         <circle cx="40" cy="14" r="1.5" />
         <circle cx="140" cy="14" r="1.5" />
         <circle cx="240" cy="14" r="1.5" />
@@ -69,7 +69,7 @@ export function WildlifeForestsDecoration() {
           width: 70,
           height: 110,
           pointerEvents: "none",
-          opacity: 0.3,
+          opacity: 0.5,
           zIndex: 0,
         }}
         viewBox="0 0 70 110"
