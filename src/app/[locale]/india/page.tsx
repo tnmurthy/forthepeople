@@ -21,6 +21,8 @@ import { IndiaAtGlanceSection } from "@/components/india/sections/IndiaAtGlance"
 import { KnowAboutIndiaSection } from "@/components/india/sections/KnowAboutIndia";
 import { LivingStandardsSection } from "@/components/india/sections/LivingStandards";
 import { WildlifeForestsSection } from "@/components/india/sections/WildlifeForests";
+import { AgricultureLivestockSection } from "@/components/india/sections/AgricultureLivestock";
+import { NaturalResourcesEnergySection } from "@/components/india/sections/NaturalResourcesEnergy";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
@@ -161,6 +163,16 @@ export default async function IndiaRoute({
               // with a STATIC directory (3 modules, no marquee).
               // Outer <section> declares data-tint-id="wildlife" itself.
               return <WildlifeForestsSection key={sc.slug} locale={locale} />;
+            }
+            if (sc.slug === "agriculture-livestock") {
+              // Step 9: agriculture-livestock — amber palette, 5-row marquee.
+              return <AgricultureLivestockSection key={sc.slug} locale={locale} />;
+            }
+            if (sc.slug === "natural-resources-energy") {
+              // Step 9: natural-resources-energy — oil-teal palette, 4-row marquee.
+              // (After Step 9 commit 0 the energy-power + energy-renewables
+              // modules moved here from infrastructure.)
+              return <NaturalResourcesEnergySection key={sc.slug} locale={locale} />;
             }
             return (
               <div
