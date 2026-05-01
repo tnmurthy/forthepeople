@@ -17,6 +17,7 @@ import { LivingStandardsDecoration } from "./LivingStandardsDecoration";
 import { AgricultureDecoration } from "./AgricultureDecoration";
 import { NaturalResourcesDecoration } from "./NaturalResourcesDecoration";
 import { InfrastructureDecoration } from "./InfrastructureDecoration";
+import { GovernanceDecoration } from "./GovernanceDecoration";
 
 export const BAND_DECORATIONS: Record<string, React.FC | undefined> = {
   "wildlife-forests": WildlifeForestsDecoration,
@@ -26,6 +27,7 @@ export const BAND_DECORATIONS: Record<string, React.FC | undefined> = {
   "agriculture-livestock": AgricultureDecoration,
   "natural-resources-energy": NaturalResourcesDecoration,
   infrastructure: InfrastructureDecoration,
+  governance: GovernanceDecoration,
 };
 
 export function getBandDecoration(slug: string): React.FC | undefined {

@@ -176,6 +176,10 @@ const BAND_STYLES: Record<string, { bg: string; border: string }> = {
     bg: "linear-gradient(180deg, #F4E8D0 0%, #ECDDB8 100%)",
     border: "1px solid rgba(186, 117, 23, 0.32)",
   },
+  governance: {
+    bg: "linear-gradient(180deg, #ECE9F4 0%, #DFD9EC 100%)",
+    border: "1px solid rgba(60, 52, 137, 0.30)",
+  },
 };
 
 const ACCENT_RGB_TUPLE: Record<IndiaAccentColorKey, string> = {
