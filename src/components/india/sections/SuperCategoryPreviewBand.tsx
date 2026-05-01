@@ -548,20 +548,31 @@ export function SuperCategoryPreviewBand({
 
   // Per-super-category thematic decoration (file 48 §Section 2.3 GAP 4).
   const Decoration = getBandDecoration(superCategory.slug);
+  const isWildlife = superCategory.slug === "wildlife-forests";
 
   return (
     <section
-      className="band-root"
+      className={`band-root ${isWildlife ? "band-wildlife" : ""}`}
       style={{
         position: "relative",
         display: "grid",
         gridTemplateColumns: "320px 1fr",
         borderRadius: "var(--border-radius-lg)",
         overflow: "hidden",
-        border: "0.5px solid var(--color-border-tertiary)",
+        border: isWildlife
+          ? "1px solid rgba(90, 143, 46, 0.30)"
+          : "0.5px solid var(--color-border-tertiary)",
         minHeight: "320px",
         marginBottom: "1.5rem",
-        background: "var(--color-surface)",
+        // Wildlife band: forest-green linear-gradient backdrop (the modules
+        // zone shows through this; identity zone overlays its own gradient).
+        // Other bands keep the neutral surface color.
+        background: isWildlife
+          ? "linear-gradient(180deg, #F4F8EA 0%, #ECF2DD 100%)"
+          : "var(--color-surface)",
+        // Branch borders need 24px of breathing room top + bottom on wildlife.
+        paddingTop: isWildlife ? "24px" : undefined,
+        paddingBottom: isWildlife ? "24px" : undefined,
         opacity: 0,
         transform: "translateY(8px)",
         animation: "band-enter 800ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
@@ -903,6 +914,18 @@ export function SuperCategoryPreviewBand({
         }
         .band-table-row:hover {
           background: ${accent.hex}0A;
+        }
+        /* Wildlife & Forests band — forest-green hover lift on cards.
+           File 48 §Section 2.3 GAP 4 Step 4C. */
+        .band-wildlife .band-featured-card,
+        .band-wildlife .band-stacked-card {
+          transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
+        }
+        .band-wildlife .band-featured-card:hover,
+        .band-wildlife .band-stacked-card:hover {
+          transform: translateY(-2px);
+          border-color: rgba(90, 143, 46, 0.7) !important;
+          box-shadow: 0 4px 14px rgba(90, 143, 46, 0.12);
         }
       `}</style>
     </section>
