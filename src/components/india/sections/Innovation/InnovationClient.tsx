@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * v1 InnovationClient — Section 09. Mirrors Infrastructure
- * structure with the COPPER palette and Rocket watermark.
+ * v1 InnovationClient. Mirrors the Infrastructure band structure
+ * with the COPPER palette and Rocket watermark.
  */
 
 import Link from "next/link";
@@ -26,6 +26,7 @@ import {
   DIGITAL_STACK,
   DIGITAL_STACK_FOOTER_LABEL,
   HERO_ANIMATION_DURATION_MS,
+  ROW_ANIMATION_DURATION_MS,
   INTERSECTION_THRESHOLD,
   INTERSECTION_ROOT_MARGIN,
   indicatorKey,
@@ -52,7 +53,7 @@ const VisibleCtx = createContext(false);
 function CountUpValue({
   value,
   decimals,
-  duration = 1200,
+  duration,
 }: {
   value: number;
   decimals: number;
@@ -63,7 +64,7 @@ function CountUpValue({
     <CountUpNumber
       value={value}
       decimals={decimals}
-      duration={duration}
+      duration={duration ?? ROW_ANIMATION_DURATION_MS}
       visible={visible}
     />
   );

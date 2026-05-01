@@ -186,8 +186,10 @@ export const CULTURAL_OUTPUT: CulturalOutputEntry[] = [
 
 export const CULTURAL_OUTPUT_FOOTER_LABEL = "All cultural data →";
 
-// ── Step-12 timing constants ──
+// ── Timing constants (kept here so the .tsx is value-free) ──
 export const HERO_ANIMATION_DURATION_MS = 1500;
+/** Default per-row CountUp duration. */
+export const ROW_ANIMATION_DURATION_MS = 1200;
 export const INTERSECTION_THRESHOLD = 0.15;
 export const INTERSECTION_ROOT_MARGIN = "0px 0px -10% 0px";
 

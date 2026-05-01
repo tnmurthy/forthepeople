@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * v1 CultureClient — Section 10. Mirrors WildlifeForests STATIC
- * directory pattern (5 modules → no marquee). ROSE palette,
- * Theater watermark.
+ * v1 CultureClient. Mirrors the WildlifeForests STATIC directory
+ * pattern (no marquee for ≤5 modules). ROSE palette, Theater
+ * watermark.
  */
 
 import Link from "next/link";
@@ -27,6 +27,7 @@ import {
   CULTURAL_OUTPUT,
   CULTURAL_OUTPUT_FOOTER_LABEL,
   HERO_ANIMATION_DURATION_MS,
+  ROW_ANIMATION_DURATION_MS,
   INTERSECTION_THRESHOLD,
   INTERSECTION_ROOT_MARGIN,
   indicatorKey,
@@ -53,7 +54,7 @@ const VisibleCtx = createContext(false);
 function CountUpValue({
   value,
   decimals,
-  duration = 1200,
+  duration,
 }: {
   value: number;
   decimals: number;
@@ -64,7 +65,7 @@ function CountUpValue({
     <CountUpNumber
       value={value}
       decimals={decimals}
-      duration={duration}
+      duration={duration ?? ROW_ANIMATION_DURATION_MS}
       visible={visible}
     />
   );
@@ -358,7 +359,7 @@ export function CultureClient({ data, locale }: Props) {
             />
           </div>
 
-          {/* MIDDLE — Featured (UNESCO & ASI Heritage) */}
+          {/* MIDDLE — Featured zone */}
           <div className={styles.featured}>
             <div className={styles.featuredHeader}>
               <div className={styles.featuredHeaderLeft}>
