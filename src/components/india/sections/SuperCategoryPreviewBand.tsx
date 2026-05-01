@@ -152,6 +152,10 @@ const BAND_STYLES: Record<string, { bg: string; border: string }> = {
     bg: "linear-gradient(180deg, #EAF1FA 0%, #DEEAF6 100%)",
     border: "1px solid rgba(24, 95, 165, 0.30)",
   },
+  "know-india": {
+    bg: "linear-gradient(180deg, #EFEDF7 0%, #E5E2F2 100%)",
+    border: "1px solid rgba(83, 74, 183, 0.28)",
+  },
   "wildlife-forests": {
     bg: "linear-gradient(180deg, #F4F8EA 0%, #ECF2DD 100%)",
     border: "1px solid rgba(90, 143, 46, 0.30)",

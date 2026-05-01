@@ -12,10 +12,12 @@
 import * as React from "react";
 import { WildlifeForestsDecoration } from "./WildlifeForestsDecoration";
 import { MacroSnapshotDecoration } from "./MacroSnapshotDecoration";
+import { KnowIndiaDecoration } from "./KnowIndiaDecoration";
 
 export const BAND_DECORATIONS: Record<string, React.FC | undefined> = {
   "wildlife-forests": WildlifeForestsDecoration,
   "macro-snapshot": MacroSnapshotDecoration,
+  "know-india": KnowIndiaDecoration,
 };
 
 export function getBandDecoration(slug: string): React.FC | undefined {
