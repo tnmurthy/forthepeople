@@ -21,6 +21,10 @@ import { BookOpenText, ChevronRight } from "lucide-react";
 import { LanguageRotator } from "@/components/india/primitives/LanguageRotator";
 import { NationalIdentityGrid } from "@/components/india/primitives/NationalIdentityGrid";
 import { QuickAccessStrip } from "@/components/india/primitives/QuickAccessStrip";
+import {
+  HeroJaaliTopRight,
+  HeroJaaliBottomLeft,
+} from "@/components/india/primitives/decorations/HeroJaali";
 
 export interface IndiaHeroDict {
   eyebrow: string;
@@ -61,6 +65,9 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
           `,
         }}
       >
+        <HeroJaaliTopRight />
+        <HeroJaaliBottomLeft />
+
         {/* 4px vertical tricolor stripe on left edge — fades in over 400ms */}
         <span
           aria-hidden
