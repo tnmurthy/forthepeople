@@ -49,7 +49,7 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
       <div
         style={{
           position: "relative",
-          padding: "14px 18px 14px 22px",
+          padding: "18px 22px 18px 26px",
           borderRadius: "var(--border-radius-lg)",
           overflow: "hidden",
           border: "0.5px solid rgba(0, 0, 0, 0.08)",
@@ -118,11 +118,11 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
             >
               <h1
                 style={{
-                  fontFamily: "var(--font-jakarta)",
-                  fontSize: "34px",
+                  fontFamily: "var(--font-serif-display)",
+                  fontSize: "52px",
                   fontWeight: 500,
                   lineHeight: 1,
-                  letterSpacing: "-0.025em",
+                  letterSpacing: "-0.015em",
                   margin: 0,
                 }}
                 className="india-hero-headline"
@@ -145,7 +145,8 @@ export function IndiaHero({ locale, dict }: IndiaHeroProps) {
                 style={{
                   flex: 1,
                   minWidth: 0,
-                  fontSize: "13.5px",
+                  fontFamily: "var(--font-serif-display)",
+                  fontSize: "15px",
                   fontStyle: "italic",
                   color: "var(--color-text-secondary)",
                 }}
