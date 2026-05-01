@@ -21,6 +21,7 @@ import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressB
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
+import { MughalArchDivider } from "@/components/india/primitives/MughalArchDivider";
 import {
   TricolorBadgesPanel,
   TricolorBadgesFooter,
@@ -131,11 +132,17 @@ export default async function IndiaRoute({
           <TricolorBadgesFooter locale={locale} />
         </div>
 
+        <MughalArchDivider />
+
         <div style={{ marginTop: "1rem" }}>
           <IndiaKpiStrip />
         </div>
 
+        <MughalArchDivider />
+
         <IndiaInTheWorldCard />
+
+        <MughalArchDivider />
 
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (
