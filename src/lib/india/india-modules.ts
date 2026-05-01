@@ -649,7 +649,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-power",
     category: "energy",
-    superCategory: "infrastructure",
+    superCategory: "natural-resources-energy",
     contentType: "data",
     subGroup: "POWER",
     title: "Power Generation",
@@ -671,7 +671,7 @@ export const INDIA_MODULES: IndiaModuleDef[] = [
   {
     slug: "energy-renewables",
     category: "energy",
-    superCategory: "infrastructure",
+    superCategory: "natural-resources-energy",
     contentType: "data",
     subGroup: "POWER",
     title: "Renewable Energy",
