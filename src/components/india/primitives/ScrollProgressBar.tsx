@@ -32,10 +32,10 @@ export function ScrollProgressBar() {
       style={{
         position: "sticky",
         // Stacks below the global sticky header (56px) and the sticky breadcrumb
-        // (~44px). z-index sits one below the breadcrumb's so the bar tucks under it.
+        // (~36px). z-index sits one below the breadcrumb's so the bar tucks under it.
         top: "100px",
         width: "100%",
-        height: "3px",
+        height: "5px",
         background: "rgba(0,0,0,0.04)",
         zIndex: 39,
         overflow: "hidden",
@@ -50,8 +50,10 @@ export function ScrollProgressBar() {
         style={{
           height: "100%",
           width: `${progress * 100}%`,
+          // 800-stop saturated colors land harder against the off-white background
+          // than the 700-stop tints did at 3px height.
           background:
-            "linear-gradient(90deg, var(--accent-blue-700) 0%, var(--accent-indigo-700) 25%, var(--accent-forest-green-700) 50%, var(--accent-amber-700) 75%, var(--accent-pink-700) 100%)",
+            "linear-gradient(90deg, #082F58 0%, #26215C 25%, #27500A 50%, #633806 75%, #4D182A 100%)",
           transition: "width 80ms linear",
         }}
       />

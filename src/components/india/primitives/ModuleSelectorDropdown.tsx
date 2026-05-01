@@ -221,12 +221,12 @@ export function ModuleSelectorDropdown({
           background: "var(--color-background-secondary)",
           border: "0.5px solid var(--color-border-tertiary)",
           borderRadius: "999px",
-          padding: "3px 10px 3px 12px",
-          fontSize: "11px",
+          padding: "4px 10px",
+          fontSize: "12px",
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
-          gap: "6px",
+          gap: "5px",
           color: "var(--color-text-secondary)",
         }}
       >

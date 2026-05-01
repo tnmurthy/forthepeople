@@ -54,10 +54,10 @@ export function IndiaBreadcrumb({
         borderBottom: "0.5px solid var(--color-border-tertiary)",
         display: "flex",
         alignItems: "center",
-        gap: "10px",
-        fontSize: "14px",
+        gap: "8px",
+        fontSize: "13px",
         color: "var(--color-text-tertiary)",
-        padding: "12px 16px",
+        padding: "8px 14px",
       }}
     >
       <Link
@@ -67,30 +67,30 @@ export function IndiaBreadcrumb({
           textDecoration: "none",
           display: "flex",
           alignItems: "center",
-          gap: "5px",
+          gap: "4px",
         }}
       >
-        <Home size={13} />
+        <Home size={12} />
         {t.home}
       </Link>
 
-      <ChevronRight size={13} style={{ opacity: 0.4 }} />
+      <ChevronRight size={12} style={{ opacity: 0.4 }} />
 
       <span
         style={{
           color: "var(--color-text-primary)",
           fontWeight: 500,
-          fontSize: "15px",
+          fontSize: "13px",
           display: "inline-flex",
           alignItems: "center",
-          gap: "5px",
+          gap: "4px",
         }}
       >
-        <MapPin size={13} style={{ opacity: 0.7 }} />
+        <MapPin size={12} style={{ opacity: 0.7 }} />
         {t.india}
       </span>
 
-      <ChevronRight size={13} style={{ opacity: 0.4 }} />
+      <ChevronRight size={12} style={{ opacity: 0.4 }} />
 
       <ModuleSelectorDropdown
         locale={locale}
