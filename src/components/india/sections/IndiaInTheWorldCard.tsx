@@ -19,12 +19,16 @@
 
 import * as React from "react";
 import {
+  Award,
   Film,
   Globe2,
   IndianRupee,
+  Mail,
+  Milk,
   Moon,
   Pill,
   Shield,
+  Train,
   Trophy,
   Users,
   Zap,
@@ -48,7 +52,11 @@ const rankings = (rawRankings as { rankings: Ranking[] }).rankings;
 
 const ICON_BY_CATEGORY: Record<string, LucideIcon> = {
   population: Users,
+  democracy: Award,
   films: Film,
+  postal: Mail,
+  milk: Milk,
+  railway: Train,
   internet: Globe2,
   pharma: Pill,
   military: Shield,
@@ -271,16 +279,15 @@ function RankRow({ ranking }: { ranking: Ranking }) {
 }
 
 const DEFAULT_VISIBLE_COUNT = 8;
-const TOTAL_TRACKED = 24;
 
 export function IndiaInTheWorldCard() {
   const [expanded, setExpanded] = React.useState(false);
-  const visibleRankings = expanded
-    ? rankings
-    : rankings.slice(0, DEFAULT_VISIBLE_COUNT);
+  const total = rankings.length;
+  const collapsedCount = Math.min(DEFAULT_VISIBLE_COUNT, total);
+  const visibleRankings = expanded ? rankings : rankings.slice(0, collapsedCount);
   const footerCount = expanded
-    ? `All ${TOTAL_TRACKED} tracked rankings shown`
-    : `${Math.min(DEFAULT_VISIBLE_COUNT, rankings.length)} of ${TOTAL_TRACKED} tracked rankings shown`;
+    ? `All ${total} ranks shown`
+    : `${collapsedCount} of ${total} ranks shown`;
   const toggleLabel = expanded ? "Show fewer ›" : "View all rankings ›";
 
   return (
