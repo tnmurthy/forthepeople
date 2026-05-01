@@ -98,28 +98,24 @@ function renderDirectoryDisplay(
 ): React.ReactNode {
   switch (format) {
     case "count_with_suffix":
-      // Constitution articles: "470+"
       return (
         <>
           <CountUpValue value={primary} decimals={0} />+
         </>
       );
     case "year_span":
-      // History: "5,000 years"
       return (
         <>
           <CountUpValue value={primary} decimals={0} /> yrs
         </>
       );
     case "million_km2":
-      // Geography: "3.29M km²"
       return (
         <>
           <CountUpValue value={primary} decimals={2} />M km²
         </>
       );
     case "lok_rajya":
-      // Parliament: "543 + 245"
       if (companion === undefined) {
         return <CountUpValue value={primary} decimals={0} />;
       }
