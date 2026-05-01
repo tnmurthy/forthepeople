@@ -38,6 +38,14 @@ export type MacroModuleRef = {
   displayOrder: number;
 };
 
+export type LatestUpdate = {
+  moduleSlug: string;
+  label: string;
+  value: number | null;
+  unit: string;
+  asOfDate: Date;
+};
+
 export type MacroSnapshotData = {
   superCategory: (typeof INDIA_SUPER_CATEGORIES)[number];
   modules: MacroModuleRef[];
@@ -49,6 +57,8 @@ export type MacroSnapshotData = {
   sources: string[];
   lastRefreshAt: Date | null;
   totalSuperCategories: number;
+  /** Most-recent indicator updates across the macro modules (live data feed). */
+  latestUpdates: LatestUpdate[];
 };
 
 export async function getMacroSnapshotData(): Promise<MacroSnapshotData> {
@@ -132,6 +142,33 @@ export async function getMacroSnapshotData(): Promise<MacroSnapshotData> {
     modules.map((m) => [m.slug, m]),
   );
 
+  // Most-recent indicator activity across the macro modules. Powers the
+  // "Latest updates" right-column card (live data feed).
+  const latestUpdatesRaw =
+    moduleSlugs.length === 0
+      ? []
+      : await prisma.indiaIndicator.findMany({
+          where: { moduleSlug: { in: moduleSlugs } },
+          orderBy: { asOfDate: "desc" },
+          take: 4,
+          select: {
+            moduleSlug: true,
+            metricKey: true,
+            metricLabel: true,
+            numericValue: true,
+            unit: true,
+            asOfDate: true,
+          },
+        });
+
+  const latestUpdates: LatestUpdate[] = latestUpdatesRaw.map((u) => ({
+    moduleSlug: u.moduleSlug,
+    label: u.metricLabel ?? u.metricKey,
+    value: u.numericValue == null ? null : Number(u.numericValue),
+    unit: u.unit ?? "",
+    asOfDate: u.asOfDate,
+  }));
+
   return {
     superCategory,
     modules,
@@ -142,5 +179,6 @@ export async function getMacroSnapshotData(): Promise<MacroSnapshotData> {
     sources,
     lastRefreshAt: lastRun?.startedAt ?? null,
     totalSuperCategories: INDIA_SUPER_CATEGORIES.length,
+    latestUpdates,
   };
 }
