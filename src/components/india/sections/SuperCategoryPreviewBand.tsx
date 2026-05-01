@@ -164,6 +164,10 @@ const BAND_STYLES: Record<string, { bg: string; border: string }> = {
     bg: "linear-gradient(180deg, #F4F8EA 0%, #ECF2DD 100%)",
     border: "1px solid rgba(90, 143, 46, 0.30)",
   },
+  "agriculture-livestock": {
+    bg: "linear-gradient(180deg, #F4ECD6 0%, #ECE3C5 100%)",
+    border: "1px solid rgba(181, 138, 30, 0.32)",
+  },
 };
 
 const ACCENT_RGB_TUPLE: Record<IndiaAccentColorKey, string> = {
