@@ -17,18 +17,20 @@ interface Tint {
   color: string;
 }
 
+// File 48 §Section 2.3 GAP 3 — saturated tints (~30-50 RGB units of difference
+// between adjacent bands so the shift is visibly perceptible while scrolling).
 const TINTS: Tint[] = [
-  { id: "hero",        color: "#FFF7EC" }, // saffron warmth
-  { id: "macro",       color: "#FEFAF1" },
-  { id: "know",        color: "#F5EFE3" }, // earthen
-  { id: "living",      color: "#ECEFEF" },
-  { id: "wildlife",    color: "#E2EFE4" }, // forest
-  { id: "agriculture", color: "#F4ECDF" }, // wheat
-  { id: "natural",     color: "#ECEFF6" }, // peacock
-  { id: "infra",       color: "#F4EAD8" },
-  { id: "governance",  color: "#ECEFF6" },
-  { id: "innovation",  color: "#F2EAE2" },
-  { id: "culture",     color: "#F4ECDF" }, // terracotta
+  { id: "hero",        color: "#FFF0D9" }, // saffron warmth
+  { id: "macro",       color: "#E8F1FA" }, // blue dawn
+  { id: "know",        color: "#ECEAF6" }, // indigo manuscript
+  { id: "living",      color: "#DEF0EA" }, // teal lotus
+  { id: "wildlife",    color: "#DCEED6" }, // forest deep
+  { id: "agriculture", color: "#F4EAD0" }, // wheat field
+  { id: "natural",     color: "#DEE3E8" }, // slate stone
+  { id: "infra",       color: "#FAEAD2" }, // amber arch
+  { id: "governance",  color: "#ECE8F4" }, // purple pillar
+  { id: "innovation",  color: "#FAE6DE" }, // coral spark
+  { id: "culture",     color: "#F4DCE6" }, // rose kalamkari
 ];
 
 export function ScrollColorShift() {
