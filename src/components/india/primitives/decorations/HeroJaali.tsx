@@ -29,14 +29,14 @@ export function HeroJaaliTopRight() {
           <path
             d="M11,0 L22,5.5 L22,16.5 L11,22 L0,16.5 L0,5.5 Z"
             fill="none"
-            stroke="#BA7517"
+            stroke="#1E5F8B"
             strokeWidth="0.7"
           />
-          <circle cx="11" cy="11" r="2.8" fill="none" stroke="#BA7517" strokeWidth="0.7" />
+          <circle cx="11" cy="11" r="2.8" fill="none" stroke="#1E5F8B" strokeWidth="0.7" />
           <path
             d="M11,5.5 L14.5,8.5 L14.5,13.5 L11,16.5 L7.5,13.5 L7.5,8.5 Z"
             fill="none"
-            stroke="#BA7517"
+            stroke="#1E5F8B"
             strokeWidth="0.5"
           />
         </pattern>
