@@ -168,6 +168,10 @@ const BAND_STYLES: Record<string, { bg: string; border: string }> = {
     bg: "linear-gradient(180deg, #F4ECD6 0%, #ECE3C5 100%)",
     border: "1px solid rgba(181, 138, 30, 0.32)",
   },
+  "natural-resources-energy": {
+    bg: "linear-gradient(180deg, #E1E5E9 0%, #D5DBE0 100%)",
+    border: "1px solid rgba(74, 83, 88, 0.30)",
+  },
 };
 
 const ACCENT_RGB_TUPLE: Record<IndiaAccentColorKey, string> = {
