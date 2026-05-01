@@ -154,16 +154,64 @@ export const FEATURED_CELLS: FeaturedCell[] = [
   },
 ];
 
-// ── RIGHT STACK (3 cards) ──
+// ── WORLD RANKINGS (right column · top card) ──
+// Each entry pairs a "rank" indicator (#N) with a "value" indicator
+// that justifies why India holds that rank.
 
+export type RankFormat = "billion_people" | "trillion_usd" | "billion_usd" | "millions_people";
+
+export type RankEntry = {
+  label: string;
+  rankRef: MetricRef;
+  valueRef: MetricRef;
+  format: RankFormat;
+};
+
+export const WORLD_RANKINGS: RankEntry[] = [
+  {
+    label: "Population",
+    rankRef: { moduleSlug: "demographics-population", metricKey: "global_rank" },
+    valueRef: { moduleSlug: "demographics-population", metricKey: "population_total" },
+    format: "billion_people",
+  },
+  {
+    label: "GDP nominal",
+    rankRef: { moduleSlug: "economy-gdp", metricKey: "world_rank_gdp_nominal" },
+    valueRef: { moduleSlug: "economy-gdp", metricKey: "gdp_nominal_usd_trillion" },
+    format: "trillion_usd",
+  },
+  {
+    label: "GDP PPP",
+    rankRef: { moduleSlug: "economy-gdp", metricKey: "world_rank_gdp_ppp" },
+    valueRef: { moduleSlug: "economy-gdp", metricKey: "gdp_ppp_usd_trillion" },
+    format: "trillion_usd",
+  },
+  {
+    label: "Remittances",
+    rankRef: { moduleSlug: "economy-gdp", metricKey: "world_rank_remittances" },
+    valueRef: { moduleSlug: "economy-gdp", metricKey: "remittances_usd_billion" },
+    format: "billion_usd",
+  },
+  {
+    label: "Smartphone users",
+    rankRef: { moduleSlug: "national-snapshot", metricKey: "world_rank_smartphone_users" },
+    valueRef: { moduleSlug: "national-snapshot", metricKey: "smartphone_users_millions" },
+    format: "millions_people",
+  },
+];
+
+/** Total ranks tracked across the platform — drives the "View all N ranks →" CTA. */
+export const WORLD_RANK_TOTAL_COUNT = 12;
+
+// ── v7 back-compat shims ──
+// Kept transitionally so the v7 IndiaAtGlanceClient compiles between
+// commit 2 and commit 5 of Step 7. Removed in commit 5.
 export type RightCardSecondary =
   | { ref: MetricRef; format: "percent_growth_pill" }
   | { kind: "static_label"; text: string };
-
 export type RightCardSubStat =
   | { label: string; valueRef: MetricRef; format: "lakh_inr" | "with_unit"; staticUnit?: string }
   | { label: string; staticValue: string };
-
 export type RightCard = {
   moduleSlug: string;
   emoji: string;
@@ -172,53 +220,7 @@ export type RightCard = {
   secondary?: RightCardSecondary;
   subStats: RightCardSubStat[];
 };
-
-export const RIGHT_STACK: RightCard[] = [
-  {
-    moduleSlug: "economy-gdp",
-    emoji: "📈",
-    headline: { moduleSlug: "economy-gdp", metricKey: "gdp_nominal_usd_trillion" },
-    headlineFormat: "trillion_usd",
-    secondary: {
-      ref: { moduleSlug: "economy-gdp", metricKey: "gdp_growth_yoy" },
-      format: "percent_growth_pill",
-    },
-    subStats: [
-      {
-        label: "Per capita",
-        valueRef: { moduleSlug: "economy-gdp", metricKey: "gdp_per_capita_inr" },
-        format: "lakh_inr",
-      },
-      { label: "Source", staticValue: "IMF · FY26" },
-    ],
-  },
-  {
-    moduleSlug: "economy-inflation",
-    emoji: "🛒",
-    headline: { moduleSlug: "economy-inflation", metricKey: "cpi_inflation" },
-    headlineFormat: "percent",
-    secondary: { kind: "static_label", text: "CPI YoY" },
-    subStats: [
-      {
-        label: "RBI target",
-        valueRef: { moduleSlug: "economy-inflation", metricKey: "rbi_target_midpoint" },
-        format: "with_unit",
-        staticUnit: "% ± 2",
-      },
-      { label: "Source", staticValue: "MoSPI" },
-    ],
-  },
-  {
-    moduleSlug: "budget-union",
-    emoji: "🏛",
-    headline: { moduleSlug: "budget-union", metricKey: "total_outlay_inr_lakh_crore" },
-    headlineFormat: "lakh_crore_inr",
-    subStats: [
-      { label: "FY", staticValue: "2025–26" },
-      { label: "Source", staticValue: "MoF" },
-    ],
-  },
-];
+export const RIGHT_STACK: RightCard[] = [];
 
 // ── Editorial copy (structural strings, never numeric data) ──
 export const SECTION_LABEL = "section";
@@ -261,14 +263,8 @@ export function allMacroRefs(): MetricRef[] {
       }
     }
   }
-  for (const card of RIGHT_STACK) {
-    refs.push(card.headline);
-    if (card.secondary && "ref" in card.secondary) {
-      refs.push(card.secondary.ref);
-    }
-    for (const s of card.subStats) {
-      if ("valueRef" in s) refs.push(s.valueRef);
-    }
+  for (const entry of WORLD_RANKINGS) {
+    refs.push(entry.rankRef, entry.valueRef);
   }
   // De-dupe by composite key.
   const seen = new Set<string>();
