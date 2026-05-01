@@ -64,6 +64,7 @@ const WATERMARK_ICONS: Record<WatermarkIconKey, LucideIcon> = {
 };
 import type { IndiaModuleDef } from "@/lib/india/india-modules";
 import { CountUpNumber } from "@/components/india/primitives/CountUpNumber";
+import { getBandDecoration } from "@/components/india/primitives/decorations";
 import { SourceDot } from "@/components/india/primitives/SourceDot";
 import { formatIndiaNumber } from "@/lib/india/format-number";
 import { INDIA_SOURCES } from "@/lib/india/india-sources";
@@ -545,10 +546,14 @@ export function SuperCategoryPreviewBand({
   const secondaryKpi = stacked.find((m) => m.headlineMetric)?.headlineMetric;
   const secondaryLabel = stacked.find((m) => m.headlineMetric)?.title ?? "";
 
+  // Per-super-category thematic decoration (file 48 §Section 2.3 GAP 4).
+  const Decoration = getBandDecoration(superCategory.slug);
+
   return (
     <section
       className="band-root"
       style={{
+        position: "relative",
         display: "grid",
         gridTemplateColumns: "320px 1fr",
         borderRadius: "var(--border-radius-lg)",
@@ -563,6 +568,7 @@ export function SuperCategoryPreviewBand({
         animationDelay: `${bandIndex * 200}ms`,
       }}
     >
+      {Decoration && <Decoration />}
       {/* Identity zone */}
       <div
         style={{
