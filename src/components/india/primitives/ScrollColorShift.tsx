@@ -37,6 +37,7 @@ export function ScrollColorShift() {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const root = document.documentElement;
+    document.body.classList.add("ftp-india-tinted");
     root.style.setProperty("--ftp-page-tint", TINTS[0].color);
 
     const observer = new IntersectionObserver(
@@ -64,7 +65,11 @@ export function ScrollColorShift() {
     document.querySelectorAll<HTMLElement>("[data-tint-id]").forEach((el) =>
       observer.observe(el),
     );
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove("ftp-india-tinted");
+      root.style.removeProperty("--ftp-page-tint");
+    };
   }, []);
 
   return null;

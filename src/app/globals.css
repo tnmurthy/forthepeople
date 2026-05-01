@@ -632,9 +632,9 @@ body {
 :root {
   --ftp-page-tint: #FAFAF8;
 }
-body {
+body.ftp-india-tinted {
   background: var(--ftp-page-tint);
-  transition: background 800ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Page-entry curtain — saffron + green panels slide apart on first visit. */
