@@ -19,6 +19,8 @@ import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorld
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
 import { IndiaAtGlanceSection } from "@/components/india/sections/IndiaAtGlance";
 import { KnowAboutIndiaSection } from "@/components/india/sections/KnowAboutIndia";
+import { LivingStandardsSection } from "@/components/india/sections/LivingStandards";
+import { WildlifeForestsSection } from "@/components/india/sections/WildlifeForests";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
@@ -148,6 +150,17 @@ export default async function IndiaRoute({
               // Step 7: know-india uses its own indigo magazine-spread band.
               // Outer <section> declares data-tint-id="know" itself.
               return <KnowAboutIndiaSection key={sc.slug} locale={locale} />;
+            }
+            if (sc.slug === "living-standards") {
+              // Step 8: living-standards uses its own teal band.
+              // Outer <section> declares data-tint-id="living" itself.
+              return <LivingStandardsSection key={sc.slug} locale={locale} />;
+            }
+            if (sc.slug === "wildlife-forests") {
+              // Step 8: wildlife-forests uses its own forest-green band
+              // with a STATIC directory (3 modules, no marquee).
+              // Outer <section> declares data-tint-id="wildlife" itself.
+              return <WildlifeForestsSection key={sc.slug} locale={locale} />;
             }
             return (
               <div
