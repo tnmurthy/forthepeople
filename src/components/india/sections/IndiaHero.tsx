@@ -177,7 +177,7 @@ export function IndiaHero({ locale, freshnessLine, dict }: IndiaHeroProps) {
           </div>
 
           {/* RIGHT — Tricolor achievement badges panel */}
-          <TricolorBadgesPanel locale={locale} />
+          <TricolorBadgesPanel />
         </div>
       </div>
 
