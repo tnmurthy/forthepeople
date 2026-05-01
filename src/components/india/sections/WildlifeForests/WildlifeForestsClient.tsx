@@ -28,6 +28,7 @@ import {
   FEATURED_DESCRIPTION,
   FEATURED_CELLS,
   TOP_FOREST_STATES,
+  TOP_FOREST_STATES_FOOTER_LABEL,
   BIODIVERSITY,
   indicatorKey,
   type DirectoryRow,
@@ -257,7 +258,7 @@ function TopForestStatesCard({ data }: { data: WildlifeForestsData }) {
         ))}
       </div>
       <a href="#" className={styles.rightCardLink}>
-        All 36 states/UTs →
+        {TOP_FOREST_STATES_FOOTER_LABEL}
       </a>
     </div>
   );

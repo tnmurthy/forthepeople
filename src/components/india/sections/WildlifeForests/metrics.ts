@@ -144,6 +144,13 @@ export const TOP_FOREST_STATES: TopForestStateEntry[] = [
   { rank: 5, state: "Nagaland",  valueRef: { moduleSlug: "wildlife-forests", metricKey: "top_state_nagaland_pct" } },
 ];
 
+/**
+ * Footer link copy for the TopForestStatesCard. The "all 36" reference
+ * folds 28 states + 8 UTs (Constitutional fact) — kept as editorial
+ * config, not in component JSX.
+ */
+export const TOP_FOREST_STATES_FOOTER_LABEL = "All 36 states/UTs →";
+
 // ── BIODIVERSITY right card ──
 
 export type BiodiversityFormat = "comma_thousands" | "integer";
