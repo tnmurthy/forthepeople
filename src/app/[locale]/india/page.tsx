@@ -140,7 +140,12 @@ export default async function IndiaRoute({
 
         <IndiaInTheWorldCard />
 
-        <MughalArchDivider />
+        {/* Step 12: replace the legacy MughalArchDivider that sat between
+            the IndiaInTheWorld card and the first super-category band
+            (macro-snapshot) with a SectionDivider matching the v12
+            inter-band design. This is the 10th divider — the page now
+            has 1 hero→macro divider + 9 super-category transitions. */}
+        <SectionDivider nextSlug="macro-snapshot" />
 
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => {
