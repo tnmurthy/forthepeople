@@ -60,7 +60,10 @@
   --border-radius-md:           8px;
   --border-radius-lg:           12px;
   --font-jakarta:               var(--font-plus-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-serif:                 ui-serif, Georgia, "Times New Roman", serif;
+  /* Heritage display serif — Cormorant Garamond loaded via next/font in layout.tsx.
+     Falls back gracefully to Georgia if the Google Fonts request fails. */
+  --font-serif:                 var(--font-display), "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-serif-display:         var(--font-display), "Cormorant Garamond", Georgia, "Times New Roman", serif;
 
   /* ── Super-category accent ramps (file 47 §4.6.7) ──
      Each super-category has 700 / 800 / 900 stops used by the v3 split

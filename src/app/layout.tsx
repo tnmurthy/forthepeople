@@ -5,7 +5,13 @@
  */
 
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono, Noto_Sans_Kannada, Noto_Sans_Devanagari } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+  Noto_Sans_Kannada,
+  Noto_Sans_Devanagari,
+  Cormorant_Garamond,
+} from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import "./mobile.css";
@@ -36,6 +42,16 @@ const notoDevanagari = Noto_Sans_Devanagari({
   variable: "--font-noto-devanagari",
   subsets: ["devanagari"],
   weight: ["400", "600"],
+  display: "swap",
+});
+
+// Heritage display serif — used for the India hero title, motto, and the
+// English language name in the bilingual rotator.
+const cormorant = Cormorant_Garamond({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -211,7 +227,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakarta.variable} ${jetBrains.variable} ${notoKannada.variable} ${notoDevanagari.variable}`}
+      className={`${plusJakarta.variable} ${jetBrains.variable} ${notoKannada.variable} ${notoDevanagari.variable} ${cormorant.variable}`}
     >
       <head>
         <meta name="theme-color" content="#2563EB" />
