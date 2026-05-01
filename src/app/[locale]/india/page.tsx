@@ -22,10 +22,6 @@ import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import { MughalArchDivider } from "@/components/india/primitives/MughalArchDivider";
-import {
-  TricolorBadgesPanel,
-  TricolorBadgesFooter,
-} from "@/components/india/primitives/TricolorBadgesPanel";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
   getOrderedSuperCategories,
@@ -122,16 +118,10 @@ export default async function IndiaRoute({
           <IndiaHero locale={locale} dict={heroDict} />
         </div>
 
-        {/* Order per file 48 §Section 2.1: hero → tricolor badges (full-width
-            horizontal strip) → KPI strip → "India in the world" rankings →
-            10 super-category bands. The badges panel + KPI + rankings used
-            to live inside IndiaHero; v10 makes them siblings so the badges
-            occupy the full row instead of a 320px right column. */}
-        <div style={{ marginTop: "12px" }}>
-          <TricolorBadgesPanel />
-          <TricolorBadgesFooter locale={locale} />
-        </div>
-
+        {/* Order per file 48 §Section 2.3: hero → KPI strip → rankings card
+            → super-category bands. The TricolorBadgesPanel was retired here
+            after the 4 #1 ranks it surfaced were absorbed into the rankings
+            card; the component file remains for reuse on a future /almanac. */}
         <MughalArchDivider />
 
         <div style={{ marginTop: "1rem" }}>
