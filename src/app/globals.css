@@ -244,6 +244,19 @@
   --accent-pink-700: #993556;
   --accent-pink-800: #72243E;
   --accent-pink-900: #4D182A;
+
+  /* ── Step 4 / IndiaAtGlance magazine-spread palette ──
+     Editorial heritage palette used by the macro-snapshot band. Peacock
+     blue = MacGyver of macro accent; emerald green = growth / live;
+     cream = paper background. Kept on :root so the band's CSS module
+     can reference them via var(). */
+  --ftp-peacock-600: #1E5F8B;
+  --ftp-peacock-800: #0C447C;
+  --ftp-peacock-900: #042C53;
+  --ftp-emerald-600: #3B6D11;
+  --ftp-emerald-800: #173404;
+  --ftp-cream-50:    #FAFAF6;
+  --ftp-cream-100:   #F4F4EE;
 }
 
 /* Convenience utilities that consume the FTP card tokens. Their primary
