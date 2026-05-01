@@ -203,25 +203,6 @@ export const WORLD_RANKINGS: RankEntry[] = [
 /** Total ranks tracked across the platform — drives the "View all N ranks →" CTA. */
 export const WORLD_RANK_TOTAL_COUNT = 12;
 
-// ── v7 back-compat shims ──
-// Kept transitionally so the v7 IndiaAtGlanceClient compiles between
-// commit 2 and commit 5 of Step 7. Removed in commit 5.
-export type RightCardSecondary =
-  | { ref: MetricRef; format: "percent_growth_pill" }
-  | { kind: "static_label"; text: string };
-export type RightCardSubStat =
-  | { label: string; valueRef: MetricRef; format: "lakh_inr" | "with_unit"; staticUnit?: string }
-  | { label: string; staticValue: string };
-export type RightCard = {
-  moduleSlug: string;
-  emoji: string;
-  headline: MetricRef;
-  headlineFormat: "trillion_usd" | "percent" | "lakh_crore_inr";
-  secondary?: RightCardSecondary;
-  subStats: RightCardSubStat[];
-};
-export const RIGHT_STACK: RightCard[] = [];
-
 // ── Editorial copy (structural strings, never numeric data) ──
 export const SECTION_LABEL = "section";
 export const FEATURED_RANK_LABEL = "global rank";

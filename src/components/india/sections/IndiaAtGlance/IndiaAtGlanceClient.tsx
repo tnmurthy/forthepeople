@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * v7 IndiaAtGlance band — dense magazine layout.
+ * v12 IndiaAtGlance band — denser magazine layout.
  *
- * Three columns: identity zone with 7-module directory, featured
- * zone with compound cells + global-rank callout, right stack of
- * 3 module cards. Owns:
+ * Three columns: identity zone with marquee-scrolling 7-module
+ * directory, featured zone with compound cells + global-rank
+ * callout, right column with two cards (India's World Rank +
+ * Latest updates). Owns:
  *   - IntersectionObserver flipping `visible` for the entry cascade
  *   - CountUpNumber on every numeric value once visible
  *   - Locale-aware module deep links + super-category browse link
@@ -24,20 +25,23 @@ import {
   FEATURED_GROWTH,
   FEATURED_RANK,
   FEATURED_CELLS,
-  RIGHT_STACK,
+  WORLD_RANKINGS,
+  WORLD_RANK_TOTAL_COUNT,
   FEATURED_RANK_LABEL,
   FEATURED_RANK_SUBTITLE,
   FEATURED_DESCRIPTION,
   indicatorKey,
   type DirectoryRow,
   type FeaturedCell,
-  type RightCard,
   type DirectoryFormat,
+  type RankEntry,
+  type RankFormat,
 } from "./metrics";
 import { INDIA_SUPER_CATEGORIES } from "@/lib/india/india-super-categories";
 import type {
   MacroSnapshotData,
   MacroIndicator,
+  LatestUpdate,
 } from "@/lib/india/getMacroSnapshotData";
 
 type Props = {
@@ -49,13 +53,44 @@ const EM_DASH = "—";
 
 // ── Formatters ──
 
-function formatLakhInr(value: number): string {
-  return `₹${(value / 100_000).toFixed(1)}L`;
-}
-
 function pctOf(numerator: number, denominator: number): string {
   if (denominator === 0) return EM_DASH;
   return `${Math.round((numerator / denominator) * 100)}`;
+}
+
+function formatRankValue(value: number, format: RankFormat): string {
+  switch (format) {
+    case "billion_people":
+      return `${(value / 1e9).toFixed(2)}B`;
+    case "trillion_usd":
+      return `$${value.toFixed(1)}T`;
+    case "billion_usd":
+      return `$${Math.round(value)}B`;
+    case "millions_people":
+      return `${Math.round(value)}M+`;
+  }
+}
+
+/**
+ * Relative time string for the live updates feed.
+ * Returns:
+ *   "Today"        within 24h
+ *   "{N}d ago"     within 7 days
+ *   "{N}w ago"     within 4 weeks
+ *   "{N}mo ago"    older
+ */
+function formatRelativeTime(date: Date | null): string {
+  if (!date) return EM_DASH;
+  const now = Date.now();
+  const diffMs = now - new Date(date).getTime();
+  if (diffMs < 0) return "Today";
+  const days = Math.floor(diffMs / 86_400_000);
+  if (days < 1) return "Today";
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
 }
 
 // ── Helpers ──
@@ -67,42 +102,31 @@ function getInd(
   return byKey[indicatorKey(ref)];
 }
 
-// ── Sub-components ──
+// ── Visible context — children animate when band scrolls into view ──
 
-function DirectoryRowItem({
-  row,
-  data,
-  locale,
+const VisibleCtx = createContext(false);
+
+function CountUpValue({
+  value,
+  decimals,
+  duration = 1200,
 }: {
-  row: DirectoryRow;
-  data: MacroSnapshotData;
-  locale: string;
+  value: number;
+  decimals: number;
+  duration?: number;
 }) {
-  const module_ = data.moduleBySlug[row.moduleSlug];
-  const headlineInd = getInd(data.indicatorByKey, row.headlineRef);
-  const companionInd = row.companion ? getInd(data.indicatorByKey, row.companion) : undefined;
-
-  if (!module_) return null;
-
-  const displayValue: React.ReactNode = headlineInd
-    ? renderDirectoryDisplay(row.format, headlineInd.value, companionInd?.value)
-    : EM_DASH;
-
+  const visible = useContext(VisibleCtx);
   return (
-    <Link
-      href={`/${locale}/india/${row.moduleSlug}`}
-      className={`${styles.directoryRow} ${row.isFeatured ? styles.featured : ""}`}
-    >
-      <span className={styles.directoryRowLabel}>
-        {row.emoji} {module_.title}
-        {row.isFeatured && (
-          <span className={styles.directoryRowFeaturedTag}>▸ featured</span>
-        )}
-      </span>
-      <span className={styles.directoryRowValue}>{displayValue}</span>
-    </Link>
+    <CountUpNumber
+      value={value}
+      decimals={decimals}
+      duration={duration}
+      visible={visible}
+    />
   );
 }
+
+// ── Sub-components ──
 
 function renderDirectoryDisplay(
   format: DirectoryFormat,
@@ -159,27 +183,51 @@ function renderDirectoryDisplay(
   }
 }
 
-/** Local context so deep children render CountUpValue without
- *  threading `visible` through every prop layer. */
-const VisibleCtx = createContext(false);
-
-function CountUpValue({
-  value,
-  decimals,
-  duration = 1200,
+function DirectoryRowItem({
+  row,
+  data,
+  locale,
+  duplicate = false,
 }: {
-  value: number;
-  decimals: number;
-  duration?: number;
+  row: DirectoryRow;
+  data: MacroSnapshotData;
+  locale: string;
+  duplicate?: boolean;
 }) {
-  const visible = useContext(VisibleCtx);
+  const module_ = data.moduleBySlug[row.moduleSlug];
+  const headlineInd = getInd(data.indicatorByKey, row.headlineRef);
+  const companionInd = row.companion ? getInd(data.indicatorByKey, row.companion) : undefined;
+
+  if (!module_) return null;
+
+  const displayValue: React.ReactNode = headlineInd
+    ? renderDirectoryDisplay(row.format, headlineInd.value, companionInd?.value)
+    : EM_DASH;
+
   return (
-    <CountUpNumber
-      value={value}
-      decimals={decimals}
-      duration={duration}
-      visible={visible}
-    />
+    <Link
+      href={`/${locale}/india/${row.moduleSlug}`}
+      className={styles.directoryRow}
+      aria-hidden={duplicate}
+      tabIndex={duplicate ? -1 : 0}
+    >
+      <span className={styles.directoryRowLabel}>
+        {row.emoji} {module_.title}
+        {row.isFeatured && (
+          <span className={styles.directoryRowFeaturedTag}>▸ featured</span>
+        )}
+      </span>
+      <span className={styles.directoryRowValue}>{displayValue}</span>
+    </Link>
+  );
+}
+
+function RepeatsDivider() {
+  return (
+    <div className={styles.repeatsDivider} aria-hidden>
+      <span className={styles.repeatsDividerIcon}>↻</span>
+      <span className={styles.repeatsDividerLabel}>repeats</span>
+    </div>
   );
 }
 
@@ -276,121 +324,69 @@ function FeaturedCellItem({
   );
 }
 
-// ── Right card ──
+// ── Right column cards ──
 
-function RightCardItem({
-  card,
-  data,
-  locale,
-}: {
-  card: RightCard;
-  data: MacroSnapshotData;
-  locale: string;
-}) {
-  const module_ = data.moduleBySlug[card.moduleSlug];
-  const headline = getInd(data.indicatorByKey, card.headline);
-
-  let majorNode: React.ReactNode = EM_DASH;
-  let unit = "";
-  if (headline) {
-    switch (card.headlineFormat) {
-      case "trillion_usd":
-        majorNode = (
-          <>
-            $<CountUpValue value={headline.value} decimals={1} />
-          </>
-        );
-        unit = "T";
-        break;
-      case "percent":
-        majorNode = <CountUpValue value={headline.value} decimals={1} />;
-        unit = "%";
-        break;
-      case "lakh_crore_inr":
-        majorNode = (
-          <>
-            ₹<CountUpValue value={headline.value} decimals={1} />
-          </>
-        );
-        unit = "L cr";
-        break;
-    }
-  }
-
-  let secondaryNode: React.ReactNode = null;
-  if (card.secondary) {
-    if ("ref" in card.secondary) {
-      const ind = getInd(data.indicatorByKey, card.secondary.ref);
-      if (ind) {
-        secondaryNode = (
-          <span className={styles.rightCardSecondaryPill}>
-            <span className={styles.rightCardSecondaryPillArrow} aria-hidden>
-              ↑
-            </span>
-            <span className={styles.rightCardSecondaryPillValue}>
-              <CountUpValue value={ind.value} decimals={1} />% YoY
-            </span>
-          </span>
-        );
-      }
-    } else {
-      secondaryNode = (
-        <span className={styles.rightCardSecondaryLabel}>
-          {card.secondary.text}
-        </span>
-      );
-    }
-  }
-
-  const titleText = module_?.title ?? card.moduleSlug;
-
+function WorldRankCard({ data }: { data: MacroSnapshotData }) {
   return (
-    <Link
-      href={`/${locale}/india/${card.moduleSlug}`}
-      className={styles.rightCard}
-    >
+    <div className={styles.rightCard}>
       <div className={styles.rightCardHeader}>
-        <div className={styles.rightCardHeaderLeft}>
-          <span className={styles.rightCardIcon} aria-hidden>
-            {card.emoji}
-          </span>
-          <span className={styles.rightCardTitle}>{titleText}</span>
-        </div>
-        {module_?.status === "live" && (
-          <span className={styles.rightCardLivePill}>live</span>
-        )}
-      </div>
-      <div className={styles.rightCardValueRow}>
-        <span className={styles.rightCardValue}>
-          {majorNode}
-          <span className={styles.rightCardValueUnit}>{unit}</span>
+        <span className={styles.rightCardTitle}>India&apos;s World Rank</span>
+        <span className={styles.rightCardIcon} aria-hidden>
+          🌐
         </span>
-        {secondaryNode}
       </div>
-      <div className={styles.rightCardSubGrid}>
-        {card.subStats.map((s, i) => {
-          let subValue: React.ReactNode = EM_DASH;
-          if ("staticValue" in s) {
-            subValue = s.staticValue;
-          } else {
-            const ind = getInd(data.indicatorByKey, s.valueRef);
-            if (ind) {
-              if (s.format === "lakh_inr") {
-                subValue = formatLakhInr(ind.value);
-              } else if (s.format === "with_unit") {
-                subValue = `${ind.value}${s.staticUnit ?? ""}`;
-              }
-            }
-          }
+      <div className={styles.rightCardList}>
+        {WORLD_RANKINGS.map((entry: RankEntry) => {
+          const rank = getInd(data.indicatorByKey, entry.rankRef);
+          const value = getInd(data.indicatorByKey, entry.valueRef);
+          if (!rank || !value) return null;
+          const formatted = formatRankValue(value.value, entry.format);
           return (
-            <div key={i} className={styles.rightCardSubItem}>
-              <span className={styles.label}>{s.label}</span>
-              <span className={styles.value}>{subValue}</span>
+            <div key={entry.label} className={styles.rightCardListItem}>
+              <span className={styles.rightCardListItemLeft}>
+                <span className={styles.rightCardListItemRank}>
+                  #<CountUpValue value={rank.value} decimals={0} />
+                </span>
+                <span className={styles.rightCardListItemLabel}>
+                  {entry.label}
+                </span>
+              </span>
+              <span className={styles.rightCardListItemValue}>{formatted}</span>
             </div>
           );
         })}
       </div>
-    </Link>
+      <a href="#" className={styles.rightCardLink}>
+        View all {WORLD_RANK_TOTAL_COUNT} ranks →
+      </a>
+    </div>
+  );
+}
+
+function LatestUpdatesCard({ updates }: { updates: LatestUpdate[] }) {
+  return (
+    <div className={styles.rightCard}>
+      <div className={styles.rightCardHeader}>
+        <span className={styles.rightCardTitle}>Latest updates</span>
+        <span className={styles.rightCardLiveBadge}>live</span>
+      </div>
+      <div className={styles.rightCardList}>
+        {updates.map((u, i) => (
+          <div
+            key={`${u.moduleSlug}-${u.label}-${i}`}
+            className={styles.rightCardListUpdate}
+          >
+            <span className={styles.rightCardListUpdateTime}>
+              {formatRelativeTime(u.asOfDate)}
+            </span>
+            <span className={styles.rightCardListUpdateLabel}>{u.label}</span>
+          </div>
+        ))}
+      </div>
+      <a href="#" className={styles.rightCardLink}>
+        Live data feed →
+      </a>
+    </div>
   );
 }
 
@@ -402,12 +398,9 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
 
   useEffect(() => {
     if (!ref.current) return;
-    // Threshold 0.15 = ~57px of the 380px section must be in view before
-    // the entry cascade fires. rootMargin shrinks the bottom edge by
-    // 10% of viewport height so the trigger sits comfortably above the
-    // fold rather than the moment a single pixel touches it. Verified
-    // for the v7 layout — initial load with the band near top of page
-    // intersects on mount and animations cascade as designed.
+    // Threshold 0.15 = ~48px of the 320px section must be in view before
+    // the entry cascade fires. rootMargin shrinks the bottom edge by 10%
+    // of viewport height so the trigger sits comfortably above the fold.
     const obs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setVisible(true);
@@ -434,7 +427,7 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
         aria-labelledby="india-at-a-glance-title"
       >
         <div className={styles.layout}>
-          {/* LEFT — Identity zone with directory */}
+          {/* LEFT — Identity zone with marquee directory */}
           <div className={styles.identityZone}>
             <div className={styles.sectionLabel}>
               <span className={styles.sectionLabelDot} aria-hidden />
@@ -459,15 +452,32 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
               </span>
             </div>
 
-            <div className={styles.directory}>
-              {MACRO_DIRECTORY.map((row) => (
-                <DirectoryRowItem
-                  key={row.moduleSlug}
-                  row={row}
-                  data={data}
-                  locale={locale}
-                />
-              ))}
+            {/* Marquee window: track holds two copies of the row block,
+                divided by ↻ REPEATS markers. The track translates -204px
+                per cycle so the second copy seamlessly aligns with where
+                the first started. */}
+            <div className={styles.directoryWindow}>
+              <div className={styles.directoryTrack}>
+                {MACRO_DIRECTORY.map((row) => (
+                  <DirectoryRowItem
+                    key={row.moduleSlug}
+                    row={row}
+                    data={data}
+                    locale={locale}
+                  />
+                ))}
+                <RepeatsDivider />
+                {MACRO_DIRECTORY.map((row) => (
+                  <DirectoryRowItem
+                    key={`dup-${row.moduleSlug}`}
+                    row={row}
+                    data={data}
+                    locale={locale}
+                    duplicate
+                  />
+                ))}
+                <RepeatsDivider />
+              </div>
             </div>
 
             <Link
@@ -488,7 +498,6 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
             <div className={styles.featuredHeader}>
               <div className={styles.featuredHeaderLeft}>
                 <span className={styles.featuredIcon} aria-hidden>
-                  {/* The featured module's icon comes via the directory entry. */}
                   {MACRO_DIRECTORY.find((r) => r.isFeatured)?.emoji ?? ""}
                 </span>
                 <span className={styles.featuredTitle}>
@@ -572,16 +581,10 @@ export function IndiaAtGlanceClient({ data, locale }: Props) {
             </div>
           </div>
 
-          {/* RIGHT — three-card stack */}
-          <div className={styles.rightStack}>
-            {RIGHT_STACK.map((card) => (
-              <RightCardItem
-                key={card.moduleSlug}
-                card={card}
-                data={data}
-                locale={locale}
-              />
-            ))}
+          {/* RIGHT — World Rank + Latest Updates */}
+          <div className={styles.rightColumn}>
+            <WorldRankCard data={data} />
+            <LatestUpdatesCard updates={data.latestUpdates} />
           </div>
         </div>
       </section>
