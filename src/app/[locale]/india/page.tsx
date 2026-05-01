@@ -14,9 +14,15 @@
 
 import type { Metadata } from "next";
 import { IndiaHero } from "@/components/india/sections/IndiaHero";
+import { IndiaKpiStrip } from "@/components/india/sections/IndiaKpiStrip";
+import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorldCard";
 import { SuperCategoryPreviewBand } from "@/components/india/sections/SuperCategoryPreviewBand";
 import { ScrollProgressBar } from "@/components/india/primitives/ScrollProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
+import {
+  TricolorBadgesPanel,
+  TricolorBadgesFooter,
+} from "@/components/india/primitives/TricolorBadgesPanel";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
   getOrderedSuperCategories,
@@ -88,6 +94,23 @@ export default async function IndiaRoute({
       <div style={{ width: "100%", padding: "1rem 1rem 0" }}>
         <LiveStrip />
         <IndiaHero locale={locale} dict={heroDict} />
+
+        {/* Order per file 48 §Section 2.1: hero → tricolor badges (full-width
+            horizontal strip) → KPI strip → "India in the world" rankings →
+            10 super-category bands. The badges panel + KPI + rankings used
+            to live inside IndiaHero; v10 makes them siblings so the badges
+            occupy the full row instead of a 320px right column. */}
+        <div style={{ marginTop: "12px" }}>
+          <TricolorBadgesPanel />
+          <TricolorBadgesFooter locale={locale} />
+        </div>
+
+        <div style={{ marginTop: "1rem" }}>
+          <IndiaKpiStrip />
+        </div>
+
+        <IndiaInTheWorldCard />
+
         <div style={{ marginTop: "2.5rem" }}>
           {superCategories.map((sc, i) => (
             <SuperCategoryPreviewBand
