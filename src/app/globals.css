@@ -641,13 +641,12 @@ body {
 
 /* ── Phase 4.7 §Section 2.2 heritage foundation ── */
 
-/* Page-level tint — set by <ScrollColorShift>; defaults to bg color. */
-:root {
-  --ftp-page-tint: #FAFAF8;
-}
+/* Page-level tint — temporarily reverted in Step 5 alongside the v4
+   super-category sweep. The body stays a static neutral cream while
+   each band is being redesigned; ScrollColorShift returns to setting
+   --ftp-page-tint once the 10 bands are finalised. */
 body.ftp-india-tinted {
-  background: var(--ftp-page-tint);
-  transition: background 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  background: #FAFAF8;
 }
 
 /* Page-entry curtain — saffron + green panels slide apart on first visit. */
