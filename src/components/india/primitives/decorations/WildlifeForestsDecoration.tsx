@@ -1,15 +1,16 @@
 /**
  * WildlifeForestsDecoration — branch borders + peacock feather corner motif.
  *
- * File 48 §Section 2.3 GAP 4 template. The host SuperCategoryPreviewBand
- * must have `position: relative; overflow: hidden;` so absolute children
- * stay inside the band. All decoration is `pointer-events: none` so it
- * never blocks interactions with the modules below.
+ * File 48 §Section 2.5+3 Commit 4 — branches reworked to read as "branch with
+ * leaves and berries" instead of "scattered dots." Stem thicker, leaves bigger,
+ * intermediate leaves added, small tendrils between them. Host band must
+ * have `position: relative; overflow: hidden;` so absolute children stay
+ * inside; all decoration is `pointer-events: none`.
  */
 
 import * as React from "react";
 
-const BRANCH_PATH = "M 0,14 Q 50,4 100,14 T 200,14 T 300,14 T 400,14 T 500,14 T 600,14 T 700,14";
+const BRANCH_PATH = "M 0,18 Q 50,4 100,18 T 200,18 T 300,18 T 400,18 T 500,18 T 600,18 T 700,18";
 
 function BranchBorder({ flip = false }: { flip?: boolean }) {
   return (
@@ -21,33 +22,50 @@ function BranchBorder({ flip = false }: { flip?: boolean }) {
         right: 0,
         top: flip ? "auto" : 0,
         bottom: flip ? 0 : "auto",
-        height: 28,
+        height: 36,
         width: "100%",
         pointerEvents: "none",
         transform: flip ? "scaleY(-1)" : undefined,
         zIndex: 0,
       }}
-      viewBox="0 0 700 28"
+      viewBox="0 0 700 36"
       preserveAspectRatio="none"
     >
-      <path d={BRANCH_PATH} fill="none" stroke="#3B6D11" strokeWidth="0.8" opacity="0.72" />
-      <g fill="#5A8F2E" opacity="0.72">
-        <ellipse cx="80" cy="18" rx="6" ry="3" transform="rotate(28 80 18)" />
-        <ellipse cx="180" cy="10" rx="5" ry="2.5" transform="rotate(-22 180 10)" />
-        <ellipse cx="280" cy="18" rx="6" ry="3" transform="rotate(28 280 18)" />
-        <ellipse cx="380" cy="10" rx="5" ry="2.5" transform="rotate(-22 380 10)" />
-        <ellipse cx="480" cy="18" rx="6" ry="3" transform="rotate(28 480 18)" />
-        <ellipse cx="580" cy="10" rx="5" ry="2.5" transform="rotate(-22 580 10)" />
-        <ellipse cx="660" cy="18" rx="6" ry="3" transform="rotate(28 660 18)" />
+      <path d={BRANCH_PATH} fill="none" stroke="#3B6D11" strokeWidth="1.4" opacity="0.85" />
+      {/* Leaves — alternating sides, larger and more visible */}
+      <g fill="#5A8F2E" opacity="0.75">
+        <ellipse cx="80" cy="24" rx="9" ry="4" transform="rotate(28 80 24)" />
+        <ellipse cx="130" cy="10" rx="7" ry="3.2" transform="rotate(-20 130 10)" />
+        <ellipse cx="180" cy="24" rx="9" ry="4" transform="rotate(28 180 24)" />
+        <ellipse cx="230" cy="10" rx="7" ry="3.2" transform="rotate(-20 230 10)" />
+        <ellipse cx="280" cy="24" rx="9" ry="4" transform="rotate(28 280 24)" />
+        <ellipse cx="330" cy="10" rx="7" ry="3.2" transform="rotate(-20 330 10)" />
+        <ellipse cx="380" cy="24" rx="9" ry="4" transform="rotate(28 380 24)" />
+        <ellipse cx="430" cy="10" rx="7" ry="3.2" transform="rotate(-20 430 10)" />
+        <ellipse cx="480" cy="24" rx="9" ry="4" transform="rotate(28 480 24)" />
+        <ellipse cx="530" cy="10" rx="7" ry="3.2" transform="rotate(-20 530 10)" />
+        <ellipse cx="580" cy="24" rx="9" ry="4" transform="rotate(28 580 24)" />
+        <ellipse cx="630" cy="10" rx="7" ry="3.2" transform="rotate(-20 630 10)" />
+        <ellipse cx="680" cy="24" rx="9" ry="4" transform="rotate(28 680 24)" />
       </g>
-      <g fill="#173404" opacity="0.80">
-        <circle cx="40" cy="14" r="1.5" />
-        <circle cx="140" cy="14" r="1.5" />
-        <circle cx="240" cy="14" r="1.5" />
-        <circle cx="340" cy="14" r="1.5" />
-        <circle cx="440" cy="14" r="1.5" />
-        <circle cx="540" cy="14" r="1.5" />
-        <circle cx="640" cy="14" r="1.5" />
+      {/* Tendrils — small curved stems between leaves */}
+      <g fill="none" stroke="#3B6D11" strokeWidth="0.7" opacity="0.65">
+        <path d="M 105,18 Q 110,12 118,12" />
+        <path d="M 205,18 Q 210,24 218,24" />
+        <path d="M 305,18 Q 310,12 318,12" />
+        <path d="M 405,18 Q 410,24 418,24" />
+        <path d="M 505,18 Q 510,12 518,12" />
+        <path d="M 605,18 Q 610,24 618,24" />
+      </g>
+      {/* Berries — small dark dots along stem */}
+      <g fill="#173404" opacity="0.85">
+        <circle cx="40" cy="18" r="2.2" />
+        <circle cx="155" cy="18" r="2.2" />
+        <circle cx="255" cy="18" r="2.2" />
+        <circle cx="355" cy="18" r="2.2" />
+        <circle cx="455" cy="18" r="2.2" />
+        <circle cx="555" cy="18" r="2.2" />
+        <circle cx="655" cy="18" r="2.2" />
       </g>
     </svg>
   );
@@ -64,7 +82,7 @@ export function WildlifeForestsDecoration() {
         aria-hidden
         style={{
           position: "absolute",
-          top: 26,
+          top: 30,
           right: 26,
           width: 70,
           height: 110,
