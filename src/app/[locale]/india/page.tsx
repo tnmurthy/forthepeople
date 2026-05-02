@@ -33,6 +33,7 @@ import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import { MughalArchDivider } from "@/components/india/primitives/MughalArchDivider";
+import { MiniHeritageSkylineDivider } from "@/components/india/primitives/MiniHeritageSkylineDivider";
 import { SectionDivider } from "@/components/india/primitives/SectionDivider";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
@@ -133,8 +134,10 @@ export default async function IndiaRoute({
         {/* Order per file 48 §Section 2.3: hero → KPI strip → rankings card
             → super-category bands. The TricolorBadgesPanel was retired here
             after the 4 #1 ranks it surfaced were absorbed into the rankings
-            card; the component file remains for reuse on a future /almanac. */}
-        <MughalArchDivider />
+            card; the component file remains for reuse on a future /almanac.
+            Step 15: replaced MughalArchDivider with MiniHeritageSkylineDivider
+            for a lighter, faster heritage motif. */}
+        <MiniHeritageSkylineDivider />
 
         <div style={{ marginTop: "1rem" }}>
           <IndiaKpiStrip />
