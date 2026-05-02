@@ -5,18 +5,30 @@
  * (just below IndiaBreadcrumb at top:56) that shows scroll progress
  * across the 10 super-categories as 10 equal-width segments.
  *
- * v2 (Step 12): segment fill is driven by `transform: scaleX(p)` on
- * a pseudo-fill element inside each segment, where `p` (0..1) is the
- * scroll progress through that band. We update the per-segment
- * `--seg-progress` CSS variable on a requestAnimationFrame loop, so
- * scrolling produces buttery 60fps fills with NO React re-renders.
- * No CSS transition is used — the rAF loop *is* the smoothing.
+ * v3 (Step 15): unified sequential boundary model. A single
+ * `boundaries[]` array (length 11) defines the scrollY range for each
+ * segment N as [boundaries[N], boundaries[N+1]]. Segment N's progress
+ * is `clamp((scrollY - boundaries[N]) / (boundaries[N+1] - boundaries[N]))`.
+ * No overlap, no gap: segment N reaches exactly 1.0 at the same scrollY
+ * where segment N+1 starts increasing from 0.
  *
- * Equal segment widths regardless of band height: scrolling halfway
- * through a tall section still shows that segment half-filled.
+ *   boundaries[0]  = 0                       (segment 0 starts at top of page)
+ *   boundaries[1]  = top of section 02       (know-india) in document coords
+ *   boundaries[2]  = top of section 03       …
+ *   …
+ *   boundaries[9]  = top of section 10       (culture)
+ *   boundaries[10] = scrollMax = scrollHeight − innerHeight
  *
- * Lighter colors: SECTION_ACCENT_LIGHT_COLORS gives the bar a sky /
- * honey / sage palette instead of the deep band accents.
+ * Performance contract:
+ *  - Boundaries are cached in closure scope and re-measured ONLY on
+ *    resize (debounced 150ms via window resize OR ResizeObserver on
+ *    document.body for content-height changes after font/image settle).
+ *  - Inside the rAF loop we do pure math against cached boundaries —
+ *    zero DOM reads, zero getBoundingClientRect calls. This is what
+ *    gives us 60fps under heavy scroll on low-end devices.
+ *  - Segment fill is `transform: scaleX(--seg-progress)` on a
+ *    pseudo-fill element, so writes are GPU-composited with no
+ *    layout/paint cost.
  *
  * prefers-reduced-motion: globals.css disables the (already absent)
  * transition. The transform jumps update on every frame regardless.
@@ -76,6 +88,10 @@ export function SectionProgressBar() {
     let rafId: number | null = null;
     let lastProgress: number[] = [];
 
+    // Sequential boundary array. Length = N + 1 where N = segment count.
+    // Populated by buildBoundaries() on init + resize/content-resize.
+    let boundaries: number[] = [];
+
     const collectSections = () => {
       const all = Array.from(
         document.querySelectorAll<HTMLElement>("[data-tint-id]"),
@@ -98,34 +114,88 @@ export function SectionProgressBar() {
     };
 
     /**
-     * Compute per-segment scroll progress relative to a pivot line at
-     * 1/3 of the viewport height. progress = scrolled past section.top
-     * divided by section.height, clamped to [0, 1]. Sections that
-     * haven't reached the pivot yield 0; sections fully scrolled past
-     * yield 1.
+     * Build the boundaries[] array from cached section element refs.
+     * boundaries[0] = 0 (segment 0 starts at top of page).
+     * boundaries[i] for i ∈ [1, N-1] = document-coord top of section i.
+     * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
+     *
+     * Short-page handling: when the page is short enough that some
+     * sectionTop values exceed scrollMax (e.g. culture is shorter than
+     * a viewport, so its top never reaches y=0), the corresponding
+     * boundaries are clamped to scrollMax. Segments whose [start, end]
+     * collapse to zero span are then snapped to 1.0 inside compute()
+     * once scrollY ≥ start, ensuring every segment reaches 1.0 at
+     * page bottom regardless of layout.
+     *
+     * Only invoked on init + resize. NEVER from inside the rAF loop.
      */
-    const compute = () => {
-      const pivot = window.innerHeight / 3;
-      // Map slug → progress so we can write to the right segment ref
-      // even if document order ever drifts from registry order.
-      const progressBySlug = new Map<string, number>();
+    const buildBoundaries = () => {
+      const scrollY = window.scrollY;
+      const N = SECTION_SLUGS_IN_ORDER.length;
+      const next: number[] = new Array(N + 1);
+      next[0] = 0;
 
-      for (const { slug, el } of sections) {
-        const rect = el.getBoundingClientRect();
-        const total = rect.height || 1;
-        const scrolledPast = pivot - rect.top;
-        const p = Math.min(1, Math.max(0, scrolledPast / total));
-        progressBySlug.set(slug, p);
+      for (let i = 1; i < N; i++) {
+        const slug = SECTION_SLUGS_IN_ORDER[i];
+        const entry = sections.find((s) => s.slug === slug);
+        if (entry) {
+          // getBoundingClientRect is robust against nested positioning,
+          // unlike offsetTop which only walks to the nearest positioned
+          // ancestor.
+          next[i] = entry.el.getBoundingClientRect().top + scrollY;
+        } else {
+          // Section not found yet — placeholder. Will be corrected on
+          // the next ResizeObserver tick once hydration finishes.
+          next[i] = next[i - 1];
+        }
       }
 
-      for (let i = 0; i < SECTION_SLUGS_IN_ORDER.length; i++) {
-        const slug = SECTION_SLUGS_IN_ORDER[i];
-        const next = progressBySlug.get(slug) ?? 0;
-        if (next === lastProgress[i]) continue;
-        lastProgress[i] = next;
+      const scrollMax = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+      next[N] = scrollMax;
+
+      // Clamp interior boundaries to scrollMax so every boundary is a
+      // scrollY position the user can actually reach. Then enforce
+      // monotonic non-decreasing order. Any segment that ends up with
+      // start === end has zero span and is handled in compute().
+      for (let i = 1; i <= N; i++) {
+        if (next[i] > scrollMax) next[i] = scrollMax;
+        if (next[i] < next[i - 1]) next[i] = next[i - 1];
+      }
+
+      boundaries = next;
+    };
+
+    /**
+     * Inner loop — pure math, zero DOM reads. For each segment N,
+     * progress = (scrollY − boundaries[N]) ÷ (boundaries[N+1] − boundaries[N]).
+     * Zero-span segments (collapsed by the short-page clamp) snap to
+     * 1.0 once scrollY reaches their start position.
+     */
+    const compute = () => {
+      const N = SECTION_SLUGS_IN_ORDER.length;
+      if (boundaries.length < N + 1) return;
+      const scrollY = window.scrollY;
+
+      for (let i = 0; i < N; i++) {
+        const start = boundaries[i];
+        const end = boundaries[i + 1];
+        const span = end - start;
+        let progress: number;
+        if (span > 0) {
+          progress = Math.min(1, Math.max(0, (scrollY - start) / span));
+        } else {
+          // Collapsed segment (short-page edge case): treat as a step
+          // function — empty until scrollY reaches start, full after.
+          progress = scrollY >= start ? 1 : 0;
+        }
+        if (progress === lastProgress[i]) continue;
+        lastProgress[i] = progress;
         const segEl = segmentRefs.current[i];
         if (segEl) {
-          segEl.style.setProperty("--seg-progress", String(next));
+          segEl.style.setProperty("--seg-progress", String(progress));
         }
       }
     };
@@ -140,20 +210,41 @@ export function SectionProgressBar() {
     const onScroll = () => {
       if (rafId === null) tick();
     };
-    const onResize = () => {
-      collectSections();
-      tick();
+
+    let resizeTimer: number | null = null;
+    const scheduleRemeasure = () => {
+      if (resizeTimer !== null) window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        collectSections();
+        buildBoundaries();
+        tick();
+        resizeTimer = null;
+      }, 150);
     };
 
     collectSections();
+    buildBoundaries();
     tick();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", scheduleRemeasure);
+
+    // ResizeObserver catches content-height changes that don't fire a
+    // window resize: fonts settling, lazy images loading, below-the-fold
+    // hydration. Debounced through the same scheduleRemeasure path.
+    let bodyResizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      bodyResizeObserver = new ResizeObserver(() => {
+        scheduleRemeasure();
+      });
+      bodyResizeObserver.observe(document.body);
+    }
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", scheduleRemeasure);
       if (rafId !== null) window.cancelAnimationFrame(rafId);
+      if (resizeTimer !== null) window.clearTimeout(resizeTimer);
+      if (bodyResizeObserver) bodyResizeObserver.disconnect();
     };
   }, []);
 
