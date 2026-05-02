@@ -32,7 +32,7 @@ import { SectionProgressBar } from "@/components/india/primitives/SectionProgres
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
-import { MiniHeritageSkylineDivider } from "@/components/india/primitives/MiniHeritageSkylineDivider";
+import { LotusVineGarlandDivider } from "@/components/india/primitives/LotusVineGarlandDivider";
 import { SectionDivider } from "@/components/india/primitives/SectionDivider";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
@@ -134,9 +134,10 @@ export default async function IndiaRoute({
             → super-category bands. The TricolorBadgesPanel was retired here
             after the 4 #1 ranks it surfaced were absorbed into the rankings
             card; the component file remains for reuse on a future /almanac.
-            Step 15: replaced MughalArchDivider with MiniHeritageSkylineDivider
-            for a lighter, faster heritage motif. */}
-        <MiniHeritageSkylineDivider />
+            Step 17: replaced the centered MiniHeritageSkylineDivider with a
+            full-width LotusVineGarlandDivider — vine + lotus pattern that
+            stretches edge-to-edge for a more textile-like ornamental feel. */}
+        <LotusVineGarlandDivider />
 
         <div style={{ marginTop: "1rem" }}>
           <IndiaKpiStrip />
