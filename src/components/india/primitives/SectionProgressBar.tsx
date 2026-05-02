@@ -116,19 +116,22 @@ export function SectionProgressBar() {
     /**
      * Build the boundaries[] array from cached section element refs.
      * boundaries[0] = 0 (segment 0 starts at top of page).
-     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i - 1].
+     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i].
      * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
      *
-     * Step 19 — section-top anchor (shifted by one): each segment owns
-     * the section that begins at its starting boundary. Segment 0 is
-     * intentionally long (page top → top of Section 01; covers hero,
-     * KPI strip, India in the World card). Segments 1..8 each span
-     * one section's scroll distance (top of Section i → top of
-     * Section i+1). Segment 9 covers Section 09 top → page bottom,
-     * which bundles Section 09 + Section 10 + footer into the last
-     * segment — there are 10 segments and 11 natural anchor points
-     * (start + 10 section tops + end), so the final pair of sections
-     * shares the last segment by design.
+     * Step 20 — section-top anchor: segment 0 owns "pre-content +
+     * Section 01" (the longest segment, covers hero, KPI strip, India
+     * in the World card, AND all of Section 01). Segments 1..8 each
+     * own a single section (top of Section i+1 → top of Section i+2,
+     * i.e. seg 1 = Section 02, seg 2 = Section 03, …). Segment 9
+     * owns Section 10 + footer; on layouts where Section 10's top
+     * exceeds scrollMax (page barely longer than viewport), the
+     * Step-15 clamp pushes boundary[9] to scrollMax, segment 9
+     * collapses to zero span, and the zero-span snap inside compute()
+     * fires segment 9 to 1.0 at the page bottom. There are 10 segments
+     * and 10 sections, so the natural one-to-one mapping is exact —
+     * with segment 0 absorbing the page header chrome and segment 9
+     * absorbing the page footer.
      *
      * Short-page handling preserved from Step 15: any boundary that
      * would exceed scrollMax is clamped to scrollMax, and segments
@@ -162,10 +165,10 @@ export function SectionProgressBar() {
       const next: number[] = new Array(N + 1);
       next[0] = 0;
       for (let i = 1; i < N; i++) {
-        // Section-top, shifted by one: boundary[i] anchors to the top
-        // of Section i (1-indexed), i.e. tops[i - 1] in 0-indexed
-        // section array.
-        next[i] = tops[i - 1];
+        // boundary[i] = top of Section (i+1), 1-indexed — i.e. tops[i]
+        // in the 0-indexed section array. So segment 1 starts at the
+        // top of Section 02, segment 2 at the top of Section 03, etc.
+        next[i] = tops[i];
       }
 
       const scrollMax = Math.max(0, document.documentElement.scrollHeight - viewportH);
