@@ -116,21 +116,33 @@ export function SectionProgressBar() {
     /**
      * Build the boundaries[] array from cached section element refs.
      * boundaries[0] = 0 (segment 0 starts at top of page).
-     * boundaries[i] for i ∈ [1, N-1] = document-coord top of section i.
+     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i] − viewportH / 2.
      * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
      *
-     * Short-page handling: when the page is short enough that some
-     * sectionTop values exceed scrollMax (e.g. culture is shorter than
-     * a viewport, so its top never reaches y=0), the corresponding
-     * boundaries are clamped to scrollMax. Segments whose [start, end]
-     * collapse to zero span are then snapped to 1.0 inside compute()
-     * once scrollY ≥ start, ensuring every segment reaches 1.0 at
-     * page bottom regardless of layout.
+     * Step 16 — viewport-center anchor: each interior boundary is
+     * shifted earlier by half a viewport so segment transitions
+     * happen as the next section's top crosses viewport center,
+     * matching the user's visual perception of "approaching the
+     * next section". Segment 0 still has the longest span (covers
+     * the pre-section-01 zone — hero + KPI strip + India in the
+     * World card), and segments 1..9 retain equal sectionHeight-ish
+     * spans relative to one another.
+     *
+     * Short-page handling: when sectionTop[i] − viewportH/2 exceeds
+     * scrollMax (rare, only when content is barely longer than the
+     * viewport), the corresponding boundaries are clamped to scrollMax
+     * and zero-span segments snap to 1.0 inside compute() once
+     * scrollY ≥ start. Guarantees every segment reaches 1.0 at page
+     * bottom regardless of layout.
      *
      * Only invoked on init + resize. NEVER from inside the rAF loop.
+     * window.innerHeight is read here (cheap, on resize only — never
+     * per scroll frame).
      */
     const buildBoundaries = () => {
       const scrollY = window.scrollY;
+      const viewportH = window.innerHeight;
+      const halfViewport = viewportH / 2;
       const N = SECTION_SLUGS_IN_ORDER.length;
       const next: number[] = new Array(N + 1);
       next[0] = 0;
@@ -141,8 +153,9 @@ export function SectionProgressBar() {
         if (entry) {
           // getBoundingClientRect is robust against nested positioning,
           // unlike offsetTop which only walks to the nearest positioned
-          // ancestor.
-          next[i] = entry.el.getBoundingClientRect().top + scrollY;
+          // ancestor. The viewport-center shift is applied here.
+          const sectionTop = entry.el.getBoundingClientRect().top + scrollY;
+          next[i] = sectionTop - halfViewport;
         } else {
           // Section not found yet — placeholder. Will be corrected on
           // the next ResizeObserver tick once hydration finishes.
@@ -150,10 +163,7 @@ export function SectionProgressBar() {
         }
       }
 
-      const scrollMax = Math.max(
-        0,
-        document.documentElement.scrollHeight - window.innerHeight,
-      );
+      const scrollMax = Math.max(0, document.documentElement.scrollHeight - viewportH);
       next[N] = scrollMax;
 
       // Clamp interior boundaries to scrollMax so every boundary is a
