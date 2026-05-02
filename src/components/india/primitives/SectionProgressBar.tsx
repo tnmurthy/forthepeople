@@ -116,17 +116,19 @@ export function SectionProgressBar() {
     /**
      * Build the boundaries[] array from cached section element refs.
      * boundaries[0] = 0 (segment 0 starts at top of page).
-     * boundaries[i] for i ∈ [1, N-1] = (sectionBottom[i-1] + sectionTop[i]) / 2.
+     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i - 1].
      * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
      *
-     * Step 18 — gap-midpoint anchor: each interior boundary fires when
-     * the visible divider strip between two adjacent sections crosses
-     * the viewport top, matching the user's perception of "I just
-     * moved past Section N, now at Section N+1." Segment 0 still owns
-     * the longest span (covers everything before Section 02's gap —
-     * hero, KPI strip, India in the World card, AND all of Section 01).
-     * Segments 1..9 each span one section's height worth of scroll
-     * (mid-gap to mid-gap).
+     * Step 19 — section-top anchor (shifted by one): each segment owns
+     * the section that begins at its starting boundary. Segment 0 is
+     * intentionally long (page top → top of Section 01; covers hero,
+     * KPI strip, India in the World card). Segments 1..8 each span
+     * one section's scroll distance (top of Section i → top of
+     * Section i+1). Segment 9 covers Section 09 top → page bottom,
+     * which bundles Section 09 + Section 10 + footer into the last
+     * segment — there are 10 segments and 11 natural anchor points
+     * (start + 10 section tops + end), so the final pair of sections
+     * shares the last segment by design.
      *
      * Short-page handling preserved from Step 15: any boundary that
      * would exceed scrollMax is clamped to scrollMax, and segments
@@ -143,29 +145,27 @@ export function SectionProgressBar() {
       const viewportH = window.innerHeight;
       const N = SECTION_SLUGS_IN_ORDER.length;
 
-      // Collect tops AND bottoms for each section in document coords.
-      // One getBoundingClientRect call per section — same DOM cost as
-      // Step 16, since rect already exposes both top and bottom.
+      // Collect tops for each section in document coords. One
+      // getBoundingClientRect per section, on resize only — never
+      // inside the rAF loop.
       const tops: number[] = new Array(N);
-      const bottoms: number[] = new Array(N);
       for (let i = 0; i < N; i++) {
         const slug = SECTION_SLUGS_IN_ORDER[i];
         const entry = sections.find((s) => s.slug === slug);
         if (entry) {
-          const rect = entry.el.getBoundingClientRect();
-          tops[i] = rect.top + scrollY;
-          bottoms[i] = rect.bottom + scrollY;
+          tops[i] = entry.el.getBoundingClientRect().top + scrollY;
         } else {
           tops[i] = i > 0 ? tops[i - 1] : 0;
-          bottoms[i] = tops[i];
         }
       }
 
       const next: number[] = new Array(N + 1);
       next[0] = 0;
       for (let i = 1; i < N; i++) {
-        // Gap midpoint between section i-1 (bottom) and section i (top).
-        next[i] = (bottoms[i - 1] + tops[i]) / 2;
+        // Section-top, shifted by one: boundary[i] anchors to the top
+        // of Section i (1-indexed), i.e. tops[i - 1] in 0-indexed
+        // section array.
+        next[i] = tops[i - 1];
       }
 
       const scrollMax = Math.max(0, document.documentElement.scrollHeight - viewportH);
