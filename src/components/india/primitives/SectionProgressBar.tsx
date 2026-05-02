@@ -90,7 +90,6 @@ export function SectionProgressBar() {
       // Document-order, matching SECTION_SLUGS_IN_ORDER.
       found.sort((a, b) => {
         const r = a.el.compareDocumentPosition(b.el);
-        // eslint-disable-next-line no-bitwise
         return r & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
       });
       sections = found;
