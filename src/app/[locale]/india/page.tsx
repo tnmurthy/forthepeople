@@ -31,6 +31,7 @@ import { CultureSection } from "@/components/india/sections/Culture";
 import { SectionProgressBar } from "@/components/india/primitives/SectionProgressBar";
 import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
+import { IndiaDoorOverlay } from "@/components/india/IndiaDoorOverlay";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import { LotusVineGarlandDivider } from "@/components/india/primitives/LotusVineGarlandDivider";
 import { SectionDivider } from "@/components/india/primitives/SectionDivider";
@@ -112,6 +113,14 @@ export default async function IndiaRoute({
         paddingBottom: "3rem",
       }}
     >
+      {/* Step 23: twin teak doors swing outward on first visit per session,
+          revealing the dashboard with a golden glow through the gap. Sits
+          above all other overlays at z-index 99999 for the brief 1.5 s
+          animation, then unmounts itself. The legacy PageEntryCurtain below
+          still mounts at z-index 1000; it remains in place but is visually
+          dominated by the doors during their window. */}
+      <IndiaDoorOverlay />
+
       {/* First-visit-per-session entrance curtain (saffron + green panels). */}
       <PageEntryCurtain />
 
