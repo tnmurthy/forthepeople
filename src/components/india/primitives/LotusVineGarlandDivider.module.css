@@ -1,0 +1,11 @@
+.divider {
+  max-width: 1200px;
+  margin: 14px auto;
+  padding: 0 32px;
+}
+
+.garland {
+  width: 100%;
+  height: 28px;
+  display: block;
+}
