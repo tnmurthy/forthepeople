@@ -116,22 +116,30 @@ export function SectionProgressBar() {
     /**
      * Build the boundaries[] array from cached section element refs.
      * boundaries[0] = 0 (segment 0 starts at top of page).
-     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i].
+     * boundaries[i] for i ∈ [1, N-1] = sectionBottom[i - 1].
      * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
      *
-     * Step 20 — section-top anchor: segment 0 owns "pre-content +
-     * Section 01" (the longest segment, covers hero, KPI strip, India
-     * in the World card, AND all of Section 01). Segments 1..8 each
-     * own a single section (top of Section i+1 → top of Section i+2,
-     * i.e. seg 1 = Section 02, seg 2 = Section 03, …). Segment 9
-     * owns Section 10 + footer; on layouts where Section 10's top
-     * exceeds scrollMax (page barely longer than viewport), the
-     * Step-15 clamp pushes boundary[9] to scrollMax, segment 9
-     * collapses to zero span, and the zero-span snap inside compute()
-     * fires segment 9 to 1.0 at the page bottom. There are 10 segments
-     * and 10 sections, so the natural one-to-one mapping is exact —
-     * with segment 0 absorbing the page header chrome and segment 9
-     * absorbing the page footer.
+     * Step 21 — section-bottom anchor: each segment's color matches
+     * what the user sees on screen during that segment's fill range.
+     * Anchoring boundaries to section bottoms makes the segment for
+     * Section i fill while the user is *inside* Section i, not
+     * before/after it. Step 20's section-top anchor lagged by one
+     * section visually because Section i's start at the top of the
+     * viewport coincided with the user already viewing Section i in
+     * the upper third — i.e. the bar's color was always one section
+     * behind the dominant on-screen card.
+     *
+     * Mapping:
+     *   segment 0 = pre-content + Section 01 (long; spans page top →
+     *               bottom of Section 01)
+     *   segment 1 = Section 02 (bottom of Section 01 → bottom of Section 02)
+     *   segment 2 = Section 03
+     *   …
+     *   segment 9 = Section 10 + footer
+     *
+     * Short-page handling preserved from Step 15: any boundary that
+     * exceeds scrollMax is clamped, and zero-span segments snap to
+     * 1.0 inside compute() once scrollY ≥ start.
      *
      * Short-page handling preserved from Step 15: any boundary that
      * would exceed scrollMax is clamped to scrollMax, and segments
@@ -148,27 +156,32 @@ export function SectionProgressBar() {
       const viewportH = window.innerHeight;
       const N = SECTION_SLUGS_IN_ORDER.length;
 
-      // Collect tops for each section in document coords. One
-      // getBoundingClientRect per section, on resize only — never
-      // inside the rAF loop.
+      // Collect tops AND bottoms for each section in document coords.
+      // One getBoundingClientRect per section, on resize only — never
+      // inside the rAF loop. rect already exposes both top and bottom,
+      // so collecting both is zero added DOM cost.
       const tops: number[] = new Array(N);
+      const bottoms: number[] = new Array(N);
       for (let i = 0; i < N; i++) {
         const slug = SECTION_SLUGS_IN_ORDER[i];
         const entry = sections.find((s) => s.slug === slug);
         if (entry) {
-          tops[i] = entry.el.getBoundingClientRect().top + scrollY;
+          const rect = entry.el.getBoundingClientRect();
+          tops[i] = rect.top + scrollY;
+          bottoms[i] = rect.bottom + scrollY;
         } else {
           tops[i] = i > 0 ? tops[i - 1] : 0;
+          bottoms[i] = tops[i];
         }
       }
 
       const next: number[] = new Array(N + 1);
       next[0] = 0;
       for (let i = 1; i < N; i++) {
-        // boundary[i] = top of Section (i+1), 1-indexed — i.e. tops[i]
-        // in the 0-indexed section array. So segment 1 starts at the
-        // top of Section 02, segment 2 at the top of Section 03, etc.
-        next[i] = tops[i];
+        // boundary[i] = bottom of Section i (1-indexed), i.e.
+        // bottoms[i - 1] in the 0-indexed section array. Segment 1
+        // starts when Section 01's bottom hits the viewport top, etc.
+        next[i] = bottoms[i - 1];
       }
 
       const scrollMax = Math.max(0, document.documentElement.scrollHeight - viewportH);
