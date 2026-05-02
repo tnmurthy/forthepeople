@@ -33,7 +33,6 @@ import { IndiaBreadcrumb } from "@/components/india/primitives/IndiaBreadcrumb";
 import { PageEntryCurtain } from "@/components/india/primitives/PageEntryCurtain";
 import { ScrollColorShift } from "@/components/india/primitives/ScrollColorShift";
 import { MiniHeritageSkylineDivider } from "@/components/india/primitives/MiniHeritageSkylineDivider";
-import { JaliPanelDivider } from "@/components/india/primitives/JaliPanelDivider";
 import { SectionDivider } from "@/components/india/primitives/SectionDivider";
 import { LiveStrip } from "@/components/india/sections/LiveStrip";
 import {
@@ -142,12 +141,6 @@ export default async function IndiaRoute({
         <div style={{ marginTop: "1rem" }}>
           <IndiaKpiStrip />
         </div>
-
-        {/* Step 15: a 7-cell octagonal jali panel sits between the
-            Indian KPI strip and the "India in the World" comparative
-            card. The jali — a recurring Indo-Islamic lattice motif —
-            cues the comparative cross-look that follows. */}
-        <JaliPanelDivider />
 
         <IndiaInTheWorldCard />
 
