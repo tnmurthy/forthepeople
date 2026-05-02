@@ -116,30 +116,30 @@ export function SectionProgressBar() {
     /**
      * Build the boundaries[] array from cached section element refs.
      * boundaries[0] = 0 (segment 0 starts at top of page).
-     * boundaries[i] for i ∈ [1, N-1] = sectionBottom[i - 1].
+     * boundaries[i] for i ∈ [1, N-1] = sectionTop[i] − viewportH / 2.
      * boundaries[N] = scrollMax (segment N-1 fully fills at page bottom).
      *
-     * Step 21 — section-bottom anchor: each segment's color matches
-     * what the user sees on screen during that segment's fill range.
-     * Anchoring boundaries to section bottoms makes the segment for
-     * Section i fill while the user is *inside* Section i, not
-     * before/after it. Step 20's section-top anchor lagged by one
-     * section visually because Section i's start at the top of the
-     * viewport coincided with the user already viewing Section i in
-     * the upper third — i.e. the bar's color was always one section
-     * behind the dominant on-screen card.
+     * Step 22 — viewport-center anchor: each interior boundary fires
+     * when the next section's top crosses viewport center. This both
+     *   (a) lets the bar's color match the dominant on-screen card
+     *       (Step 21's bottom-anchor only fired the next segment after
+     *       the user had already moved through ~half of the next
+     *       section, leaving the bar one section behind), AND
+     *   (b) gives segment 9 a real span instead of zero, so Section 10
+     *       (pink) gradually fills as the user scrolls into it rather
+     *       than snapping to 1.0 at page bottom.
      *
-     * Mapping:
-     *   segment 0 = pre-content + Section 01 (long; spans page top →
-     *               bottom of Section 01)
-     *   segment 1 = Section 02 (bottom of Section 01 → bottom of Section 02)
-     *   segment 2 = Section 03
-     *   …
-     *   segment 9 = Section 10 + footer
+     * Segment 0 still owns "pre-content + Section 01" (the long
+     * segment, spanning page top → Section 02's centerline anchor).
+     * Segments 1..8 each fill across roughly one section's distance.
+     * Segment 9 fills from Section 10's centerline anchor through
+     * scrollMax.
      *
      * Short-page handling preserved from Step 15: any boundary that
      * exceeds scrollMax is clamped, and zero-span segments snap to
-     * 1.0 inside compute() once scrollY ≥ start.
+     * 1.0 inside compute() once scrollY ≥ start. viewportH is re-read
+     * on every buildBoundaries() invocation, which the existing
+     * scheduleRemeasure path triggers on window resize.
      *
      * Short-page handling preserved from Step 15: any boundary that
      * would exceed scrollMax is clamped to scrollMax, and segments
@@ -156,32 +156,30 @@ export function SectionProgressBar() {
       const viewportH = window.innerHeight;
       const N = SECTION_SLUGS_IN_ORDER.length;
 
-      // Collect tops AND bottoms for each section in document coords.
-      // One getBoundingClientRect per section, on resize only — never
-      // inside the rAF loop. rect already exposes both top and bottom,
-      // so collecting both is zero added DOM cost.
+      // Collect tops for each section in document coords. One
+      // getBoundingClientRect per section, on resize only — never
+      // inside the rAF loop.
       const tops: number[] = new Array(N);
-      const bottoms: number[] = new Array(N);
       for (let i = 0; i < N; i++) {
         const slug = SECTION_SLUGS_IN_ORDER[i];
         const entry = sections.find((s) => s.slug === slug);
         if (entry) {
-          const rect = entry.el.getBoundingClientRect();
-          tops[i] = rect.top + scrollY;
-          bottoms[i] = rect.bottom + scrollY;
+          tops[i] = entry.el.getBoundingClientRect().top + scrollY;
         } else {
           tops[i] = i > 0 ? tops[i - 1] : 0;
-          bottoms[i] = tops[i];
         }
       }
 
+      const halfViewport = viewportH / 2;
       const next: number[] = new Array(N + 1);
       next[0] = 0;
       for (let i = 1; i < N; i++) {
-        // boundary[i] = bottom of Section i (1-indexed), i.e.
-        // bottoms[i - 1] in the 0-indexed section array. Segment 1
-        // starts when Section 01's bottom hits the viewport top, etc.
-        next[i] = bottoms[i - 1];
+        // boundary[i] = top of Section (i+1) shifted earlier by half a
+        // viewport, so the boundary fires when the next section's top
+        // crosses the viewport's vertical center. This puts the bar's
+        // color in sync with the dominant on-screen card and gives
+        // segment 9 a real span (instead of zero-span snap at bottom).
+        next[i] = tops[i] - halfViewport;
       }
 
       const scrollMax = Math.max(0, document.documentElement.scrollHeight - viewportH);
