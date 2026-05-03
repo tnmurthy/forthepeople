@@ -222,6 +222,29 @@ export default function HeroSection({ locale, districts = [] }: HeroSectionProps
           position: relative;
           display: flex;
           touch-action: pinch-zoom;
+          /* Step 23: ambient warm halo (outer) + brass tint (inner). Pulses
+             slowly via box-shadow only — GPU-cheap. */
+          box-shadow:
+            0 0 60px 12px rgba(244, 217, 164, 0.18),
+            0 0 24px 4px rgba(201, 164, 90, 0.14);
+          animation: ftp-map-glow-pulse 4.5s ease-in-out infinite;
+        }
+        @keyframes ftp-map-glow-pulse {
+          0%, 100% {
+            box-shadow:
+              0 0 60px 12px rgba(244, 217, 164, 0.18),
+              0 0 24px 4px rgba(201, 164, 90, 0.14);
+          }
+          50% {
+            box-shadow:
+              0 0 80px 18px rgba(244, 217, 164, 0.26),
+              0 0 32px 6px rgba(201, 164, 90, 0.20);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ftp-hero-map-frame {
+            animation: none;
+          }
         }
         .ftp-hero-map-frame svg {
           width: 100%;
