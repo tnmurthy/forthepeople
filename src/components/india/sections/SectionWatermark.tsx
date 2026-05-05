@@ -23,5 +23,15 @@ export function SectionWatermark({
 }) {
   const Icon = SECTION_WATERMARK_ICONS[slug];
   if (!Icon) return null;
-  return <Icon className={className} strokeWidth={1} aria-hidden />;
+  // The data-ftp-watermark attribute lets india-mobile.css fade every
+  // section's watermark on viewports < 768 px without touching the
+  // 10 per-section CSS modules that own the positioning class.
+  return (
+    <Icon
+      className={className}
+      strokeWidth={1}
+      aria-hidden
+      data-ftp-watermark="1"
+    />
+  );
 }
