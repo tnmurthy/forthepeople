@@ -73,4 +73,14 @@
   [data-ftp-watermark="1"] {
     opacity: 0 !important;
   }
+
+  /* Step 25 commit 3: tighten inter-section vertical margin.
+     Each section's CSS module sets `.section { margin-bottom: 2rem }`.
+     The data-tint-id attribute is on the same element, so we can
+     override globally with the attribute + !important. Hero is
+     excluded since it sits above the KPI strip and isn't a
+     v12 section card. */
+  [data-tint-id]:not([data-tint-id="hero"]) {
+    margin-bottom: 1rem !important;
+  }
 }
