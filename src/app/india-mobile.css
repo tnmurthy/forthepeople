@@ -1,0 +1,67 @@
+/* ──────────────────────────────────────────────────────────────────
+ * india-mobile.css — mobile-only polish for /[locale]/india.
+ *
+ * Imported by /[locale]/india/page.tsx as a side-effect stylesheet.
+ * All rules are gated behind @media (max-width: 767px) so desktop
+ * (≥ 768 px) is completely untouched. Targets stable data-attributes
+ * (data-ftp-right-rail, data-ftp-watermark, data-tint-id) that each
+ * section's client component sets on otherwise-CSS-module-scoped
+ * elements, so per-section CSS modules don't need to be edited.
+ * ────────────────────────────────────────────────────────────────── */
+
+/* Dots indicator — base styles always on so the HTML structure is
+   stable across viewports; visibility is mobile-only. */
+.ftp-right-rail-dots {
+  display: none;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ftp-right-rail-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ftp-dot-accent, #888780);
+  opacity: 0.25;
+  transition: opacity 200ms ease;
+}
+
+.ftp-right-rail-dot[data-active="true"] {
+  opacity: 1;
+}
+
+@media (max-width: 767px) {
+  /* Step 25 commit 1: right-rail carousel.
+     Each section's <div className={styles.rightColumn}> carries
+     data-ftp-right-rail="1". On mobile we override its layout into
+     a horizontal scroll-snap container; per-section CSS module rules
+     are overridden via the data-attribute selector + !important on
+     the conflicting properties (flex, width, margin). */
+  [data-ftp-right-rail="1"] {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding: 6px 12px 8px;
+    border-left: none !important;
+    border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+  }
+  [data-ftp-right-rail="1"]::-webkit-scrollbar {
+    display: none;
+  }
+  [data-ftp-right-rail="1"] > * {
+    flex: 0 0 calc(100% - 24px) !important;
+    width: calc(100% - 24px) !important;
+    min-width: 0 !important;
+    scroll-snap-align: start;
+    margin: 0 !important;
+  }
+
+  .ftp-right-rail-dots {
+    display: flex;
+  }
+}

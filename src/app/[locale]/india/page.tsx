@@ -14,6 +14,7 @@
 
 import * as React from "react";
 import type { Metadata } from "next";
+import "@/app/india-mobile.css";
 import { IndiaHero } from "@/components/india/sections/IndiaHero";
 import { IndiaKpiStrip } from "@/components/india/sections/IndiaKpiStrip";
 import { IndiaInTheWorldCard } from "@/components/india/sections/IndiaInTheWorldCard";

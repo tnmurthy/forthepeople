@@ -10,6 +10,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   CUL_DIRECTORY,
@@ -451,10 +452,11 @@ export function CultureClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — World Heritage Sites + Cultural Output */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <WorldHeritageSitesCard data={data} />
             <CulturalOutputCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#993556" />
         </div>
       </section>
     </VisibleCtx.Provider>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   NRE_DIRECTORY,
@@ -500,10 +501,11 @@ export function NaturalResourcesEnergyClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Top Power States + Energy Mix */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <TopPowerStatesCard data={data} />
             <EnergyMixCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#1F5C5C" />
         </div>
       </section>
     </VisibleCtx.Provider>

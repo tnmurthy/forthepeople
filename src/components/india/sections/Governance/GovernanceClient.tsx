@@ -13,6 +13,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   GOV_DIRECTORY,
@@ -493,10 +494,11 @@ export function GovernanceClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Justice System + Defence & Elections */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <JusticeSystemCard data={data} />
             <DefenceElectionsCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#3C3489" />
         </div>
       </section>
     </VisibleCtx.Provider>

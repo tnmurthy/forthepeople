@@ -13,6 +13,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   INF_DIRECTORY,
@@ -479,10 +480,11 @@ export function InfrastructureClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Top Highway States + Flagship Projects */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <TopHighwayStatesCard data={data} />
             <FlagshipProjectsCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#5F5E5A" />
         </div>
       </section>
     </VisibleCtx.Provider>

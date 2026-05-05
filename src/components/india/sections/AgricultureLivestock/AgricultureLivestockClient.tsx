@@ -12,6 +12,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   AL_DIRECTORY,
@@ -496,10 +497,11 @@ export function AgricultureLivestockClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Top Crop States + Farmer Schemes */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <TopCropStatesCard data={data} />
             <FarmerSchemesCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#B58A1E" />
         </div>
       </section>
     </VisibleCtx.Provider>

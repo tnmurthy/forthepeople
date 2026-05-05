@@ -15,6 +15,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   WF_DIRECTORY,
@@ -511,10 +512,11 @@ export function WildlifeForestsClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Top Forest States + Biodiversity */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <TopForestStatesCard data={data} />
             <BiodiversityCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#3B6D11" />
         </div>
       </section>
     </VisibleCtx.Provider>

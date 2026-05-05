@@ -9,6 +9,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 import { SectionWatermark } from "../SectionWatermark";
+import { SectionRightRailDots } from "../SectionRightRailDots";
 import { CountUpNumber } from "../IndiaAtGlance/CountUpNumber";
 import {
   INN_DIRECTORY,
@@ -497,10 +498,11 @@ export function InnovationClient({ data, locale }: Props) {
           </div>
 
           {/* RIGHT — Top Startup Hubs + Digital Stack */}
-          <div className={styles.rightColumn}>
+          <div className={styles.rightColumn} data-ftp-right-rail="1">
             <TopStartupHubsCard data={data} />
             <DigitalStackCard data={data} />
           </div>
+          <SectionRightRailDots count={2} accent="#993C1D" />
         </div>
       </section>
     </VisibleCtx.Provider>
