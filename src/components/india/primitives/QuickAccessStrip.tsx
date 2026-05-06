@@ -47,6 +47,7 @@ export function QuickAccessStrip({ locale }: QuickAccessStripProps) {
 
   return (
     <div
+      data-ftp-kpi-quickactions="1"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(6, 1fr)",

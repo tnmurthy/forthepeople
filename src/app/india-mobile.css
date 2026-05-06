@@ -88,6 +88,22 @@
     max-width: none !important;
   }
 
+  /* Step 26 commit 3: collapse the hero's 1×6 strips into 3×2 grids
+     on mobile. Both NationalIdentityGrid and QuickAccessStrip use
+     inline `grid-template-columns: repeat(6, 1fr)` — overriding with
+     !important works because !important beats inline styles when the
+     inline rule itself isn't !important. */
+  [data-ftp-national-symbols="1"],
+  [data-ftp-kpi-quickactions="1"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  /* Slightly tighter per-tile padding on mobile so 3 tiles per row
+     fit inside ~110 px each without wrapping the label. */
+  [data-ftp-national-symbols="1"] > div,
+  [data-ftp-kpi-quickactions="1"] > a {
+    padding: 6px 8px !important;
+  }
+
   /* Step 25 commit 3: tighten inter-section vertical margin.
      Each section's CSS module sets `.section { margin-bottom: 2rem }`.
      The data-tint-id attribute is on the same element, so we can

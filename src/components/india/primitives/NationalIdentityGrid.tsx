@@ -38,6 +38,7 @@ const CELLS: IdentityCell[] = [
 export function NationalIdentityGrid() {
   return (
     <div
+      data-ftp-national-symbols="1"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(6, 1fr)",
