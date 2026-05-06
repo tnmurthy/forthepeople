@@ -237,11 +237,15 @@ export function ModuleSelectorDropdown({
       {open && (
         <div
           role="listbox"
+          data-ftp-module-popover="1"
           style={{
             position: "absolute",
             top: "calc(100% + 4px)",
             // Anchor to the trigger pill's left edge so the panel expands
             // rightward into the viewport rather than off-screen left.
+            // On mobile (< 768 px) india-mobile.css overrides left/width
+            // so the popover centers in the viewport with 12 px gutters
+            // instead of clipping past the right edge.
             left: 0,
             width: "480px",
             maxWidth: "calc(100vw - 32px)",

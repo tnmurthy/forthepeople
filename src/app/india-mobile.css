@@ -74,6 +74,20 @@
     opacity: 0 !important;
   }
 
+  /* Step 26 commit 2: module-selector popover centers in the viewport
+     on mobile so the right edge doesn't clip. The popover lives inside
+     the breadcrumb's flex row, so absolute positioning anchored to
+     `left: 0` of the trigger pushes it rightward — fine on desktop
+     where the viewport is wider than the popover, but clipping on a
+     390 px screen. Pin both edges to 12 px gutters with !important
+     overriding the inline `left: 0; width: 480px`. */
+  [data-ftp-module-popover="1"] {
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
   /* Step 25 commit 3: tighten inter-section vertical margin.
      Each section's CSS module sets `.section { margin-bottom: 2rem }`.
      The data-tint-id attribute is on the same element, so we can
