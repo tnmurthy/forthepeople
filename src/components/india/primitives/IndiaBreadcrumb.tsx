@@ -7,9 +7,11 @@
  *
  * Layout: [🏠 Home] › [📍 India] › [Select module ▾]   (all inline, no auto margin)
  *
- * Position: sticky at top:56px (right under the global header which is sticky at
- * top:0 with height 56). The page-level scroll-progress bar lives directly below
- * this breadcrumb (sticky at top:100px, z-index one less than the breadcrumb).
+ * Position: sticky at top:41px so the breadcrumb butts cleanly against the
+ * bottom of the global header (Step 26 fix — was top:56px which left a 15 px
+ * transparent strip visible while scrolling). The page-level scroll-progress
+ * bar lives directly below this breadcrumb (sticky at top:100px, z-index one
+ * less than the breadcrumb).
  */
 
 import * as React from "react";
@@ -48,7 +50,7 @@ export function IndiaBreadcrumb({
       aria-label="Breadcrumb"
       style={{
         position: "sticky",
-        top: "56px",
+        top: "41px",
         zIndex: 40,
         background: "var(--color-background)",
         borderBottom: "0.5px solid var(--color-border-tertiary)",
