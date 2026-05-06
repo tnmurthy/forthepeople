@@ -85,8 +85,33 @@ export async function LiveStrip({
 
   const liveDistrictCount = getTotalActiveDistrictCount();
 
+  // The five non-pill items are rendered into a marquee track on mobile
+  // so the LIVE pill stays pinned at the left while the rest scroll
+  // through. The track contains TWO copies of the same fragment so the
+  // CSS `translateX(-50%)` loop hands off seamlessly without a visible
+  // gap. Desktop hides the duplicate copy via india-mobile.css and
+  // disables the animation so the row reads exactly as before.
+  const trailingItems = (
+    <>
+      <Divider />
+      <Item label="Last sync" value={lastSync} />
+      <Divider />
+      <Item label="Sources" value={`${sourceCount} .gov.in`} />
+      <Divider />
+      <Item
+        label="Modules"
+        value={`${liveModuleCount} live · ${editorialModuleCount} editorial`}
+      />
+      <Divider />
+      <Item label="Districts" value={`${liveDistrictCount} of ${totalDistricts}`} />
+      <Divider />
+      <Item label="States" value={`${liveStateCount} of ${totalStates}`} />
+    </>
+  );
+
   return (
     <div
+      data-ftp-live-bar="1"
       style={{
         border: "0.5px solid rgba(83, 74, 183, 0.18)",
         background:
@@ -103,7 +128,10 @@ export async function LiveStrip({
       role="status"
       aria-label="Platform freshness and coverage"
     >
-      <span style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+      <span
+        data-ftp-live-pill="1"
+        style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}
+      >
         <span
           aria-hidden
           className="ftp-live-dot"
@@ -127,19 +155,17 @@ export async function LiveStrip({
         </span>
       </span>
 
-      <Divider />
-      <Item label="Last sync" value={lastSync} />
-      <Divider />
-      <Item label="Sources" value={`${sourceCount} .gov.in`} />
-      <Divider />
-      <Item
-        label="Modules"
-        value={`${liveModuleCount} live · ${editorialModuleCount} editorial`}
-      />
-      <Divider />
-      <Item label="Districts" value={`${liveDistrictCount} of ${totalDistricts}`} />
-      <Divider />
-      <Item label="States" value={`${liveStateCount} of ${totalStates}`} />
+      <div data-ftp-live-marquee="1" style={{ display: "contents" }}>
+        <div
+          data-ftp-live-marquee-track="1"
+          style={{ display: "contents" }}
+        >
+          <div style={{ display: "contents" }}>{trailingItems}</div>
+          <div style={{ display: "contents" }} aria-hidden="true">
+            {trailingItems}
+          </div>
+        </div>
+      </div>
 
       <style>{`
         @keyframes ftp-live-pulse {
