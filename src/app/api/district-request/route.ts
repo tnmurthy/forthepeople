@@ -10,10 +10,30 @@
 // GET /api/district-request — get top requested districts
 // ═══════════════════════════════════════════════════════════
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { prisma } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { rateLimit } from "@/lib/rate-limit";
 
 const TOP_CACHE_KEY = "ftp:district-requests:top";
+
+// 120 votes / IP / minute. Generous enough that no enthusiastic human ever
+// hits it; restrictive enough that scripts can't hammer.
+const VOTE_RATE_LIMIT = 120;
+const VOTE_RATE_WINDOW_SECONDS = 60;
+
+function hashIp(ip: string): string {
+  const salt = process.env.VOTE_IP_SALT || "forthepeople-default-salt";
+  return createHash("sha256").update(ip + salt).digest("hex").slice(0, 32);
+}
+
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
 
 export async function GET() {
   const cached = await cacheGet<object[]>(TOP_CACHE_KEY);
@@ -42,6 +62,15 @@ export async function POST(req: NextRequest) {
 
     if (!stateName || !districtName) {
       return NextResponse.json({ error: "stateName and districtName required" }, { status: 400 });
+    }
+
+    const ipHash = hashIp(getClientIp(req));
+    const rl = await rateLimit(`vote:${ipHash}`, VOTE_RATE_LIMIT, VOTE_RATE_WINDOW_SECONDS);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "rate_limited", retryAfter: VOTE_RATE_WINDOW_SECONDS },
+        { status: 429, headers: { "Retry-After": String(VOTE_RATE_WINDOW_SECONDS) } },
+      );
     }
 
     // Upsert — increment count
