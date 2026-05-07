@@ -6,13 +6,15 @@
  * Session 12 v7 — /vote-district client page.
  *
  * Flattens INDIA_STATES → all locked districts. Augments with vote
- * counts from existing /api/district-request GET (top 5 cached) when
- * available; falls back to 0 votes for districts not in the response.
+ * counts from /api/district-request?all=1 so every voted district shows
+ * its true count, not just the top 5. Districts with no votes default to 0.
  *
  * Vote action: POST to /api/district-request with { stateName, districtName }.
  * Server upserts on (stateName, districtName) so re-votes simply increment.
- * If POST fails, the row stays in optimistic-vote state but shows a
- * brief inline error.
+ * No per-visitor cap — each click is one POST. The server returns the
+ * authoritative new total which replaces the optimistic +1.
+ * On 429: revert the +1 and surface "slow down" inline.
+ * On other error: revert and surface a generic retry prompt.
  *
  * UI:
  *   - Search input (filters by district name)
@@ -25,7 +27,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { INDIA_STATES } from "@/lib/constants/districts";
 
@@ -75,18 +77,18 @@ export default function VoteDistrictPage({
 }: VoteDistrictPageProps) {
   const allLocked = useMemo(() => flattenLocked(), []);
 
-  // ── Augment with live vote counts ──
+  // ── Augment with live vote counts (all districts, not just top 5) ──
   const [voteMap, setVoteMap] = useState<Record<string, number>>({});
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const res = await fetch("/api/district-request");
+        const res = await fetch("/api/district-request?all=1");
         if (!res.ok) return;
-        const data = (await res.json()) as { top?: DistrictRequestRow[] };
+        const data = (await res.json()) as { all?: DistrictRequestRow[] };
         if (cancelled) return;
         const next: Record<string, number> = {};
-        for (const r of data.top ?? []) {
+        for (const r of data.all ?? []) {
           next[`${r.stateName}::${r.districtName}`.toLowerCase()] = r.requestCount;
         }
         setVoteMap(next);
@@ -106,10 +108,12 @@ export default function VoteDistrictPage({
   const [sortBy, setSortBy] = useState<"votes" | "alpha">("votes");
   const [page, setPage] = useState(0);
 
-  // Local optimistic vote tracking (slug → bump)
+  // Local optimistic vote tracking (slug → bump applied on top of server count)
   const [bumps, setBumps] = useState<Record<string, number>>({});
-  const [voted, setVoted] = useState<Set<string>>(new Set());
   const [errorSlug, setErrorSlug] = useState<string | null>(null);
+  const [errorKind, setErrorKind] = useState<"rate" | "generic" | null>(null);
+  // Per-slug debounce — last click time to drop accidental triple-fires.
+  const lastClickRef = useRef<Record<string, number>>({});
 
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -153,21 +157,51 @@ export default function VoteDistrictPage({
   }, [preselected]);
 
   async function handleVote(d: LockedDistrict) {
-    if (voted.has(d.slug)) return;
-    setVoted((prev) => new Set(prev).add(d.slug));
+    // 200ms debounce — prevents accidental triple-fires from latency,
+    // not a vote cap. Each separate click is still one POST.
+    const now = Date.now();
+    if (now - (lastClickRef.current[d.slug] ?? 0) < 200) return;
+    lastClickRef.current[d.slug] = now;
+
     setBumps((prev) => ({ ...prev, [d.slug]: (prev[d.slug] ?? 0) + 1 }));
     setErrorSlug(null);
+    setErrorKind(null);
+
     try {
       const res = await fetch("/api/district-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stateName: d.stateName, districtName: d.name }),
       });
-      if (!res.ok) {
+
+      if (res.status === 429) {
+        // Rate limited — revert optimistic bump and surface inline notice.
+        setBumps((prev) => ({ ...prev, [d.slug]: (prev[d.slug] ?? 1) - 1 }));
         setErrorSlug(d.slug);
+        setErrorKind("rate");
+        return;
+      }
+
+      if (!res.ok) {
+        setBumps((prev) => ({ ...prev, [d.slug]: (prev[d.slug] ?? 1) - 1 }));
+        setErrorSlug(d.slug);
+        setErrorKind("generic");
+        return;
+      }
+
+      // Replace voteMap with the server's authoritative total so a refresh
+      // (or a subsequent click) starts from the real DB count.
+      const data = (await res.json()) as { requestCount?: number };
+      if (typeof data.requestCount === "number") {
+        const key = `${d.stateName}::${d.name}`.toLowerCase();
+        setVoteMap((prev) => ({ ...prev, [key]: data.requestCount as number }));
+        // Server count now includes our +1; clear the optimistic bump for this slug.
+        setBumps((prev) => ({ ...prev, [d.slug]: (prev[d.slug] ?? 1) - 1 }));
       }
     } catch {
+      setBumps((prev) => ({ ...prev, [d.slug]: (prev[d.slug] ?? 1) - 1 }));
       setErrorSlug(d.slug);
+      setErrorKind("generic");
     }
   }
 
@@ -271,15 +305,12 @@ export default function VoteDistrictPage({
           min-height: 36px;
           transition: background 150ms ease, color 150ms ease;
         }
-        .ftp-vote-btn:hover:not(:disabled) {
+        .ftp-vote-btn:hover {
           background: #2563EB;
           color: #FFFFFF;
         }
-        .ftp-vote-btn-voted {
-          background: #16A34A !important;
-          color: #FFFFFF !important;
-          border-color: #16A34A !important;
-          cursor: default;
+        .ftp-vote-btn:active {
+          transform: scale(0.97);
         }
         .ftp-vote-empty {
           padding: 28px;
@@ -366,7 +397,6 @@ export default function VoteDistrictPage({
           </div>
         ) : (
           pageItems.map((d) => {
-            const isVoted = voted.has(d.slug);
             const isPre = preselected === d.slug;
             const hadError = errorSlug === d.slug;
             return (
@@ -385,16 +415,18 @@ export default function VoteDistrictPage({
                 </div>
                 <button
                   type="button"
-                  className={`ftp-vote-btn${isVoted ? " ftp-vote-btn-voted" : ""}`}
+                  className="ftp-vote-btn"
                   onClick={() => handleVote(d)}
-                  disabled={isVoted}
                   aria-label={`Vote for ${d.name}, ${d.stateName}`}
                 >
-                  ▲ {d.voteCount.toLocaleString("en-IN")}{" "}
-                  {isVoted ? "Voted" : "Vote"}
+                  ▲ {d.voteCount.toLocaleString("en-IN")} Vote
                 </button>
                 {hadError && (
-                  <span className="ftp-vote-error">network error — try again</span>
+                  <span className="ftp-vote-error">
+                    {errorKind === "rate"
+                      ? "slow down — try again in a minute"
+                      : "could not save vote, try again"}
+                  </span>
                 )}
               </div>
             );
