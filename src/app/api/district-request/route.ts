@@ -16,6 +16,7 @@ import { cacheGet, cacheSet } from "@/lib/cache";
 import { rateLimit } from "@/lib/rate-limit";
 
 const TOP_CACHE_KEY = "ftp:district-requests:top";
+const ALL_CACHE_KEY = "ftp:district-requests:all";
 
 // 120 votes / IP / minute. Generous enough that no enthusiastic human ever
 // hits it; restrictive enough that scripts can't hammer.
@@ -35,7 +36,26 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const wantAll = req.nextUrl.searchParams.get("all") === "1";
+
+  if (wantAll) {
+    const cached = await cacheGet<object[]>(ALL_CACHE_KEY);
+    if (cached) {
+      return NextResponse.json({ all: cached, fromCache: true });
+    }
+    try {
+      const all = await prisma.districtRequest.findMany({
+        orderBy: { requestCount: "desc" },
+      });
+      await cacheSet(ALL_CACHE_KEY, all, 60);
+      return NextResponse.json({ all, fromCache: false });
+    } catch (err) {
+      console.error("[district-request GET ?all]", err);
+      return NextResponse.json({ all: [], fromCache: false, error: true });
+    }
+  }
+
   const cached = await cacheGet<object[]>(TOP_CACHE_KEY);
   if (cached) {
     return NextResponse.json({ top: cached, fromCache: true });
@@ -80,8 +100,9 @@ export async function POST(req: NextRequest) {
       update: { requestCount: { increment: 1 } },
     });
 
-    // Bust top cache
+    // Bust caches so next GET reflects the new total
     await cacheSet(TOP_CACHE_KEY, null as unknown as object[], 0);
+    await cacheSet(ALL_CACHE_KEY, null as unknown as object[], 0);
 
     return NextResponse.json({ success: true, requestCount: record.requestCount });
   } catch (err) {
